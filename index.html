@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refr — Idea Document</title>
+<meta name="description" content="A verified employee referral marketplace for India. Referrals produce 30–50% of all hires from 7% of applicants.">
+<meta property="og:title" content="Refr — A verified employee referral marketplace for India">
+<meta property="og:description" content="Referrals produce 30–50% of all hires from 7% of applicants. In India, this runs on LinkedIn DMs and WhatsApp groups. We're building the infrastructure.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Refr — Idea Document">
+<meta name="twitter:description" content="A verified employee referral marketplace for India.">
+<meta name="theme-color" content="#faf9f6">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#faf9f6;--surface:#fff;--surface2:#f3f1ec;--surface3:#ebe8e1;
+--border:#e2dfd8;--ink:#1a1816;--ink2:#3d3a35;--ink3:#6b6660;--ink4:#9c978f;
+--accent:#c45d2c;--teal:#1a7a6d;--teal2:#22a394;--blue:#2563eb;--green:#16a34a;--gold:#ca8a04;--rose:#dc2626;
+--mono:'JetBrains Mono',monospace;--serif:'Instrument Serif',serif;--sans:'Outfit',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased}
+::selection{background:rgba(196,93,44,.15)}
+.wrap{max-width:720px;margin:0 auto;padding:0 28px}
+.wrap-wide{max-width:1100px;margin:0 auto;padding:0 28px}
+@media(max-width:600px){.wrap,.wrap-wide{padding:0 20px}}
+
+/* ═══ TOP NAV ═══ */
+.topnav{position:fixed;top:0;left:0;right:0;background:rgba(250,249,246,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:100;padding:0 32px}
+.topnav-inner{max-width:780px;margin:0 auto;display:flex;align-items:center;height:52px;gap:20px}
+.topnav .logo{font-family:var(--serif);font-size:1.1rem;color:var(--ink);white-space:nowrap}
+.topnav .progress-bar{flex:1;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.topnav .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .3s;border-radius:2px}
+.topnav .section-label{font-family:var(--mono);font-size:.6rem;color:var(--ink4);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+
+section{padding:72px 0;border-top:1px solid var(--border)}
+section:first-of-type{border-top:none;padding-top:100px}
+.tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+h2{font-family:var(--serif);font-size:clamp(1.8rem,4vw,2.5rem);font-weight:400;line-height:1.15;margin-bottom:10px}
+h3{font-family:var(--serif);font-size:1.3rem;margin:36px 0 10px;font-weight:400}
+h4{font-size:.88rem;font-weight:600;margin:24px 0 6px;color:var(--ink2)}
+.lead{font-size:.98rem;color:var(--ink3);margin-bottom:36px;font-weight:300;max-width:600px}
+p{margin-bottom:14px;color:var(--ink2);font-size:.92rem}
+p strong{color:var(--ink);font-weight:600}
+
+.callout{border-radius:8px;padding:20px 24px;margin:28px 0;font-size:.88rem;line-height:1.7;position:relative}
+.callout::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.callout-o{background:rgba(196,93,44,.05);border:1px solid rgba(196,93,44,.12)}.callout-o::before{background:var(--accent)}
+.callout-t{background:rgba(26,122,109,.04);border:1px solid rgba(26,122,109,.1)}.callout-t::before{background:var(--teal)}
+.callout .cl{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:6px;font-weight:600}
+.callout-o .cl{color:var(--accent)}.callout-t .cl{color:var(--teal)}
+.callout p{margin-bottom:6px;font-size:.85rem}.callout p:last-child{margin-bottom:0}
+
+.math{background:var(--ink);color:#ddd;border-radius:8px;padding:18px 22px;margin:24px 0;font-family:var(--mono);font-size:.78rem;line-height:1.9;overflow-x:auto;white-space:pre}.math .h{color:#d97b4a}.math .r{color:#a3e635;font-weight:600}.math .d{color:#6b6660}
+table{width:100%;border-collapse:collapse;margin:24px 0;font-size:.82rem}
+thead{border-bottom:2px solid var(--border)}
+th{text-align:left;padding:10px 14px;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);font-weight:500}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:top}
+td strong{color:var(--ink)}
+
+/* ═══ PHONE MOCKUPS ═══ */
+.screen-flow{margin:48px 0}
+.flow-row{display:flex;gap:24px;align-items:flex-start;margin-bottom:56px;flex-wrap:wrap}
+.flow-row.reverse{flex-direction:row-reverse}
+@media(max-width:800px){.flow-row,.flow-row.reverse{flex-direction:column;align-items:center}}
+
+.phone-wrap{flex:0 0 280px}
+.phone{background:#1a1816;border-radius:36px;padding:9px;box-shadow:0 24px 64px rgba(26,24,22,.15),0 0 0 1px rgba(0,0,0,.04);position:relative}
+.phone::before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:76px;height:22px;background:#1a1816;border-radius:0 0 13px 13px;z-index:10}
+.phone::after{content:'';position:absolute;top:13px;left:50%;transform:translateX(-50%);width:48px;height:5px;background:#2a2826;border-radius:3px;z-index:11}
+.scr{background:#fff;border-radius:28px;overflow:hidden;font-family:var(--sans)}
+
+.sb{display:flex;justify-content:space-between;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#1a1816}
+.tab-bar{display:flex;justify-content:space-around;padding:6px 0 18px;border-top:1px solid #f0eeeb;background:#fafaf9}
+.tab{text-align:center;font-size:8px;color:#bbb;font-weight:500}.tab.on{color:var(--teal)}
+.tab .ti{font-size:16px;display:block;margin-bottom:1px}
+
+.ann{flex:1;min-width:240px;padding-top:4px}
+.ann h4{font-family:var(--serif);font-size:1.2rem;font-weight:400;margin:0 0 6px;color:var(--ink)}
+.ann>p{font-size:.84rem;color:var(--ink3);margin-bottom:12px}
+.ann-feat{display:flex;gap:8px;align-items:start;padding:5px 0}
+.ann-feat .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:7px}
+.ann-feat p{font-size:.78rem;color:var(--ink3);margin:0}
+
+.flow-arrow{text-align:center;margin:-24px 0 24px;color:var(--ink4);font-size:1.2rem}
+
+.s-body{padding:12px 14px}
+.card-mock{border-radius:16px;overflow:hidden;position:relative;height:300px}
+.card-mock .card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.8) 100%)}
+.card-mock .card-inner{position:absolute;bottom:0;left:0;right:0;padding:16px;color:white}
+.card-mock .cc-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:4px 10px;border-radius:100px;font-size:9px;font-weight:600;margin-bottom:8px}
+.card-mock .cc-logo{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:white}
+.card-mock .cc-name{font-size:19px;font-weight:700}
+.card-mock .cc-role{font-size:10.5px;opacity:.8;margin-top:1px}
+.card-mock .cc-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.card-mock .cc-chip{font-size:8px;padding:3px 9px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.12);border-radius:100px}
+.card-mock .cc-trust{display:flex;gap:10px;margin-top:10px;font-size:9px;font-weight:600}
+.card-mock .ct-item{display:flex;align-items:center;gap:3px}
+.card-mock .ct-dot{width:5px;height:5px;border-radius:50%}
+
+.swipe-btns{display:flex;justify-content:center;gap:12px;padding:10px 0 4px}
+.sw-btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sw-skip{background:#fff;border:2px solid #fee2e2;color:var(--rose)}
+.sw-refer{background:linear-gradient(135deg,var(--teal),var(--teal2));color:white;width:56px;height:56px;font-size:22px;border:none;box-shadow:0 4px 16px rgba(26,122,109,.25)}
+.sw-view{background:#fff;border:2px solid #dbeafe;color:var(--blue)}
+
+.stamp-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-size:28px;font-weight:800;padding:6px 16px;border-radius:8px;border:3px solid;letter-spacing:.04em;z-index:5;background:rgba(255,255,255,.92)}
+.stamp-refer{color:var(--teal);border-color:var(--teal)}
+.stamp-skip{color:var(--rose);border-color:var(--rose)}
+
+.r-card{background:white;border:1px solid #eee;border-radius:12px;padding:11px;margin-bottom:7px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.r-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.r-av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0}
+.r-name{font-size:11px;font-weight:600;color:var(--ink)}.r-role{font-size:8px;color:var(--ink4);margin-top:1px}
+.r-pct{font-family:var(--mono);font-size:13px;font-weight:700;margin-left:auto}
+.r-chips{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
+.r-chip{font-size:7px;padding:2px 7px;background:#f7f6f3;border-radius:3px;color:var(--ink3)}
+.r-btns{display:flex;gap:6px}
+.r-btn{flex:1;padding:8px;border-radius:8px;font-size:10px;font-weight:600;text-align:center;border:none;font-family:var(--sans)}
+.r-accept{background:var(--teal);color:white}
+.r-decline{background:#f5f4f1;color:var(--ink3)}
+
+.prof-hero{position:relative;height:200px;overflow:hidden}
+.prof-hero-bg{position:absolute;inset:0;filter:blur(30px) saturate(1.5);transform:scale(1.2)}
+.prof-hero-over{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.95))}
+.prof-center{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:16px}
+.prof-av{width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;box-shadow:0 6px 20px rgba(0,0,0,.1);margin-bottom:8px}
+.prof-name{font-size:17px;font-weight:700}.prof-title{font-size:9.5px;color:var(--ink3);margin-top:2px}
+.prof-badge{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:600;color:var(--green);background:rgba(22,163,74,.06);padding:3px 10px;border-radius:100px;margin-top:6px}
+.prof-stats{display:flex;margin:0 12px;background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.04);overflow:hidden;position:relative;z-index:2;margin-top:-16px}
+.ps{flex:1;text-align:center;padding:12px 6px;border-right:1px solid #f5f4f1}.ps:last-child{border-right:none}
+.ps .psv{font-family:var(--mono);font-size:13px;font-weight:700}.ps .psl{font-size:7px;color:var(--ink4);margin-top:1px;text-transform:uppercase;letter-spacing:.04em}
+.skill-row{display:flex;align-items:center;gap:6px;margin-bottom:7px;padding:0 14px}
+.skill-name{font-size:9px;color:var(--ink3);width:64px;flex-shrink:0}
+.skill-track{flex:1;height:5px;background:#f3f1ec;border-radius:3px;overflow:hidden}
+.skill-fill{height:100%;border-radius:3px}
+.review-box{background:#f9f8f5;border-radius:10px;padding:10px;margin:0 14px 8px}
+.review-stars{font-size:9px;color:var(--gold)}.review-text{font-size:9px;color:var(--ink3);margin-top:4px;line-height:1.5;font-style:italic}.review-by{font-size:7.5px;color:var(--ink4);margin-top:4px}
+.prof-cta{display:block;margin:10px 14px 14px;padding:11px;background:var(--teal);color:white;border-radius:10px;font-size:11px;font-weight:700;text-align:center}
+
+.earn-hero{border-radius:16px;padding:20px;color:white;margin:8px 0 12px}
+.earn-label{font-size:8px;opacity:.7;text-transform:uppercase;letter-spacing:.08em}
+.earn-val{font-family:var(--mono);font-size:28px;font-weight:700;margin-top:2px}
+.earn-sub{font-size:9px;opacity:.6;margin-top:2px}
+.earn-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:12px}
+.eg{background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center}
+.eg .egv{font-family:var(--mono);font-size:13px;font-weight:700}.eg .egl{font-size:7px;opacity:.7;margin-top:1px;text-transform:uppercase}
+.streak-bar{background:#f9f8f5;border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.streak-fire{font-size:24px}
+.streak-info h5{font-size:11px;font-weight:700;margin:0}.streak-info p{font-size:8px;color:var(--ink4);margin:2px 0 0}
+.streak-days{display:flex;gap:3px;margin-top:6px}
+.sd{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600}
+.sd.done{background:linear-gradient(135deg,#f59e0b,#f97316);color:white}
+.sd.now{background:white;border:2px solid #f59e0b;color:#f59e0b}
+.sd.todo{background:#f3f1ec;color:#bbb}
+.level-card{background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.level-ring{width:40px;height:40px;border-radius:50%;border:3px solid #f59e0b;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700;color:#92400e;background:white}
+.level-info h5{font-size:10px;font-weight:700;color:#92400e;margin:0}.level-info p{font-size:8px;color:#a16207;margin:1px 0 0}
+.level-prog{margin-top:4px;height:3px;background:rgba(146,64,14,.15);border-radius:2px;overflow:hidden;width:120px}.level-fill{height:100%;background:#f59e0b;border-radius:2px}
+.txn{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f4f1}
+.txn-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.txn-name{font-size:9.5px;font-weight:600;color:var(--ink)}.txn-desc{font-size:7.5px;color:var(--ink4);margin-top:1px}
+.txn-amt{font-family:var(--mono);font-size:11px;font-weight:700;margin-left:auto}
+
+.phase{margin-bottom:48px}
+.phase-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.phase-num{font-family:var(--mono);font-size:.7rem;font-weight:700;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0}
+.phase-title{font-size:1.1rem;font-weight:600}
+.checklist{margin:0;padding:0;list-style:none}
+.checklist li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:start;font-size:.85rem;color:var(--ink2)}
+.checklist li:last-child{border-bottom:none}
+.cl-cat{font-family:var(--mono);font-size:.6rem;font-weight:600;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;min-width:64px;flex-shrink:0;padding-top:2px}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV WITH PROGRESS BAR ═══ -->
+<nav class="topnav">
+<div class="topnav-inner">
+  <div class="logo">Refr</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="section-label" id="sectionLabel">Intro</div>
+</div>
+</nav>
+
+<!-- ═══════ HEADER ═══════ -->
+<section id="secIntro" style="border-top:none;padding-top:100px">
+<div class="wrap">
+  <div class="tag">March 2026</div>
+  <h2 style="font-size:clamp(2rem,5vw,3rem)">A verified employee referral marketplace for India</h2>
+  <p class="lead">Referrals make up only 7% of all applicants to a company. But they produce 30–50% of all successful hires. In India, this runs on LinkedIn DMs and WhatsApp groups.</p>
+</div>
+</section>
+
+<!-- ═══════ THE CONCEPT ═══════ -->
+<section id="secConcept">
+  <div class="wrap">
+    <div class="tag">The Concept</div>
+    <h2>Three users, one transaction</h2>
+    <p>A <strong>job seeker</strong> opens the app and swipes through <strong>verified Google employees</strong> who are open to referring in the engineering domain. Each referrer has a trust score, response SLA, and hire success rate. The seeker swipes right on a match, sends their profile, and the referrer — if the profile fits — submits them through Google's internal system.</p>
+    <p>On a successful hire, <strong>Google pays the referrer a ₹50,000 bonus</strong> (existing company policy). The platform takes 15–20% (₹10K) and charges Google a ₹12K success fee. The referrer earns ₹40K they never would have otherwise. The seeker gets a job they never would have gotten through Naukri.</p>
+  
+    <table>
+    <thead><tr><th>User</th><th>What they get</th><th>What they give</th></tr></thead>
+    <tbody>
+    <tr><td><strong>Job seeker</strong></td><td>Access to verified insiders. AI match scoring. Resume gap analysis.</td><td>Free tier or ₹499–₹1,999/mo premium.</td></tr>
+    <tr><td><strong>Referrer</strong></td><td>₹10K–₹80K+ per successful hire. Pre-filtered candidates (no spam).</td><td>30 min to review + submit internally.</td></tr>
+    <tr><td><strong>Company</strong></td><td>Better retention (46% vs 33%), ₹2.37L saved vs agency, faster fills.</td><td>₹12K success fee or ₹15–50K/mo SaaS.</td></tr>
+    </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════ APP SCREENS WALKTHROUGH ═══════ -->
+<section id="secProduct">
+<div class="wrap">
+  <div class="tag">The Product — Visual Walkthrough</div>
+  <h2>Every screen and state, explained</h2>
+  <p class="lead">The app has two modes: <strong>Seeker Mode</strong> (swipe through referrers, request referrals) and <strong>Referrer Mode</strong> (review requests, track earnings). Here's every key screen.</p>
+</div>
+
+<div class="wrap-wide">
+<div class="screen-flow">
+
+<!-- ═══ SCREEN 1: Discover (Swipe Stack) ═══ -->
+<div class="flow-row">
+  <div class="phone-wrap">
+    <div class="phone"><div class="scr">
+      <div class="sb"><span>9:41</span><span style="font-size:10px">📶 🔋</span></div>
+      <div style="padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:16px;font-weight:700">Discover</div>
+        <div style="display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:4px 10px;border-radius:100px;font-size:9px;font-weight:700;color:#92400e">🔥 Level 3 · 240 XP</div>
+      </div>
+      <div style="padding:0 14px 8px">
+        <div class="card-mock" style="background:linear-gradient(135deg,#0d9488,#065f46)">
+          <div class="card-overlay"></div>
+          <div class="card-inner">
+            <div class="cc-pill"><div class="cc-logo" style="background:#4285f4">G</div>Google · Bangalore</div>
+            <div class="cc-name">Aditya Kumar</div>
+            <div class="cc-role">SDE-2 · Backend · 3yr tenure</div>
+            <div class="cc-chips"><span class="cc-chip">Go</span><span class="cc-chip">Java</span><span class="cc-chip">Distributed</span><span class="cc-chip">gRPC</span></div>
+            <div class="cc-trust">
+              <span class="ct-item"><span class="ct-dot" style="background:#2dd4bf"></span>★ 4.9</span>
+              <span class="ct-item"><span class="ct-dot" style="background:#fbbf24"></span>12 hires</span>
+              <span class="ct-item"><span class="ct-dot" style="background:#93c5fd"></span>~6hr</span>
+              <span class="ct-item"><span class="ct-dot" style="background:#c4b5fd"></span>87%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="swipe-btns">
+        <div class="sw-btn sw-skip">✕</div>
+        <div class="sw-btn sw-refer">✓</div>
+        <div class="sw-btn sw-view">→</div>
+      </div>
+      <div class="tab-bar"><div class="tab on"><span class="ti">🃏</span>Discover</div><div class="tab"><span class="ti">📥</span>Inbox</div><div class="tab"><span class="ti">💰</span>Earnings</div><div class="tab"><span class="ti">👤</span>Profile</div></div>
+    </div></div>
+  </div>
+  <div class="ann">
+    <h4>1. Discover — Swipe Stack</h4>
+    <p>The primary screen for job seekers. Referrer profiles presented as a card stack (Tinder mechanic). Cards stack with depth — next card visible behind at smaller scale. Three actions: skip (✕), request referral (✓), view full profile (→).</p>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Card information hierarchy:</strong> Company + city at top (the #1 filter seekers care about), name and role, skill chips, then trust metrics. Everything needed to make a swipe decision in 3 seconds.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>XP / Level pill:</strong> Gamification visible from the first screen. Seekers earn XP for completing their profile, getting referred, getting hired. Referrers earn XP for responding fast, accepting requests, successful hires.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Swipe right = variable reward:</strong> "Will this referrer accept me?" is the dopamine loop. Same psychology as dating apps — uncertainty of acceptance drives engagement.</p></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2: Swipe Right → REFER stamp ═══ -->
+<div class="flow-row reverse">
+  <div class="phone-wrap">
+    <div class="phone"><div class="scr">
+      <div class="sb"><span>9:41</span><span style="font-size:10px">📶 🔋</span></div>
+      <div style="padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:16px;font-weight:700">Discover</div>
+        <div style="display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:4px 10px;border-radius:100px;font-size:9px;font-weight:700;color:#92400e">🔥 Level 3 · 240 XP</div>
+      </div>
+      <div style="padding:0 14px 8px">
+        <div class="card-mock" style="background:linear-gradient(135deg,#0d9488,#065f46);transform:rotate(6deg) translateX(20px)">
+          <div class="card-overlay"></div>
+          <div class="stamp-overlay stamp-refer">REFER</div>
+          <div class="card-inner">
+            <div class="cc-pill"><div class="cc-logo" style="background:#4285f4">G</div>Google · Bangalore</div>
+            <div class="cc-name">Aditya Kumar</div>
+            <div class="cc-role">SDE-2 · Backend · 3yr tenure</div>
+            <div class="cc-chips"><span class="cc-chip">Go</span><span class="cc-chip">Java</span><span class="cc-chip">Distributed</span></div>
+            <div class="cc-trust">
+              <span class="ct-item"><span class="ct-dot" style="background:#2dd4bf"></span>★ 4.9</span>
+              <span class="ct-item"><span class="ct-dot" style="background:#fbbf24"></span>12 hires</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="swipe-btns"><div class="sw-btn sw-skip">✕</div><div class="sw-btn sw-refer">✓</div><div class="sw-btn sw-view">→</div></div>
+      <div class="tab-bar"><div class="tab on"><span class="ti">🃏</span>Discover</div><div class="tab"><span class="ti">📥</span>Inbox</div><div class="tab"><span class="ti">💰</span>Earnings</div><div class="tab"><span class="ti">👤</span>Profile</div></div>
+    </div></div>
+  </div>
+  <div class="ann">
+    <h4>2. Swipe Right → "REFER" Stamp</h4>
+    <p>When the seeker drags the card right past the threshold, a green "REFER" stamp appears on the card. On release, the card flies off-screen and the seeker is prompted to confirm the request (optional note, resume attached automatically).</p>
+    <div class="ann-feat"><div class="dot"></div><p><strong>The stamp is the commitment moment.</strong> Seeing "REFER" appear on the card creates a physical sense of action — you're doing something, not just browsing. This is the Tinder "It's a Match" equivalent.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Swipe left = "SKIP" stamp</strong> (red, card flies left). No penalty. The referrer never knows they were skipped. Seeker can always go back via search.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Anti-spam limit:</strong> Free tier: 3 referral requests/month. Premium: unlimited. Visible counter prevents spray-and-pray behavior.</p></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 3: Referrer Profile (Full) ═══ -->
+<div class="flow-row">
+  <div class="phone-wrap">
+    <div class="phone"><div class="scr">
+      <div class="sb"><span>9:41</span><span style="font-size:10px">📶 🔋</span></div>
+      <div style="padding:4px 16px 0"><span style="font-size:11px;color:var(--teal);font-weight:500">‹ Back</span></div>
+      <div class="prof-hero">
+        <div class="prof-hero-bg" style="background:linear-gradient(135deg,#0d9488,#065f46)"></div>
+        <div class="prof-hero-over"></div>
+        <div class="prof-center">
+          <div class="prof-av" style="background:linear-gradient(135deg,#0d9488,#065f46)">AK</div>
+          <div class="prof-name">Aditya Kumar</div>
+          <div class="prof-title">SDE-2 · Backend · Google Bangalore · 3yr</div>
+          <div class="prof-badge">✓ Verified 9/9 · 12 hires</div>
+        </div>
+      </div>
+      <div class="prof-stats">
+        <div class="ps"><div class="psv">★ 4.9</div><div class="psl">Trust</div></div>
+        <div class="ps"><div class="psv">~6hr</div><div class="psl">Response</div></div>
+        <div class="ps"><div class="psv">87%</div><div class="psl">Accept</div></div>
+        <div class="ps"><div class="psv">12</div><div class="psl">Hires</div></div>
+      </div>
+      <div style="padding:12px 0 0">
+        <div style="font-size:9px;font-weight:700;padding:0 14px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Referral Domains</div>
+        <div class="skill-row"><span class="skill-name">Backend</span><div class="skill-track"><div class="skill-fill" style="width:95%;background:var(--teal)"></div></div></div>
+        <div class="skill-row"><span class="skill-name">Sys Design</span><div class="skill-track"><div class="skill-fill" style="width:82%;background:var(--teal)"></div></div></div>
+        <div class="skill-row"><span class="skill-name">DevOps</span><div class="skill-track"><div class="skill-fill" style="width:55%;background:var(--gold)"></div></div></div>
+        <div style="font-size:9px;font-weight:700;padding:0 14px;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.06em">Reviews</div>
+        <div class="review-box">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Reviewed my resume in 4 hours. Gave honest feedback about team culture. Got interview in 2 weeks."</div>
+          <div class="review-by">— Backend eng, hired at Google, Nov 2025</div>
+        </div>
+        <div class="prof-cta">Request Referral from Aditya</div>
+      </div>
+    </div></div>
+  </div>
+  <div class="ann">
+    <h4>3. Referrer Profile — Full View</h4>
+    <p>Accessed by tapping the → button or tapping a card. This is where the seeker evaluates if this referrer is worth their limited request quota.</p>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Trust score is not a single number.</strong> Broken into response time, accept rate, and hires — so the seeker can distinguish a fast-but-picky referrer from a slow-but-generous one.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Domain skill bars:</strong> Shows what this referrer can credibly refer for. Aditya is 95% Backend but only 55% DevOps — don't ask him for an SRE referral.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Candidate reviews (the moat):</strong> Real feedback from people who were referred by this person. Review data compounds over time and can't be replicated by a new entrant.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>9/9 verification badge:</strong> Corporate email ✓, LinkedIn match ✓, tenure >6mo ✓, domain relevance ✓, historical audit ✓, candidate feedback ✓, SLA tracking ✓, employment letter ✓, re-verification ✓.</p></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 4: Referrer Inbox (their view) ═══ -->
+<div class="flow-row reverse">
+  <div class="phone-wrap">
+    <div class="phone"><div class="scr">
+      <div class="sb"><span>9:41</span><span style="font-size:10px">📶 🔋</span></div>
+      <div style="padding:12px 16px 4px"><div style="font-size:16px;font-weight:700">Inbox</div><div style="font-size:9px;color:var(--ink4);margin-top:1px">3 new · ₹1.2L earned</div></div>
+      <div style="display:flex;gap:5px;padding:6px 16px 10px">
+        <div style="font-size:9px;padding:5px 12px;border-radius:100px;font-weight:600;background:var(--ink);color:white">New (3)</div>
+        <div style="font-size:9px;padding:5px 12px;border-radius:100px;font-weight:600;background:#f3f1ec;color:var(--ink3)">Accepted (5)</div>
+        <div style="font-size:9px;padding:5px 12px;border-radius:100px;font-weight:600;background:#f3f1ec;color:var(--ink3)">Hired (12)</div>
+      </div>
+      <div class="s-body" style="padding-top:0">
+        <div class="r-card">
+          <div class="r-top">
+            <div class="r-av" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">AS</div>
+            <div><div class="r-name">Arjun Srinivasan</div><div class="r-role">Sr. Backend · 4yr · Ex-Uber</div></div>
+            <div class="r-pct" style="color:var(--teal)">88%</div>
+          </div>
+          <div class="r-chips"><span class="r-chip">Go</span><span class="r-chip">Java</span><span class="r-chip">gRPC</span><span class="r-chip">K8s</span></div>
+          <div class="r-btns"><div class="r-btn r-accept">Accept · ₹40K–80K</div><div class="r-btn r-decline">Decline</div></div>
+          <div style="font-size:7.5px;color:var(--ink4);text-align:right;margin-top:5px">2hrs ago · 46hr SLA</div>
+        </div>
+        <div class="r-card">
+          <div class="r-top">
+            <div class="r-av" style="background:linear-gradient(135deg,#dc2626,#991b1b)">PM</div>
+            <div><div class="r-name">Priya Mehta</div><div class="r-role">Backend · 2yr · ISB</div></div>
+            <div class="r-pct" style="color:var(--gold)">64%</div>
+          </div>
+          <div class="r-chips"><span class="r-chip">Python</span><span class="r-chip">Django</span><span class="r-chip">PostgreSQL</span></div>
+          <div class="r-btns"><div class="r-btn r-accept">Accept · ₹40K–80K</div><div class="r-btn r-decline">Decline</div></div>
+          <div style="font-size:7.5px;color:var(--ink4);text-align:right;margin-top:5px">5hrs ago · 43hr SLA</div>
+        </div>
+      </div>
+      <div class="tab-bar"><div class="tab"><span class="ti">🃏</span>Discover</div><div class="tab on"><span class="ti">📥</span>Inbox</div><div class="tab"><span class="ti">💰</span>Earnings</div><div class="tab"><span class="ti">👤</span>Profile</div></div>
+    </div></div>
+  </div>
+  <div class="ann">
+    <h4>4. Referrer Inbox — Review Requests</h4>
+    <p>This is the referrer's primary screen. Incoming referral requests, pre-filtered by the platform's AI. The referrer should be able to evaluate and decide in under 60 seconds per request.</p>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Match % is the first thing you see.</strong> 88% match = this candidate's skills closely align with open roles at your company. 64% = weaker match, maybe skip. The referrer doesn't need to read the resume — the platform already did.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>"Accept · ₹40K–80K"</strong> — earnings potential is on the button itself. The referrer knows exactly what they'll earn. This is intentional — it reminds them this isn't charity, it's compensated work.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>48hr SLA countdown.</strong> If a referrer doesn't respond in 48 hours, the request auto-expires and their response rate drops — which lowers their trust score and card placement. Creates urgency without being pushy.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>On Accept:</strong> Referrer sees instructions for submitting through their company's internal ATS. Platform tracks the submission status. On Decline: brief reason selection (helps the AI learn). Candidate is notified without seeing the reason.</p></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 5: Earnings + Gamification ═══ -->
+<div class="flow-row">
+  <div class="phone-wrap">
+    <div class="phone"><div class="scr">
+      <div class="sb"><span>9:41</span><span style="font-size:10px">📶 🔋</span></div>
+      <div class="s-body" style="padding-top:4px">
+        <div class="earn-hero" style="background:linear-gradient(135deg,#0d5c52,#1a7a6d)">
+          <div class="earn-label">Total Earned</div>
+          <div class="earn-val">₹1,24,000</div>
+          <div class="earn-sub">12 successful hires · Since Jan 2026</div>
+          <div class="earn-grid">
+            <div class="eg"><div class="egv">₹38K</div><div class="egl">This Month</div></div>
+            <div class="eg"><div class="egv">87%</div><div class="egl">Accept Rate</div></div>
+            <div class="eg"><div class="egv">~6hr</div><div class="egl">Response</div></div>
+            <div class="eg"><div class="egv">4.9 ★</div><div class="egl">Trust</div></div>
+          </div>
+        </div>
+        <div class="streak-bar">
+          <div class="streak-fire">🔥</div>
+          <div>
+            <div class="streak-info"><h5>5-Day Streak!</h5><p>Respond daily for streak bonus</p></div>
+            <div class="streak-days"><div class="sd done">M</div><div class="sd done">T</div><div class="sd done">W</div><div class="sd done">T</div><div class="sd done">F</div><div class="sd now">S</div><div class="sd todo">S</div></div>
+          </div>
+        </div>
+        <div class="level-card">
+          <div class="level-ring">3</div>
+          <div class="level-info"><h5>Gold Referrer</h5><p>5 hires to Platinum</p><div class="level-prog"><div class="level-fill" style="width:70%"></div></div></div>
+        </div>
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Recent</div>
+        <div class="txn"><div class="txn-icon" style="background:#d1fae5">💰</div><div><div class="txn-name">Deepak hired at Google</div><div class="txn-desc">Backend Eng · Referred 3wk ago</div></div><div class="txn-amt" style="color:var(--green)">+₹42K</div></div>
+        <div class="txn"><div class="txn-icon" style="background:#fef3c7">⭐</div><div><div class="txn-name">7-day streak bonus</div><div class="txn-desc">Response streak completed</div></div><div class="txn-amt" style="color:var(--gold)">+₹500</div></div>
+        <div class="txn"><div class="txn-icon" style="background:#ede9fe">🏆</div><div><div class="txn-name">Level 3 unlocked</div><div class="txn-desc">Gold Referrer badge</div></div><div class="txn-amt" style="color:var(--blue)">+50 XP</div></div>
+      </div>
+      <div class="tab-bar"><div class="tab"><span class="ti">🃏</span>Discover</div><div class="tab"><span class="ti">📥</span>Inbox</div><div class="tab on"><span class="ti">💰</span>Earnings</div><div class="tab"><span class="ti">👤</span>Profile</div></div>
+    </div></div>
+  </div>
+  <div class="ann">
+    <h4>5. Earnings + Gamification</h4>
+    <p>The referrer retention engine. This screen makes earning from referrals feel like progress in a game, not a one-off transaction.</p>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Earnings hero card:</strong> Total earned prominently displayed. Referrers see the cumulative value of their participation — ₹1.24L from 12 hires. This is the "portfolio value" feeling.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Daily streak (Duolingo mechanic):</strong> Respond to at least one request per day to maintain streak. 7-day streak = ₹500 bonus. Streak breaks = restart. Creates daily habit of checking the app.</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Level system (Bumble-inspired):</strong> Bronze → Silver → Gold → Platinum. Each level unlocks: higher card placement (more seekers see you), priority support, and higher take-rate (referrer keeps 85% at Platinum vs 80% at Bronze).</p></div>
+    <div class="ann-feat"><div class="dot"></div><p><strong>Transaction feed:</strong> Every payout, bonus, and XP event logged. Transparency builds trust. The referrer can see exactly when and why money was earned.</p></div>
+  </div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- ═══════ ROADMAP ═══════ -->
+<section id="secRoadmap">
+<div class="wrap">
+  <div class="tag">Roadmap</div>
+  <h2>Everything needed to start this from scratch</h2>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num" style="background:var(--accent)">1</div><div class="phase-title">Company Formation & Infrastructure</div></div>
+    <ul class="checklist">
+      <li><span class="cl-cat">Legal</span>Register company (Pvt Ltd or LLP). GST registration. DPIIT startup recognition. Draft co-founder agreement with equity vesting.</li>
+      <li><span class="cl-cat">Legal</span>Terms of service, privacy policy, referrer agreement (IP, liability, payout terms). Consult employment lawyer on referral bonus taxation (TDS implications for referrer payouts).</li>
+      <li><span class="cl-cat">Banking</span>Open business current account. Setup Razorpay/Cashfree for payment processing. UPI integration for referrer payouts. Escrow arrangement for employer success fees.</li>
+      <li><span class="cl-cat">Infra</span>Cloud setup — AWS India (Mumbai region) or GCP. PostgreSQL on RDS/Cloud SQL. Redis for caching. S3 for resume storage. CDN for static assets.</li>
+      <li><span class="cl-cat">Infra</span>CI/CD pipeline (GitHub Actions or GitLab CI). Staging + production environments. Monitoring (Grafana/Datadog). Error tracking (Sentry). Logging (ELK or CloudWatch).</li>
+      <li><span class="cl-cat">Infra</span>Auth system — OTP-based login (Indian standard), Google OAuth, LinkedIn OAuth. Email service (SES/Postmark). SMS gateway (Twilio/MSG91 for Indian numbers).</li>
+      <li><span class="cl-cat">Domain</span>Register domain. Setup DNS, SSL, email (workspace). Create brand identity (logo, colors, typography). Social accounts (LinkedIn, Twitter, Instagram).</li>
+      <li><span class="cl-cat">Team</span>Founding team roles: product + engineering (can be same person), design (can be contracted), and one person focused entirely on supply-side BD (recruiting referrers).</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num" style="background:var(--teal)">2</div><div class="phase-title">MVP Build — Prove the Referral Loop</div></div>
+    <ul class="checklist">
+      <li><span class="cl-cat">Product</span>Seeker onboarding: phone/email signup → profile creation → resume upload (PDF parse to extract skills) → target company selection.</li>
+      <li><span class="cl-cat">Product</span>Referrer onboarding: LinkedIn OAuth → corporate email verification (OTP to @company.com) → profile setup (domain expertise, availability toggle).</li>
+      <li><span class="cl-cat">Product</span>Company directory: seeded database of top 20 companies in Bangalore with open role data (scraped from career pages or manual entry).</li>
+      <li><span class="cl-cat">Product</span>Swipe card stack (Discover screen): referrer cards with trust metrics, skill chips, company badge. Swipe right = request, left = skip.</li>
+      <li><span class="cl-cat">Product</span>Referrer profile view: trust score breakdown, domain skill bars, candidate reviews (initially empty — seed with onboarding survey data).</li>
+      <li><span class="cl-cat">Product</span>Referral request flow: seeker sends request → referrer receives in Inbox → accept/decline → on accept, show "Submit through [Company] internal system" instructions.</li>
+      <li><span class="cl-cat">Product</span>Status tracking pipeline: Request → Accepted → Submitted → Interviewing → Offered → Hired. Both parties see real-time status updates via push notifications.</li>
+      <li><span class="cl-cat">Product</span>Referrer inbox with match % (basic keyword matching v1 — not AI yet), skill chips, accept/decline buttons, earnings estimate, SLA timer.</li>
+      <li><span class="cl-cat">Ops</span>Manual payout process: on confirmed hire, verify via referrer screenshot of internal ATS → trigger UPI payout minus platform commission. Manual is fine at <50 hires.</li>
+      <li><span class="cl-cat">Growth</span>Seed supply: recruit 100 referrers at 20 Bangalore companies. Source from LinkedIn #OpenToRefer users, Fishbowl IT Job Referral India bowl. Offer founding badge + zero take rate initially.</li>
+      <li><span class="cl-cat">Growth</span>Seed demand: SEO content ("how to get referral at Google India"), LinkedIn content from verified referrers, Product Hunt India launch.</li>
+      <li><span class="cl-cat">Metric</span>North star for this phase: <strong>10 complete referral→hire→payout loops.</strong> Everything else is noise until this works.</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num" style="background:var(--blue)">3</div><div class="phase-title">Trust Engine, AI Matching & Gamification</div></div>
+    <ul class="checklist">
+      <li><span class="cl-cat">Product</span>AI match scoring: train on successful referral data. Input = seeker skills/experience, output = match % against role requirements. Replace keyword matching with embeddings-based similarity.</li>
+      <li><span class="cl-cat">Product</span>Resume gap analysis: compare seeker profile to role requirements, surface specific gaps ("Add Kubernetes experience") with actionable suggestions.</li>
+      <li><span class="cl-cat">Product</span>Dynamic trust scores: composite of response time (SLA adherence), acceptance rate, hire conversion, candidate feedback, recency. Recalculated daily.</li>
+      <li><span class="cl-cat">Product</span>Candidate review system: after every referral interaction (accept, decline, or hire), candidate rates the referrer. 5-star + free text. Displayed on profile.</li>
+      <li><span class="cl-cat">Product</span>Gamification layer: XP system, level progression (Bronze→Silver→Gold→Platinum), daily response streaks with streak bonuses (₹500 for 7-day), level-up rewards (higher take rate, priority placement).</li>
+      <li><span class="cl-cat">Product</span>Earnings wallet: in-app wallet showing balance, pending payouts, transaction history. Withdrawal to UPI/bank. Automated payout on hire confirmation.</li>
+      <li><span class="cl-cat">Product</span>Anti-spam pre-filtering: before a request reaches the referrer, AI checks if the seeker's profile meets minimum match threshold. Rejects mismatches with feedback to seeker.</li>
+      <li><span class="cl-cat">Product</span>Premium seeker tier: ₹499–₹1,999/month. Unlimited referral requests, AI resume optimization, priority in referrer queues, skill gap analysis. Free tier: 3 requests/month.</li>
+      <li><span class="cl-cat">Growth</span>Expand to Hyderabad (Microsoft, Amazon, Google GDC, ServiceNow) and Pune (Persistent, Barclays, Cummins). Same playbook: seed supply first.</li>
+      <li><span class="cl-cat">Metric</span>North star: <strong>500 referrers, 10K seekers, 30% monthly referrer retention, 50+ hires/month.</strong></li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num" style="background:var(--gold)">4</div><div class="phase-title">Employer SaaS — The Revenue Engine</div></div>
+    <ul class="checklist">
+      <li><span class="cl-cat">Product</span>Employer dashboard: branded referral portal showing all referrals flowing into the company, conversion funnel, time-to-fill metrics, top referrer leaderboard.</li>
+      <li><span class="cl-cat">Product</span>ATS integration: Zoho Recruit, Darwinbox, Keka, Greenhouse, Lever. Two-way sync — referral submitted on platform → auto-creates candidate in company's ATS.</li>
+      <li><span class="cl-cat">Product</span>Referral analytics: which departments get the most referrals, which referrers are most effective, cost-per-hire comparison vs other channels, retention tracking.</li>
+      <li><span class="cl-cat">Product</span>Employee engagement tools: internal leaderboards (gamify referrals within the company), referral campaigns ("We're hiring 10 engineers this quarter — bonus doubled"), Slack/Teams integration.</li>
+      <li><span class="cl-cat">Product</span>Compliance module: referral bonus policy management, TDS certificate generation for referrer payouts, audit trail for all referral transactions.</li>
+      <li><span class="cl-cat">Sales</span>Enterprise sales: target HR heads at 50+ companies with transaction data ("We've already placed 15 engineers at your company through our platform — here's the data"). Pricing: ₹15K–50K/month.</li>
+      <li><span class="cl-cat">Growth</span>Expand to Mumbai + Delhi-NCR. Target: 5 cities, 50K+ referrers, 500+ employer accounts.</li>
+      <li><span class="cl-cat">Ops</span>Automated payout infrastructure: bulk UPI payouts, TDS deduction and filing, referrer PAN collection and verification, GST invoicing for employer fees.</li>
+      <li><span class="cl-cat">Metric</span>North star: <strong>₹15Cr+ ARR from SaaS. This is the real business.</strong></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ═══════ ECONOMICS ═══════ -->
+<section id="secEconomics">
+<div class="wrap">
+  <div class="tag">The Economics</div>
+  <h2>Revenue per hire</h2>
+
+  <div class="math"><span class="d">PER SUCCESSFUL HIRE:</span>
+  Employer success fee:       <span class="h">₹12,000</span> <span class="d">(5% of ₹2.4L monthly CTC)</span>
+  Referrer take rate (20%):   <span class="h">₹10,000</span> <span class="d">(20% of ₹50K company bonus)</span>
+  <span class="r">Platform revenue per hire:  ₹22,000</span>
+
+<span class="d">AT SCALE:</span>
+  15,000 hires × ₹22K     =  <span class="h">₹3.3 Crore</span> <span class="d">transactions</span>
+  500 employers × ₹25K/mo  =  <span class="h">₹15 Crore</span> <span class="d">SaaS</span>
+  Premium seekers           =  <span class="h">~₹3 Crore</span> <span class="d">subscriptions</span>
+  <span class="r">Total:                     ~₹21 Crore ($2.5M) ARR</span></div>
+</div>
+</section>
+
+<!-- ═══════ COMPETITION ═══════ -->
+<section id="secCompetition">
+<div class="wrap">
+  <div class="tag">Competitive Gap</div>
+  <h2>What exists and what doesn't</h2>
+  <table>
+  <thead><tr><th>Player</th><th>What they do</th><th>What's missing</th></tr></thead>
+  <tbody>
+  <tr><td><strong>Refer.me</strong> (US)</td><td>Referral marketplace + AI. 5000+ companies. Funded.</td><td>No INR pricing, no UPI, Indian companies barely listed.</td></tr>
+  <tr><td><strong>GetMeReferred</strong> (India)</td><td>Referrer discovery. 9-checkpoint verification.</td><td>No AI matching, no gamification, no ATS integration, no scale.</td></tr>
+  <tr><td><strong>AskReferral</strong> (Bangalore)</td><td>Pull-model referral requests. Founded 2022.</td><td>Zero funding. Chicken-and-egg unsolved.</td></tr>
+  <tr><td><strong>LinkedIn</strong></td><td>#OpenToRefer hashtags, DMs.</td><td>No workflow, no trust, no payments, spam-heavy.</td></tr>
+  </tbody>
+  </table>
+  <div class="callout callout-o">
+    <span class="cl">The gap</span>
+    <p>Nobody combines: 1. Trust verification + 2. AI matching + 3. swipe UX + 4. gamification for retention + 5. INR/UPI payments + 6. Indian ATS integration.</p>
+  </div>
+</div>
+</section>
+
+<footer style="padding:48px 0;border-top:1px solid var(--border);text-align:center">
+<p style="font-family:var(--mono);font-size:.6rem;color:var(--ink4);letter-spacing:.06em">REFR · MARCH 2026</p>
+</footer>
+
+<!-- ═══ PROGRESS BAR + SECTION LABEL SCRIPT ═══ -->
+<script>
+const sections = [
+  { id: 'secIntro', label: 'Intro' },
+  { id: 'secConcept', label: 'Concept' },
+  { id: 'secProduct', label: 'Product' },
+  { id: 'secRoadmap', label: 'Roadmap' },
+  { id: 'secEconomics', label: 'Economics' },
+  { id: 'secCompetition', label: 'Competition' }
+];
+const fill = document.getElementById('progressFill');
+const label = document.getElementById('sectionLabel');
+
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  fill.style.width = (window.scrollY / h * 100) + '%';
+
+  let current = sections[0].label;
+  for (const s of sections) {
+    const el = document.getElementById(s.id);
+    if (el && window.scrollY >= el.offsetTop - 200) current = s.label;
+  }
+  label.textContent = current;
+});
+</script>
+</body>
+</html>
