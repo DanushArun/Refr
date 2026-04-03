@@ -5,7 +5,7 @@ import { useAuth } from '../src/hooks/useAuth';
 import { colors } from '../src/theme/colors';
 
 export default function Index() {
-  const { session, loading } = useAuth();
+  const { session, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -15,9 +15,13 @@ export default function Index() {
     );
   }
 
-  if (!session) {
+  if (!session || !user) {
     return <Redirect href="/(auth)/role-selection" />;
   }
 
-  return <Redirect href="/(tabs)/feed" />;
+  if (user.role === 'seeker') {
+    return <Redirect href="/(seeker-tabs)/discover" />;
+  } else {
+    return <Redirect href="/(referrer-tabs)/inbox" />;
+  }
 }
