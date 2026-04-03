@@ -5,6 +5,7 @@ import {
   type ViewStyle,
   type StyleProp,
 } from 'react-native';
+import { Canvas, BackdropFilter, Blur, Fill } from '@shopify/react-native-skia';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/spacing';
 
@@ -29,12 +30,8 @@ const paddingMap = {
 /**
  * GlassCard — the foundational surface component for the REFR dark glass aesthetic.
  *
- * Uses a dark semi-transparent background with a hairline white border to simulate
- * glass-morphism on dark backgrounds. All feed cards and stat widgets use this as
- * their outer container.
- *
- * On React Native there is no true backdrop-filter — the glass effect is achieved
- * with layered opacity and a slightly lighter background than the base canvas.
+ * Uses a Skia BackdropFilter for a true glass-morphism effect on dark backgrounds.
+ * All feed cards and stat widgets use this as their outer container.
  */
 export function GlassCard({
   children,
@@ -53,6 +50,13 @@ export function GlassCard({
         style,
       ]}
     >
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Canvas style={StyleSheet.absoluteFill}>
+          <BackdropFilter filter={<Blur blur={15} />}>
+            <Fill color={colors.surface} />
+          </BackdropFilter>
+        </Canvas>
+      </View>
       {children}
     </View>
   );
@@ -60,7 +64,6 @@ export function GlassCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
