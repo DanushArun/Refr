@@ -27,32 +27,18 @@ class ApiError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = await getAuthHeaders();
 
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
-    headers: {
-      ...headers,
-      ...options.headers,
-    },
+    headers: { ...headers, ...options.headers },
   });
 
   if (!response.ok) {
     let body: unknown;
-    try {
-      body = await response.json();
-    } catch {
-      body = null;
-    }
-    throw new ApiError(
-      response.status,
-      `API ${options.method ?? 'GET'} ${path} failed with ${response.status}`,
-      body
-    );
+    try { body = await response.json(); } catch { body = null; }
+    throw new ApiError(response.status, `API ${options.method ?? 'GET'} ${path} → ${response.status}`, body);
   }
 
   return response.json() as Promise<T>;
@@ -61,67 +47,87 @@ async function request<T>(
 // ─── Feed ───────────────────────────────────────────────────────────────────
 
 export const feedApi = {
-  /**
-   * Fetch the next page of feed cards.
-   * Uses keyset pagination — pass cursor from previous response.
-   */
   getFeed: (params: FeedRequest = {}): Promise<FeedResponse> => {
     const query = new URLSearchParams();
     if (params.cursor) query.set('cursor', params.cursor);
     if (params.limit) query.set('limit', String(params.limit));
     const qs = query.toString() ? `?${query.toString()}` : '';
-    return request<FeedResponse>(`/feed${qs}`);
+    return request<{ data: FeedResponse['cards']; meta: { cursor: string; hasMore: boolean } }>(`/api/v1/feed${qs}`)
+      .then((r: any) => ({ cards: r.data, cursor: r.meta.cursor, hasMore: r.meta.hasMore }));
   },
 
-  /**
-   * Post a batch of behavior events for feed ranking signals.
-   * Fire-and-forget from the client — do not await in hot paths.
-   */
   trackBehavior: (events: BehaviorEvent[]): Promise<void> =>
-    request<void>('/feed/behavior', {
-      method: 'POST',
-      body: JSON.stringify({ events }),
-    }),
+    request<void>('/api/v1/feed/events/batch', { method: 'POST', body: JSON.stringify({ events }) }),
 };
 
 // ─── Referrals ──────────────────────────────────────────────────────────────
 
-export const referralApi = {
-  /** Seeker requests a referral from a feed card */
-  requestReferral: (payload: {
-    feedCardId: string;
-    seekerNote?: string;
-    targetRole: string;
-  }) =>
-    request<{ referralId: string }>('/referrals', {
+export const referralsApi = {
+  createRequest: (payload: { feedCardId?: string; targetRole: string; seekerNote?: string }) =>
+    request<any>('/api/v1/referrals', { method: 'POST', body: JSON.stringify(payload) })
+      .then((r: any) => r.data),
+
+  getInbox: () =>
+    request<any>('/api/v1/referrals/inbox').then((r: any) => r.data),
+
+  getPipeline: () =>
+    request<any>('/api/v1/referrals/pipeline').then((r: any) => r.data),
+
+  transition: (id: string, status: string, note?: string) =>
+    request<any>(`/api/v1/referrals/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, note }),
+    }).then((r: any) => r.data),
+
+  getReputation: () =>
+    request<any>('/api/v1/reputation/me').then((r: any) => r.data),
+
+  getLeaderboard: (companyId?: string) => {
+    const qs = companyId ? `?companyId=${companyId}` : '';
+    return request<any>(`/api/v1/reputation/leaderboard${qs}`).then((r: any) => r.data);
+  },
+};
+
+// Legacy alias
+export const referralApi = referralsApi;
+
+// ─── Chat ───────────────────────────────────────────────────────────────────
+
+export const chatApi = {
+  getConversation: (referralId: string) =>
+    request<any>(`/api/v1/chat/${referralId}`).then((r: any) => r.data),
+
+  sendMessage: (conversationId: string, body: string) =>
+    request<any>(`/api/v1/chat/${conversationId}/messages`, {
       method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+      body: JSON.stringify({ body }),
+    }).then((r: any) => r.data),
 
-  /** Referrer accepts an incoming request */
-  acceptReferral: (referralId: string) =>
-    request<void>(`/referrals/${referralId}/accept`, { method: 'POST' }),
-
-  /** Referrer marks the referral as submitted to their company ATS */
-  markSubmitted: (referralId: string, referrerNote?: string) =>
-    request<void>(`/referrals/${referralId}/submit`, {
-      method: 'POST',
-      body: JSON.stringify({ referrerNote }),
-    }),
-
-  /** Get all referrals for the current user (role-aware endpoint) */
-  getMyReferrals: () => request<unknown[]>('/referrals/me'),
+  // Supabase Realtime subscription for real-time messages in a conversation.
+  // Returns a subscription object with an .unsubscribe() method.
+  subscribeToMessages: (conversationId: string, onMessage: (msg: any) => void) =>
+    supabase
+      .channel(`conversation:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => onMessage(payload.new),
+      )
+      .subscribe(),
 };
 
 // ─── Profile ────────────────────────────────────────────────────────────────
 
 export const profileApi = {
-  getMe: () => request<unknown>('/users/me'),
+  getMe: () => request<any>('/api/v1/users/me').then((r: any) => r.data),
   updateMe: (data: unknown) =>
-    request<unknown>('/users/me', {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }),
+    request<any>('/api/v1/users/me', { method: 'PATCH', body: JSON.stringify(data) })
+      .then((r: any) => r.data),
 };
 
 export { ApiError };

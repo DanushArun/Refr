@@ -1,0 +1,226 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  Pressable,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
+import { colors } from '../theme/colors';
+import { typography } from '../theme/typography';
+import { spacing } from '../theme/spacing';
+import { chatApi } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
+import type { ChatScreenProps } from '../types/navigation';
+
+interface Message {
+  id: string;
+  body: string;
+  createdAt: string;
+  sender: { id: string; displayName: string; avatarUrl?: string };
+}
+
+/**
+ * ChatScreen — real-time chat within a referral.
+ *
+ * Supabase Realtime provides WebSocket updates — new messages appear
+ * without polling. The conversation is scoped to one referral.
+ *
+ * UI: WhatsApp-style bubble layout. Sent messages right-aligned (violet),
+ * received left-aligned (glass surface).
+ */
+export function ChatScreen({ route, navigation }: ChatScreenProps) {
+  const { referralId, participantName } = route.params;
+  const { user } = useAuth();
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const listRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    navigation.setOptions({ title: participantName });
+
+    chatApi.getConversation(referralId).then((conv) => {
+      setConversationId(conv.id);
+      setMessages(conv.messages);
+      setLoading(false);
+    });
+  }, [referralId, participantName]);
+
+  // Subscribe to Supabase Realtime for new messages
+  useEffect(() => {
+    if (!conversationId) return;
+    const sub = chatApi.subscribeToMessages(conversationId, (msg: Message) => {
+      setMessages((prev) => [...prev, msg]);
+      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
+    });
+    return () => sub.unsubscribe();
+  }, [conversationId]);
+
+  const handleSend = useCallback(async () => {
+    const body = draft.trim();
+    if (!body || !conversationId || sending) return;
+
+    setSending(true);
+    setDraft('');
+    try {
+      await chatApi.sendMessage(conversationId, body);
+      // Realtime subscription will add the message
+    } catch {
+      setDraft(body); // Restore on failure
+    } finally {
+      setSending(false);
+    }
+  }, [draft, conversationId, sending]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.kav}
+        keyboardVerticalOffset={90}
+      >
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(m) => m.id}
+          contentContainerStyle={styles.messageList}
+          showsVerticalScrollIndicator={false}
+          onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
+          renderItem={({ item }) => {
+            const isMine = item.sender.id === user?.id;
+            return (
+              <View style={[styles.bubbleRow, isMine ? styles.bubbleRowMine : styles.bubbleRowTheirs]}>
+                <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
+                  <Text style={[styles.bubbleText, isMine ? styles.bubbleTextMine : styles.bubbleTextTheirs]}>
+                    {item.body}
+                  </Text>
+                  <Text style={styles.bubbleTime}>{formatTime(item.createdAt)}</Text>
+                </View>
+              </View>
+            );
+          }}
+        />
+
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            value={draft}
+            onChangeText={setDraft}
+            placeholder="Type a message..."
+            placeholderTextColor={colors.textTertiary}
+            multiline
+            maxLength={4000}
+          />
+          <Pressable
+            style={[styles.sendBtn, (!draft.trim() || sending) && styles.sendBtnDisabled]}
+            onPress={handleSend}
+            disabled={!draft.trim() || sending}
+          >
+            <Text style={styles.sendBtnText}>→</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background },
+  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  kav: { flex: 1 },
+  messageList: {
+    padding: spacing[4],
+    paddingBottom: spacing[4],
+    gap: spacing[3],
+  },
+  bubbleRow: { flexDirection: 'row', marginBottom: spacing[1] },
+  bubbleRowMine: { justifyContent: 'flex-end' },
+  bubbleRowTheirs: { justifyContent: 'flex-start' },
+  bubble: {
+    maxWidth: '78%',
+    borderRadius: 18,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2.5],
+    gap: spacing[1],
+  },
+  bubbleMine: {
+    backgroundColor: colors.chatBubbleSent,
+    borderBottomRightRadius: 4,
+  },
+  bubbleTheirs: {
+    backgroundColor: colors.chatBubbleReceived,
+    borderBottomLeftRadius: 4,
+  },
+  bubbleText: {
+    ...typography.body,
+    lineHeight: 22,
+  },
+  bubbleTextMine: { color: colors.text },
+  bubbleTextTheirs: { color: colors.text },
+  bubbleTime: {
+    ...typography.caption,
+    color: 'rgba(255,255,255,0.5)',
+    alignSelf: 'flex-end',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    padding: spacing[3],
+    gap: spacing[2],
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 22,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2.5],
+    color: colors.text,
+    fontFamily: 'Outfit-Regular',
+    fontSize: 15,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendBtnDisabled: {
+    backgroundColor: colors.accentDim,
+  },
+  sendBtnText: {
+    color: colors.text,
+    fontSize: 20,
+    fontFamily: 'Outfit-Bold',
+  },
+});
