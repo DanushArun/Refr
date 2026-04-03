@@ -71,7 +71,7 @@ export function MatchesScreen() {
               style={styles.card}
               onPress={() =>
                 router.push({
-                  pathname: '/Chat',
+                  pathname: '/chat',
                   params: {
                     referralId: item.id,
                     participantName: item.referrer?.user?.displayName ?? 'Referrer',

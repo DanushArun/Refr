@@ -53,7 +53,7 @@ export function InboxScreen() {
       await referralsApi.transition(referralId, 'accepted');
       setItems((prev) => prev.map((item) => item.referral.id === id ? { ...item, referral: { ...item.referral, status: 'accepted' as any } } : item));
       router.push({
-        pathname: '/Chat',
+        pathname: '/chat',
         params: { referralId, participantName: seekerName, participantAvatar: avatarUrl },
       });
     } catch (err) {

@@ -11,12 +11,12 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { chatApi } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import type { ChatScreenProps } from '../types/navigation';
 
 interface Message {
   id: string;
@@ -34,8 +34,11 @@ interface Message {
  * UI: WhatsApp-style bubble layout. Sent messages right-aligned (violet),
  * received left-aligned (glass surface).
  */
-export function ChatScreen({ route, navigation }: ChatScreenProps) {
-  const { referralId, participantName } = route.params;
+export function ChatScreen() {
+  const params = useLocalSearchParams();
+  const referralId = params.referralId as string;
+  const participantName = params.participantName as string;
+  
   const { user } = useAuth();
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,8 +50,6 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
   const listRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    navigation.setOptions({ title: participantName });
-
     chatApi.getConversation(referralId).then((conv) => {
       setConversationId(conv.id);
       setMessages(conv.messages);
@@ -85,6 +86,7 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
   if (loading) {
     return (
       <View style={styles.center}>
+        <Stack.Screen options={{ title: participantName }} />
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
@@ -92,6 +94,7 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Stack.Screen options={{ title: participantName }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.kav}
