@@ -26,7 +26,7 @@ export function CompanyIntelCard({ card, onPress }: CompanyIntelCardProps) {
       <Pressable onPress={onPress} style={styles.inner}>
         {/* Verified byline */}
         <View style={styles.byline}>
-          <Avatar uri={card.companyLogoUrl} displayName={card.companyName} size="sm" square />
+          <Avatar uri={card.companyLogo} displayName={card.companyName} size="sm" />
           <View style={styles.bylineMeta}>
             <Text style={styles.verifiedBadge}>Verified employee</Text>
             <Text style={styles.companyName}>at {card.companyName}</Text>
@@ -35,7 +35,7 @@ export function CompanyIntelCard({ card, onPress }: CompanyIntelCardProps) {
         </View>
 
         {/* Content headline */}
-        <Text style={styles.headline}>{card.headline}</Text>
+        <Text style={styles.headline}>{card.title}</Text>
 
         {/* Body */}
         <Text style={styles.body}>{truncate(card.body, 240)}</Text>
@@ -48,11 +48,6 @@ export function CompanyIntelCard({ card, onPress }: CompanyIntelCardProps) {
         {/* Engagement */}
         <View style={styles.engagement}>
           <Text style={styles.reactionCount}>{card.reactionCount} reactions</Text>
-          {card.isAnonymous && (
-            <View style={styles.anonBadge}>
-              <Text style={styles.anonText}>Anonymous</Text>
-            </View>
-          )}
         </View>
       </Pressable>
     </GlassCard>
@@ -121,18 +116,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   reactionCount: {
-    ...typography.caption,
-    color: colors.textTertiary,
-  },
-  anonBadge: {
-    paddingHorizontal: spacing[2],
-    paddingVertical: spacing[0.5],
-    borderRadius: 4,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  anonText: {
     ...typography.caption,
     color: colors.textTertiary,
   },

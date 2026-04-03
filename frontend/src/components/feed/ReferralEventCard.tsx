@@ -18,27 +18,18 @@ interface ReferralEventCardProps {
  * For hires: triggers the helper's high celebration in the referrer.
  */
 export function ReferralEventCard({ card }: ReferralEventCardProps) {
-  const isHire = card.eventType === 'hired';
-
   return (
-    <GlassCard style={[styles.card, isHire && styles.cardHire]}>
+    <GlassCard style={styles.card}>
       <View style={styles.inner}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>{isHire ? '★' : '→'}</Text>
+          <Text style={styles.icon}>→</Text>
         </View>
         <View style={styles.content}>
           <Text style={styles.headline}>
-            {isHire
-              ? `${card.referrerName} helped ${card.seekerName} get hired at ${card.companyName}`
-              : `${card.referrerName} referred someone to ${card.companyName}`}
+            {card.referrerDisplayName} referred {card.seekerDisplayName} to {card.companyName}
           </Text>
-          {isHire && (
-            <Text style={styles.celebration}>
-              Another Kingmaker moment in Bangalore tech.
-            </Text>
-          )}
           <Text style={styles.meta}>
-            {card.role} · {formatTimeAgo(card.createdAt)}
+            {card.eventDescription} · {formatTimeAgo(card.createdAt)}
           </Text>
         </View>
       </View>
