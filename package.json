@@ -3,19 +3,16 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "backend",
     "frontend"
   ],
   "scripts": {
-    "backend:dev": "cd backend_django && source venv/bin/activate && python manage.py runserver",
     "frontend:dev": "npm run dev --workspace=frontend",
     "shared:build": "npm run build --workspace=@refr/shared",
-    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
-    "typecheck": "tsc --noEmit --workspace=backend && tsc --noEmit --workspace=frontend",
+    "dev": "npm run frontend:dev",
+    "typecheck": "tsc --noEmit --workspace=frontend",
     "lint": "eslint . --ext .ts,.tsx"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
     "typescript": "^5.7.3"
   }
 }

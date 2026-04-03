@@ -37,7 +37,7 @@ export function useAuth(): UseAuthReturn {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const signOut = useCallback(async () => {

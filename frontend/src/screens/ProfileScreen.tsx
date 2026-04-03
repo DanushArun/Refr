@@ -15,6 +15,7 @@ import { Avatar } from '../components/common/Avatar';
 import { GlassCard } from '../components/common/GlassCard';
 import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
+import type { UserProfile, ReferrerProfile, SeekerProfile } from '@refr/shared';
 
 export function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -29,6 +30,7 @@ export function ProfileScreen() {
   if (!user) return null;
 
   const isReferrer = user.role === 'referrer';
+  const profile = user as unknown as UserProfile;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -39,7 +41,7 @@ export function ProfileScreen() {
         {/* Profile card */}
         <GlassCard style={styles.profileCard}>
           <View style={styles.profileHeader}>
-            <Avatar uri={user.avatarUrl} displayName={user.displayName} size="xl" />
+            <Avatar uri={user.avatarUrl} displayName={user.displayName || 'User'} size="xl" />
             <View style={styles.profileMeta}>
               <Text style={styles.displayName}>{user.displayName}</Text>
               <View style={styles.roleBadge}>
@@ -50,20 +52,20 @@ export function ProfileScreen() {
             </View>
           </View>
 
-          {isReferrer && user.referrerProfile && (
+          {isReferrer && 'jobTitle' in profile && (
             <View style={styles.profileDetail}>
               <Text style={styles.profileDetailText}>
-                {user.referrerProfile.jobTitle} at {user.company?.name}
+                {(profile as ReferrerProfile).jobTitle} at {(profile as ReferrerProfile).company}
               </Text>
               <Text style={styles.profileDetailSub}>
-                Kingmaker Score: {user.referrerProfile.kingmakerScore}
+                Kingmaker Score: {(profile as ReferrerProfile).kingmakerScore}
               </Text>
             </View>
           )}
 
-          {!isReferrer && user.seekerProfile && (
+          {!isReferrer && 'headline' in profile && (
             <Text style={styles.headline} numberOfLines={2}>
-              {user.seekerProfile.headline}
+              {(profile as SeekerProfile).headline}
             </Text>
           )}
         </GlassCard>
@@ -84,7 +86,7 @@ export function ProfileScreen() {
         <Button
           label="Sign out"
           onPress={handleSignOut}
-          variant="ghost"
+          variant="text"
           size="large"
           fullWidth
           style={styles.signOutBtn}

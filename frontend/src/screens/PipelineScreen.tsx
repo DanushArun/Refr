@@ -72,7 +72,7 @@ export function PipelineScreen() {
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.referral.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
             <PipelineItem item={item} />
@@ -85,8 +85,8 @@ export function PipelineScreen() {
 }
 
 function PipelineItem({ item }: { item: SeekerPipelineItem }) {
-  const statusColor = STATUS_COLORS[item.status] ?? colors.textTertiary;
-  const statusLabel = STATUS_LABELS[item.status] ?? item.status;
+  const statusColor = STATUS_COLORS[item.referral.status] ?? colors.textTertiary;
+  const statusLabel = STATUS_LABELS[item.referral.status] ?? item.referral.status;
 
   return (
     <View style={styles.card}>
@@ -97,16 +97,16 @@ function PipelineItem({ item }: { item: SeekerPipelineItem }) {
             <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
           </View>
         </View>
-        <Text style={styles.role}>{item.targetRole}</Text>
+        <Text style={styles.role}>{item.referral.targetRole}</Text>
       </View>
 
       <View style={styles.referrerRow}>
         <Text style={styles.referrerLabel}>Referrer</Text>
         <Text style={styles.referrerName}>{item.referrerName}</Text>
-        <Text style={styles.referrerTitle}>{item.referrerTitle} at {item.companyName}</Text>
+        <Text style={styles.referrerTitle}>{item.referrerName} at {item.companyName}</Text>
       </View>
 
-      <PipelineStepper status={item.status as ReferralStatus} />
+      <PipelineStepper status={item.referral.status as ReferralStatus} />
     </View>
   );
 }
