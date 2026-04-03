@@ -9,13 +9,13 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
-import { Button } from '../components/common/Button';
-import { Input } from '../components/common/Input';
-import { authApi } from '../services/auth';
-import type { ProfileSetupScreenProps } from '../types/navigation';
+import { useLocalSearchParams } from 'expo-router';
+import { colors } from '../../src/theme/colors';
+import { typography } from '../../src/theme/typography';
+import { spacing, layout } from '../../src/theme/spacing';
+import { Button } from '../../src/components/common/Button';
+import { Input } from '../../src/components/common/Input';
+import { authApi } from '../../src/services/auth';
 
 // ─── Step definitions ──────────────────────────────────────────────────────
 
@@ -41,8 +41,8 @@ type ReferrerForm = {
   canReferTo: string;
 };
 
-export function ProfileSetupScreen({ route, navigation }: ProfileSetupScreenProps) {
-  const { role } = route.params;
+export default function ProfileSetupScreen() {
+  const { role } = useLocalSearchParams<{ role: string }>();
   const isSeeker = role === 'seeker';
 
   const [loading, setLoading] = useState(false);

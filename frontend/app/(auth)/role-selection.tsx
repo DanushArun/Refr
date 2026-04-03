@@ -6,11 +6,11 @@ import {
   Pressable,
   SafeAreaView,
 } from 'react-native';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
-import { Button } from '../components/common/Button';
-import type { RoleSelectionScreenProps } from '../types/navigation';
+import { router } from 'expo-router';
+import { colors } from '../../src/theme/colors';
+import { typography } from '../../src/theme/typography';
+import { spacing, layout } from '../../src/theme/spacing';
+import { Button } from '../../src/components/common/Button';
 
 type Role = 'seeker' | 'referrer';
 
@@ -34,12 +34,12 @@ const ROLES: Array<{
   },
 ];
 
-export function RoleSelectionScreen({ navigation }: RoleSelectionScreenProps) {
+export default function RoleSelectionScreen() {
   const [selected, setSelected] = useState<Role | null>(null);
 
   const handleContinue = () => {
     if (!selected) return;
-    navigation.navigate('ProfileSetup', { role: selected });
+    router.push({ pathname: '/(auth)/profile-setup', params: { role: selected } });
   };
 
   return (
