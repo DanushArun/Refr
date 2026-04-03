@@ -16,7 +16,7 @@ import { Avatar } from '../components/common/Avatar';
 import { Button } from '../components/common/Button';
 import { referralsApi } from '../services/api';
 import type { ReferrerInboxItem } from '@refr/shared';
-import type { ReferrerInboxScreenProps } from '../types/navigation';
+import { router } from 'expo-router';
 
 /**
  * InboxScreen — the referrer's home.
@@ -25,7 +25,7 @@ import type { ReferrerInboxScreenProps } from '../types/navigation';
  * Referrers accept or decline here. On acceptance, a chat opens.
  * The "Kingmaker Score" stat at top creates the identity hook.
  */
-export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
+export function InboxScreen() {
   const [items, setItems] = useState<ReferrerInboxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [kingmakerScore, setKingmakerScore] = useState<number | null>(null);
@@ -50,12 +50,11 @@ export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
 
   const handleAccept = async (id: string, seekerName: string, referralId: string, avatarUrl?: string) => {
     try {
-      await referralsApi.transition(id, 'accepted');
+      await referralsApi.transition(referralId, 'accepted');
       setItems((prev) => prev.map((item) => item.referral.id === id ? { ...item, referral: { ...item.referral, status: 'accepted' as any } } : item));
-      navigation.navigate('Chat', {
-        referralId,
-        participantName: seekerName,
-        participantAvatar: avatarUrl,
+      router.push({
+        pathname: '/Chat',
+        params: { referralId, participantName: seekerName, participantAvatar: avatarUrl },
       });
     } catch (err) {
       Alert.alert('Error', 'Failed to accept request');
@@ -123,7 +122,7 @@ export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
               onAccept={handleAccept}
               onDecline={handleDecline}
               onChatPress={(referralId, name, avatar) =>
-                navigation.navigate('Chat', { referralId, participantName: name, participantAvatar: avatar })
+                router.push({ pathname: '/Chat', params: { referralId, participantName: name, participantAvatar: avatar } })
               }
             />
           )}

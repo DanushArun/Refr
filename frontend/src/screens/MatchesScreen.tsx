@@ -12,8 +12,8 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { Avatar } from '../components/common/Avatar';
+import { router } from 'expo-router';
 import { referralsApi } from '../services/api';
-import type { SeekerMatchesScreenProps } from '../types/navigation';
 
 /**
  * MatchesScreen — seeker's view of accepted referrals.
@@ -21,7 +21,7 @@ import type { SeekerMatchesScreenProps } from '../types/navigation';
  * Only shows referrals where status is accepted/submitted/interviewing.
  * Each row shows the referrer + company + chat CTA.
  */
-export function MatchesScreen({ navigation }: SeekerMatchesScreenProps) {
+export function MatchesScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,10 +70,13 @@ export function MatchesScreen({ navigation }: SeekerMatchesScreenProps) {
             <Pressable
               style={styles.card}
               onPress={() =>
-                navigation.navigate('Chat', {
-                  referralId: item.id,
-                  participantName: item.referrer?.user?.displayName ?? 'Referrer',
-                  participantAvatar: item.referrer?.user?.avatarUrl,
+                router.push({
+                  pathname: '/Chat',
+                  params: {
+                    referralId: item.id,
+                    participantName: item.referrer?.user?.displayName ?? 'Referrer',
+                    participantAvatar: item.referrer?.user?.avatarUrl,
+                  }
                 })
               }
             >

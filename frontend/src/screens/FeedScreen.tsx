@@ -19,18 +19,8 @@ import { Button } from '../components/common/Button';
 import { StatCard } from '../components/common/StatCard';
 import { referralsApi } from '../services/api';
 import type { FeedCard } from '@refr/shared';
-import type { SeekerDiscoverScreenProps } from '../types/navigation';
 
-/**
- * FeedScreen — the home screen of REFR.
- *
- * For seekers: "Discover" tab — infinite scroll of career stories and company intel.
- * For referrers: the same feed renders under "Inbox" with the "I can refer" CTA.
- *
- * The referral initiation happens via a bottom sheet modal — the user never leaves
- * the feed, preserving the doom-scroll flow. This is a deliberate anti-stopping-cue.
- */
-export function FeedScreen({ navigation }: SeekerDiscoverScreenProps) {
+export function FeedScreen() {
   const { cards, loading, refreshing, hasMore, fetchMore, refresh } = useFeed();
 
   // Trigger initial load on mount
