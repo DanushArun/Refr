@@ -89,14 +89,13 @@ export function EarningsScreen() {
 
         {/* Stats row */}
         <View style={styles.statsRow}>
-          <StatCard label="Total referrals" value={String(reputation.totalReferrals)} size="md" />
-          <StatCard label="Successful hires" value={String(reputation.successfulHires)} size="md" accent />
+          <StatCard label="Total referrals" value={String(reputation.totalReferrals)} />
+          <StatCard label="Successful hires" value={String(reputation.successfulHires)} valueColor={colors.accent} />
           <StatCard
             label="Hire rate"
             value={reputation.totalReferrals > 0
               ? `${Math.round((reputation.successfulHires / reputation.totalReferrals) * 100)}%`
               : '—'}
-            size="md"
           />
         </View>
 

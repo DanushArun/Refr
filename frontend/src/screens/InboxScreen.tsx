@@ -48,10 +48,10 @@ export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
 
   useEffect(() => { loadInbox(); }, []);
 
-  const handleAccept = async (id: string, seekerName: string, referralId: string, conversationId: string, avatarUrl?: string) => {
+  const handleAccept = async (id: string, seekerName: string, referralId: string, avatarUrl?: string) => {
     try {
       await referralsApi.transition(id, 'accepted');
-      setItems((prev) => prev.map((item) => item.id === id ? { ...item, status: 'accepted' as any } : item));
+      setItems((prev) => prev.map((item) => item.referral.id === id ? { ...item, referral: { ...item.referral, status: 'accepted' as any } } : item));
       navigation.navigate('Chat', {
         referralId,
         participantName: seekerName,
@@ -71,7 +71,7 @@ export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
         onPress: async () => {
           try {
             await referralsApi.transition(id, 'rejected');
-            setItems((prev) => prev.filter((item) => item.id !== id));
+            setItems((prev) => prev.filter((item) => item.referral.id !== id));
           } catch {
             Alert.alert('Error', 'Failed to decline request');
           }
@@ -93,7 +93,7 @@ export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Inbox</Text>
-          <Text style={styles.subtitle}>{items.filter((i) => i.status === 'requested').length} new requests</Text>
+          <Text style={styles.subtitle}>{items.filter((i) => i.referral.status === 'requested').length} new requests</Text>
         </View>
         {kingmakerScore !== null && (
           <View style={styles.scoreChip}>
@@ -113,7 +113,7 @@ export function InboxScreen({ navigation }: ReferrerInboxScreenProps) {
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.referral.id}
           contentContainerStyle={styles.list}
           onRefresh={loadInbox}
           refreshing={loading}
@@ -141,12 +141,12 @@ function InboxCard({
   onChatPress,
 }: {
   item: ReferrerInboxItem;
-  onAccept: (id: string, name: string, referralId: string, conversationId: string, avatar?: string) => void;
+  onAccept: (id: string, name: string, referralId: string, avatar?: string) => void;
   onDecline: (id: string) => void;
   onChatPress: (referralId: string, name: string, avatar?: string) => void;
 }) {
-  const isPending = item.status === 'requested';
-  const isAccepted = item.status === 'accepted' || item.status === 'submitted' || item.status === 'interviewing';
+  const isPending = item.referral.status === 'requested';
+  const isAccepted = item.referral.status === 'accepted' || item.referral.status === 'submitted' || item.referral.status === 'interviewing';
 
   return (
     <View style={styles.card}>
@@ -155,14 +155,14 @@ function InboxCard({
         <View style={styles.cardMeta}>
           <Text style={styles.seekerName}>{item.seekerName}</Text>
           <Text style={styles.seekerHeadline} numberOfLines={2}>{item.seekerHeadline}</Text>
-          <Text style={styles.targetRole}>Wants to join as {item.targetRole}</Text>
+          <Text style={styles.targetRole}>Wants to join as {item.referral.targetRole}</Text>
         </View>
         <Text style={styles.matchScore}>{item.matchScore}%</Text>
       </View>
 
-      {item.seekerNote && (
+      {item.referral.seekerNote && (
         <View style={styles.noteBox}>
-          <Text style={styles.noteText}>{item.seekerNote}</Text>
+          <Text style={styles.noteText}>{item.referral.seekerNote}</Text>
         </View>
       )}
 
@@ -170,15 +170,15 @@ function InboxCard({
         <View style={styles.actions}>
           <Button
             label="Accept"
-            onPress={() => onAccept(item.id, item.seekerName, item.referralId, item.conversationId, item.seekerAvatar)}
+            onPress={() => onAccept(item.referral.id, item.seekerName, item.referral.id, item.seekerAvatar)}
             variant="primary"
             size="medium"
             style={styles.actionBtn}
           />
           <Button
             label="Decline"
-            onPress={() => onDecline(item.id)}
-            variant="ghost"
+            onPress={() => onDecline(item.referral.id)}
+            variant="text"
             size="medium"
             style={styles.actionBtn}
           />
@@ -188,7 +188,7 @@ function InboxCard({
       {isAccepted && (
         <Button
           label="Open chat"
-          onPress={() => onChatPress(item.referralId, item.seekerName, item.seekerAvatar)}
+          onPress={() => onChatPress(item.referral.id, item.seekerName, item.seekerAvatar)}
           variant="secondary"
           size="medium"
           fullWidth

@@ -118,12 +118,10 @@ export function FeedScreen({ navigation }: SeekerDiscoverScreenProps) {
                   <StatCard
                     label="Experience"
                     value={`${referModal.card.yearsOfExperience}y`}
-                    size="sm"
                   />
                   <StatCard
                     label="Skills"
                     value={String(referModal.card.skills?.length ?? 0)}
-                    size="sm"
                   />
                 </View>
 
@@ -149,7 +147,7 @@ export function FeedScreen({ navigation }: SeekerDiscoverScreenProps) {
                 <Button
                   label="Cancel"
                   onPress={handleCloseModal}
-                  variant="ghost"
+                  variant="text"
                   size="medium"
                   fullWidth
                   disabled={referModal.submitting}
