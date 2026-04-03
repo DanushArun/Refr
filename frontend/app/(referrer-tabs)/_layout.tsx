@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { colors } from '../../src/theme/colors';
+import { hapticSelection } from '../../src/utils/haptics';
 
 export default function ReferrerTabsLayout() {
   return (
@@ -9,10 +10,10 @@ export default function ReferrerTabsLayout() {
       tabBarActiveTintColor: colors.accent,
       tabBarInactiveTintColor: colors.textTertiary,
     }}>
-      <Tabs.Screen name="inbox" options={{ title: 'Inbox' }} />
-      <Tabs.Screen name="active" options={{ title: 'Active' }} />
-      <Tabs.Screen name="earnings" options={{ title: 'Earnings' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen name="inbox" options={{ title: 'Inbox' }} listeners={{ tabPress: () => hapticSelection() }} />
+      <Tabs.Screen name="active" options={{ title: 'Active' }} listeners={{ tabPress: () => hapticSelection() }} />
+      <Tabs.Screen name="earnings" options={{ title: 'Earnings' }} listeners={{ tabPress: () => hapticSelection() }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile' }} listeners={{ tabPress: () => hapticSelection() }} />
     </Tabs>
   );
 }

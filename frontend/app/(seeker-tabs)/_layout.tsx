@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { colors } from '../../src/theme/colors';
+import { hapticSelection } from '../../src/utils/haptics';
 
 export default function SeekerTabsLayout() {
   return (
@@ -9,10 +10,10 @@ export default function SeekerTabsLayout() {
       tabBarActiveTintColor: colors.accent,
       tabBarInactiveTintColor: colors.textTertiary,
     }}>
-      <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
-      <Tabs.Screen name="matches" options={{ title: 'Matches' }} />
-      <Tabs.Screen name="pipeline" options={{ title: 'Pipeline' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen name="discover" options={{ title: 'Discover' }} listeners={{ tabPress: () => hapticSelection() }} />
+      <Tabs.Screen name="matches" options={{ title: 'Matches' }} listeners={{ tabPress: () => hapticSelection() }} />
+      <Tabs.Screen name="pipeline" options={{ title: 'Pipeline' }} listeners={{ tabPress: () => hapticSelection() }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile' }} listeners={{ tabPress: () => hapticSelection() }} />
     </Tabs>
   );
 }

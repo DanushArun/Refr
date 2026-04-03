@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { layout } from '../../theme/spacing';
+import { hapticImpact } from '../../utils/haptics';
 
 type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger';
 type ButtonSize = 'small' | 'medium' | 'large';
@@ -137,7 +138,7 @@ export function Button({
   // variant === 'text'
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => { hapticImpact(); onPress(); }}
       disabled={isDisabled}
       activeOpacity={0.6}
       style={[{ height, alignItems: 'center', justifyContent: 'center', opacity: isDisabled ? 0.45 : 1 }, style]}
