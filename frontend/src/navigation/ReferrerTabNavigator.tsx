@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Platform } from 'react-native';
 import type { ReferrerTabParamList } from '../types/navigation';
-import { MatchesScreen } from '../screens/MatchesScreen';
+import { InboxScreen } from '../screens/InboxScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { EarningsScreen } from '../screens/EarningsScreen';
 import { FeedScreen } from '../screens/FeedScreen';
@@ -35,7 +35,7 @@ export function ReferrerTabNavigator() {
     >
       <Tab.Screen
         name="Inbox"
-        component={MatchesScreen}
+        component={InboxScreen}
         options={{
           tabBarLabel: 'Inbox',
           tabBarIcon: ({ color, focused }) => (

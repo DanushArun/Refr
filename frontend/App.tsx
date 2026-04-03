@@ -13,14 +13,15 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
-    'InstrumentSerif-Regular': require('./assets/fonts/InstrumentSerif-Regular.ttf'),
-    'InstrumentSerif-Italic': require('./assets/fonts/InstrumentSerif-Italic.ttf'),
-    'Outfit-Regular': require('./assets/fonts/Outfit-Regular.ttf'),
-    'Outfit-Medium': require('./assets/fonts/Outfit-Medium.ttf'),
-    'Outfit-SemiBold': require('./assets/fonts/Outfit-SemiBold.ttf'),
-    'Outfit-Bold': require('./assets/fonts/Outfit-Bold.ttf'),
-    'JetBrainsMono-Regular': require('./assets/fonts/JetBrainsMono-Regular.ttf'),
-    'JetBrainsMono-Medium': require('./assets/fonts/JetBrainsMono-Medium.ttf'),
+    // Commented out since the actual font files are missing
+    // 'InstrumentSerif-Regular': require('./assets/fonts/InstrumentSerif-Regular.ttf'),
+    // 'InstrumentSerif-Italic': require('./assets/fonts/InstrumentSerif-Italic.ttf'),
+    // 'Outfit-Regular': require('./assets/fonts/Outfit-Regular.ttf'),
+    // 'Outfit-Medium': require('./assets/fonts/Outfit-Medium.ttf'),
+    // 'Outfit-SemiBold': require('./assets/fonts/Outfit-SemiBold.ttf'),
+    // 'Outfit-Bold': require('./assets/fonts/Outfit-Bold.ttf'),
+    // 'JetBrainsMono-Regular': require('./assets/fonts/JetBrainsMono-Regular.ttf'),
+    // 'JetBrainsMono-Medium': require('./assets/fonts/JetBrainsMono-Medium.ttf'),
   });
 
   useEffect(() => {

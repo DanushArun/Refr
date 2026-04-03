@@ -2,8 +2,9 @@
   "name": "refr-frontend",
   "version": "0.1.0",
   "private": true,
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "expo/AppEntry.js",
   "scripts": {
+    "dev": "expo start",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
