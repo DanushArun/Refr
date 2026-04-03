@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import {
   View,
   TextInput,
@@ -16,11 +16,13 @@ import { spacing, layout } from '../../theme/spacing';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   label: string;
+  name?: string;
   error?: string;
   hint?: string;
   containerStyle?: StyleProp<ViewStyle>;
   /** Show a clear button when input has value */
   clearable?: boolean;
+  onChangeValue?: (name: string, value: string) => void;
 }
 
 /**
@@ -29,14 +31,16 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
  * The label lifts to a small caption above the field when focused or filled.
  * Error state renders a red border and error message below.
  */
-export function Input({
+export const Input = memo(function Input({
   label,
+  name,
   error,
   hint,
   containerStyle,
   clearable = false,
   value,
   onChangeText,
+  onChangeValue,
   ...rest
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -63,6 +67,11 @@ export function Input({
     setIsFocused(false);
     if (!hasValue) animateLabel(0);
     rest.onBlur?.(null as any);
+  }
+
+  function handleChange(text: string) {
+    if (onChangeText) onChangeText(text);
+    if (onChangeValue && name) onChangeValue(name, text);
   }
 
   const labelTop = labelAnim.interpolate({
@@ -103,7 +112,7 @@ export function Input({
         <TextInput
           {...rest}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
           style={[styles.input, isActive && styles.inputActive]}
@@ -114,7 +123,7 @@ export function Input({
 
         {clearable && hasValue && (
           <TouchableOpacity
-            onPress={() => onChangeText?.('')}
+            onPress={() => handleChange('')}
             style={styles.clearButton}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -130,7 +139,7 @@ export function Input({
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

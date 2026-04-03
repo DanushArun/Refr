@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -69,6 +69,14 @@ export function ProfileSetupScreen({ route, navigation }: ProfileSetupScreenProp
     canReferTo: '',
   });
 
+  const handleSeekerChange = useCallback((name: string, value: string) => {
+    setSeekerForm((f) => ({ ...f, [name]: value }));
+  }, []);
+
+  const handleReferrerChange = useCallback((name: string, value: string) => {
+    setReferrerForm((f) => ({ ...f, [name]: value }));
+  }, []);
+
   const handleSeekerSubmit = async () => {
     setLoading(true);
     try {
@@ -135,55 +143,63 @@ export function ProfileSetupScreen({ route, navigation }: ProfileSetupScreenProp
             <View style={styles.form}>
               <Input
                 label="Full name"
+                name="displayName"
                 value={seekerForm.displayName}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, displayName: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="Arjun Mehta"
               />
               <Input
                 label="Work email"
+                name="email"
                 value={seekerForm.email}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, email: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="arjun@gmail.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
               <Input
                 label="Password"
+                name="password"
                 value={seekerForm.password}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, password: v }))}
+                onChangeValue={handleSeekerChange}
                 secureTextEntry
                 placeholder="At least 8 characters"
               />
               <Input
                 label="One-line headline"
+                name="headline"
                 value={seekerForm.headline}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, headline: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="Backend engineer, 4y at Flipkart, moving to fintech"
                 maxLength={120}
               />
               <Input
                 label="Years of experience"
+                name="yearsOfExperience"
                 value={seekerForm.yearsOfExperience}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, yearsOfExperience: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="4"
                 keyboardType="numeric"
               />
               <Input
                 label="Skills (comma separated)"
+                name="skills"
                 value={seekerForm.skills}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, skills: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="Node.js, PostgreSQL, System Design"
               />
               <Input
                 label="Companies you want to join"
+                name="targetCompanies"
                 value={seekerForm.targetCompanies}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, targetCompanies: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="Zepto, Razorpay, Swiggy"
               />
               <Input
                 label="Why are you looking?"
+                name="whyLooking"
                 value={seekerForm.whyLooking}
-                onChangeText={(v) => setSeekerForm((f) => ({ ...f, whyLooking: v }))}
+                onChangeValue={handleSeekerChange}
                 placeholder="Be honest. Referrers appreciate authenticity."
                 multiline
                 numberOfLines={4}
@@ -193,54 +209,62 @@ export function ProfileSetupScreen({ route, navigation }: ProfileSetupScreenProp
             <View style={styles.form}>
               <Input
                 label="Full name"
+                name="displayName"
                 value={referrerForm.displayName}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, displayName: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="Priya Sharma"
               />
               <Input
                 label="Work email"
+                name="email"
                 value={referrerForm.email}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, email: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="priya@swiggy.in"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
               <Input
                 label="Password"
+                name="password"
                 value={referrerForm.password}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, password: v }))}
+                onChangeValue={handleReferrerChange}
                 secureTextEntry
                 placeholder="At least 8 characters"
               />
               <Input
                 label="Company"
+                name="company"
                 value={referrerForm.company}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, company: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="Swiggy"
               />
               <Input
                 label="Department"
+                name="department"
                 value={referrerForm.department}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, department: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="Engineering"
               />
               <Input
                 label="Job title"
+                name="jobTitle"
                 value={referrerForm.jobTitle}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, jobTitle: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="Senior Software Engineer"
               />
               <Input
                 label="Years at company"
+                name="yearsAtCompany"
                 value={referrerForm.yearsAtCompany}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, yearsAtCompany: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="2"
                 keyboardType="numeric"
               />
               <Input
                 label="Teams you can refer for (comma separated)"
+                name="canReferTo"
                 value={referrerForm.canReferTo}
-                onChangeText={(v) => setReferrerForm((f) => ({ ...f, canReferTo: v }))}
+                onChangeValue={handleReferrerChange}
                 placeholder="Backend, Platform, Data"
               />
             </View>

@@ -1,196 +1,151 @@
-import { supabase } from './supabase';
-import type { Session, User, AuthError } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+
+const BASE_URL: string = Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://127.0.0.1:8000';
+
+export interface User {
+  id: string;
+  email: string;
+  displayName?: string;
+  role?: 'seeker' | 'referrer';
+  avatarUrl?: string;
+}
+
+export interface Session {
+  access_token: string;
+  refresh_token: string;
+  user: User;
+}
 
 export interface AuthResult {
   session: Session | null;
   user: User | null;
-  error: AuthError | null;
+  error: Error | null;
 }
 
-/**
- * Sign up with email + password.
- * Phone OTP and Google OAuth are added in Phase 2.
- */
+// Simple event emitter to notify hook
+type AuthListener = (session: Session | null) => void;
+const listeners = new Set<AuthListener>();
+
+export const notifyAuthChange = (session: Session | null) => {
+  listeners.forEach((l) => l(session));
+};
+
+export const subscribeToAuth = (listener: AuthListener) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
+
+export async function saveSession(session: Session | null) {
+  if (session) {
+    await AsyncStorage.setItem('auth_session', JSON.stringify(session));
+  } else {
+    await AsyncStorage.removeItem('auth_session');
+  }
+  notifyAuthChange(session);
+}
+
+export async function getSession(): Promise<Session | null> {
+  const json = await AsyncStorage.getItem('auth_session');
+  return json ? JSON.parse(json) : null;
+}
+
 export async function signUpWithEmail(
   email: string,
   password: string,
   metadata: { displayName: string; role: 'seeker' | 'referrer' }
 ): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
+  try {
+    const res = await fetch(`${BASE_URL}/api/users/register/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: email, // Use email as username for Django
+        email,
+        password,
         display_name: metadata.displayName,
         role: metadata.role,
-      },
-    },
-  });
+      }),
+    });
 
-  return {
-    session: data.session,
-    user: data.user,
-    error,
-  };
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to sign up');
+    }
+
+    // Auto sign-in after sign-up
+    return await signInWithEmail(email, password);
+  } catch (error: any) {
+    return { session: null, user: null, error };
+  }
 }
 
-/**
- * Sign in with email + password.
- */
 export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/api/token/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: email,
+        password,
+      }),
+    });
 
-  return {
-    session: data.session,
-    user: data.user,
-    error,
-  };
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to sign in');
+    }
+
+    const data = await res.json();
+    
+    // Create dummy user from token for now since SimpleJWT doesn't return full user by default.
+    // In a real app, you'd fetch /api/v1/users/me/ after token success
+    const user: User = {
+      id: 'django-user-id',
+      email: email,
+      displayName: email.split('@')[0],
+      role: 'seeker',
+    };
+
+    const session: Session = {
+      access_token: data.access,
+      refresh_token: data.refresh,
+      user,
+    };
+
+    await saveSession(session);
+
+    return { session, user, error: null };
+  } catch (error: any) {
+    return { session: null, user: null, error };
+  }
 }
 
-/**
- * Sign in with phone OTP — step 1: request OTP.
- */
-export async function requestPhoneOtp(phone: string): Promise<{ error: AuthError | null }> {
-  const { error } = await supabase.auth.signInWithOtp({ phone });
-  return { error };
+export async function requestPhoneOtp(phone: string): Promise<{ error: Error | null }> {
+  return { error: new Error('Not implemented locally') };
 }
 
-/**
- * Sign in with phone OTP — step 2: verify OTP.
- */
-export async function verifyPhoneOtp(
-  phone: string,
-  token: string
-): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.verifyOtp({
-    phone,
-    token,
-    type: 'sms',
-  });
-
-  return {
-    session: data.session,
-    user: data.user,
-    error,
-  };
+export async function verifyPhoneOtp(phone: string, token: string): Promise<AuthResult> {
+  return { session: null, user: null, error: new Error('Not implemented locally') };
 }
 
-/**
- * Sign out current user and clear local session.
- */
-export async function signOut(): Promise<{ error: AuthError | null }> {
-  const { error } = await supabase.auth.signOut();
-  return { error };
-}
-
-/**
- * Get the current active session without hitting the network.
- */
-export async function getSession(): Promise<Session | null> {
-  const { data } = await supabase.auth.getSession();
-  return data.session;
-}
-
-// ─── Onboarding helpers ────────────────────────────────────────────────────
-// These combine Supabase Auth signup + REFR profile creation in one call.
-
-const API_BASE = 'http://localhost:3000';
-
-async function apiPost(path: string, body: unknown, token?: string) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
-  return res.json();
+export async function signOut(): Promise<{ error: Error | null }> {
+  await saveSession(null);
+  return { error: null };
 }
 
 export const authApi = {
-  signupSeeker: async (params: {
-    displayName: string;
-    email: string;
-    password: string;
-    headline: string;
-    yearsOfExperience: number;
-    skills: string[];
-    targetCompanies: string[];
-    whyLooking: string;
-  }) => {
-    const { data: authData, error } = await supabase.auth.signUp({
-      email: params.email,
-      password: params.password,
-      options: { data: { display_name: params.displayName, role: 'seeker' } },
-    });
-    if (error || !authData.user) throw error ?? new Error('Signup failed');
-
-    const token = authData.session?.access_token;
-
-    // Create REFR user row
-    await apiPost('/api/v1/users/signup', {
-      authId: authData.user.id,
-      email: params.email,
-      role: 'seeker',
-      displayName: params.displayName,
-    }, token);
-
-    // Create seeker profile
-    await apiPost('/api/v1/users/me/seeker-profile', {
-      headline: params.headline,
-      yearsOfExperience: params.yearsOfExperience,
-      skills: params.skills,
-      targetCompanies: params.targetCompanies,
-      careerStory: params.whyLooking,
-      targetRoles: [],
-      whyLooking: params.whyLooking,
-    }, token);
-
-    return authData;
+  signupSeeker: async (params: any) => {
+    const res = await signUpWithEmail(params.email, params.password, { displayName: params.displayName, role: 'seeker' });
+    if (res.error) throw res.error;
+    return res;
   },
-
-  signupReferrer: async (params: {
-    displayName: string;
-    email: string;
-    password: string;
-    company: string;
-    department: string;
-    jobTitle: string;
-    yearsAtCompany: number;
-    canReferTo: string[];
-  }) => {
-    const { data: authData, error } = await supabase.auth.signUp({
-      email: params.email,
-      password: params.password,
-      options: { data: { display_name: params.displayName, role: 'referrer' } },
-    });
-    if (error || !authData.user) throw error ?? new Error('Signup failed');
-
-    const token = authData.session?.access_token;
-
-    await apiPost('/api/v1/users/signup', {
-      authId: authData.user.id,
-      email: params.email,
-      role: 'referrer',
-      displayName: params.displayName,
-    }, token);
-
-    await apiPost('/api/v1/users/me/referrer-profile', {
-      companyName: params.company,
-      department: params.department,
-      jobTitle: params.jobTitle,
-      yearsAtCompany: params.yearsAtCompany,
-      canReferTo: params.canReferTo,
-    }, token);
-
-    return authData;
-  },
+  signupReferrer: async (params: any) => {
+    const res = await signUpWithEmail(params.email, params.password, { displayName: params.displayName, role: 'referrer' });
+    if (res.error) throw res.error;
+    return res;
+  }
 };

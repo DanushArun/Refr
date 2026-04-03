@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
 import { StyleSheet } from 'react-native';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { colors } from './src/theme/colors';
@@ -12,26 +11,15 @@ import { colors } from './src/theme/colors';
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [fontsLoaded, fontError] = useFonts({
-    // Commented out since the actual font files are missing
-    // 'InstrumentSerif-Regular': require('./assets/fonts/InstrumentSerif-Regular.ttf'),
-    // 'InstrumentSerif-Italic': require('./assets/fonts/InstrumentSerif-Italic.ttf'),
-    // 'Outfit-Regular': require('./assets/fonts/Outfit-Regular.ttf'),
-    // 'Outfit-Medium': require('./assets/fonts/Outfit-Medium.ttf'),
-    // 'Outfit-SemiBold': require('./assets/fonts/Outfit-SemiBold.ttf'),
-    // 'Outfit-Bold': require('./assets/fonts/Outfit-Bold.ttf'),
-    // 'JetBrainsMono-Regular': require('./assets/fonts/JetBrainsMono-Regular.ttf'),
-    // 'JetBrainsMono-Medium': require('./assets/fonts/JetBrainsMono-Medium.ttf'),
-  });
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+    // Simulate any initialization
+    setAppIsReady(true);
+    SplashScreen.hideAsync();
+  }, []);
 
-  // Don't render anything until fonts are ready
-  if (!fontsLoaded && !fontError) {
+  if (!appIsReady) {
     return null;
   }
 

@@ -1,15 +1,15 @@
 import Constants from 'expo-constants';
-import { supabase } from './supabase';
+import { getSession } from './auth';
 import type { FeedResponse, FeedRequest, BehaviorEvent } from '@refr/shared';
 
 const BASE_URL: string =
-  Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://localhost:3000';
+  Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://127.0.0.1:8000';
 
 // ─── HTTP helpers ───────────────────────────────────────────────────────────
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  const session = await getSession();
+  const token = session?.access_token;
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -64,27 +64,27 @@ export const feedApi = {
 
 export const referralsApi = {
   createRequest: (payload: { feedCardId?: string; targetRole: string; seekerNote?: string }) =>
-    request<any>('/api/v1/referrals', { method: 'POST', body: JSON.stringify(payload) })
+    request<any>('/api/v1/referrals/', { method: 'POST', body: JSON.stringify(payload) })
       .then((r: any) => r.data),
 
   getInbox: () =>
-    request<any>('/api/v1/referrals/inbox').then((r: any) => r.data),
+    request<any>('/api/v1/referrals/inbox/').then((r: any) => r.data),
 
   getPipeline: () =>
-    request<any>('/api/v1/referrals/pipeline').then((r: any) => r.data),
+    request<any>('/api/v1/referrals/pipeline/').then((r: any) => r.data),
 
   transition: (id: string, status: string, note?: string) =>
-    request<any>(`/api/v1/referrals/${id}/status`, {
+    request<any>(`/api/v1/referrals/${id}/status/`, {
       method: 'PATCH',
       body: JSON.stringify({ status, note }),
     }).then((r: any) => r.data),
 
   getReputation: () =>
-    request<any>('/api/v1/reputation/me').then((r: any) => r.data),
+    request<any>('/api/v1/reputation/me/').then((r: any) => r.data),
 
   getLeaderboard: (companyId?: string) => {
     const qs = companyId ? `?companyId=${companyId}` : '';
-    return request<any>(`/api/v1/reputation/leaderboard${qs}`).then((r: any) => r.data);
+    return request<any>(`/api/v1/reputation/leaderboard/${qs}`).then((r: any) => r.data);
   },
 };
 
@@ -95,38 +95,30 @@ export const referralApi = referralsApi;
 
 export const chatApi = {
   getConversation: (referralId: string) =>
-    request<any>(`/api/v1/chat/${referralId}`).then((r: any) => r.data),
+    request<any>(`/api/v1/chat/${referralId}/`).then((r: any) => r.data),
 
   sendMessage: (conversationId: string, body: string) =>
-    request<any>(`/api/v1/chat/${conversationId}/messages`, {
+    request<any>(`/api/v1/chat/${conversationId}/messages/`, {
       method: 'POST',
       body: JSON.stringify({ body }),
     }).then((r: any) => r.data),
 
-  // Supabase Realtime subscription for real-time messages in a conversation.
-  // Returns a subscription object with an .unsubscribe() method.
-  subscribeToMessages: (conversationId: string, onMessage: (msg: any) => void) =>
-    supabase
-      .channel(`conversation:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => onMessage(payload.new),
-      )
-      .subscribe(),
+  subscribeToMessages: (conversationId: string, onMessage: (msg: any) => void) => {
+    // Dummy polling implementation as fallback for local dev
+    const interval = setInterval(async () => {
+      // Fetch latest and compare... 
+      // In a real Django setup without websockets, we poll. 
+    }, 5000);
+    return { unsubscribe: () => clearInterval(interval) };
+  }
 };
 
 // ─── Profile ────────────────────────────────────────────────────────────────
 
 export const profileApi = {
-  getMe: () => request<any>('/api/v1/users/me').then((r: any) => r.data),
+  getMe: () => request<any>('/api/v1/users/me/').then((r: any) => r.data),
   updateMe: (data: unknown) =>
-    request<any>('/api/v1/users/me', { method: 'PATCH', body: JSON.stringify(data) })
+    request<any>('/api/v1/users/me/', { method: 'PATCH', body: JSON.stringify(data) })
       .then((r: any) => r.data),
 };
 

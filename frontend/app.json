@@ -10,14 +10,16 @@
       "bundleIdentifier": "com.refr.app",
       "buildNumber": "1"
     },
+    "newArchEnabled": true,
     "android": {
       "package": "com.refr.app",
       "versionCode": 1
     },
     "extra": {
-      "supabaseUrl": "",
-      "supabaseAnonKey": "",
       "apiBaseUrl": "http://127.0.0.1:8000"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
