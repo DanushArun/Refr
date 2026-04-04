@@ -121,14 +121,18 @@ export default function ProfileSetupScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.kav}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+          nestedScrollEnabled={true}
+          keyboardDismissMode="interactive"
         >
           <Text style={styles.heading}>
             {isSeeker ? 'Your story' : 'Your profile'}
@@ -290,9 +294,10 @@ const styles = StyleSheet.create({
   kav: { flex: 1 },
   scroll: { flex: 1 },
   content: {
+    flexGrow: 1,
     padding: layout.screenPaddingH,
     paddingTop: spacing[8],
-    paddingBottom: spacing[12],
+    paddingBottom: 120,
     gap: spacing[6],
   },
   heading: { ...typography.h2, color: colors.text },

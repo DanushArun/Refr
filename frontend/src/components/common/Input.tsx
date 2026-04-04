@@ -143,7 +143,6 @@ export const Input = memo(function Input({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing[4],
   },
   field: {
     height: layout.inputHeight,
