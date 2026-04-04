@@ -12,6 +12,7 @@ import type { FeedCard } from '@refr/shared';
 import { CareerStoryCard } from './CareerStoryCard';
 import { CompanyIntelCard } from './CompanyIntelCard';
 import { ReferralEventCard } from './ReferralEventCard';
+import { EditorialCard } from './EditorialCard';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
@@ -69,7 +70,21 @@ export function FeedList({
         case 'referral_event':
           return <ReferralEventCard card={item} />;
         case 'milestone':
-          return <ReferralEventCard card={{ ...item, eventType: 'hired' } as any} />;
+          return <ReferralEventCard card={{
+            ...item,
+            type: 'referral_event',
+            referrerDisplayName: '',
+            seekerDisplayName: '',
+            companyName: '',
+            eventDescription: (item as any).description || (item as any).title || '',
+          } as any} />;
+        case 'editorial':
+          return (
+            <EditorialCard
+              card={item as any}
+              onPress={onCardPress ? () => onCardPress(item) : undefined}
+            />
+          );
         default:
           return null;
       }
