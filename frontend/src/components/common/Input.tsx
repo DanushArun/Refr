@@ -98,13 +98,14 @@ export const Input = memo(function Input({
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={[styles.field, { borderColor }]}>
-        {/* Floating label */}
+        {/* Floating label -- pointerEvents none so it doesn't block taps */}
         <Animated.Text
           style={[
             styles.floatingLabel,
             { top: labelTop, fontSize: labelFontSize, color: labelColor },
           ]}
           numberOfLines={1}
+          pointerEvents="none"
         >
           {label}
         </Animated.Text>
@@ -116,7 +117,8 @@ export const Input = memo(function Input({
           onFocus={handleFocus}
           onBlur={handleBlur}
           style={[styles.input, isActive && styles.inputActive]}
-          placeholderTextColor="transparent"
+          placeholderTextColor={isActive ? 'transparent' : colors.textTertiary}
+          placeholder={label}
           selectionColor={colors.accent}
           cursorColor={colors.accent}
         />
