@@ -14,22 +14,23 @@ import { spacing, layout } from '../theme/spacing';
 import { Avatar } from '../components/common/Avatar';
 import { router } from 'expo-router';
 import { referralsApi } from '../services/api';
+import type { SeekerPipelineItem } from '@refr/shared';
 
 /**
- * MatchesScreen — seeker's view of accepted referrals.
+ * MatchesScreen -- seeker's view of accepted referrals.
  *
  * Only shows referrals where status is accepted/submitted/interviewing.
  * Each row shows the referrer + company + chat CTA.
  */
 export function MatchesScreen() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     referralsApi.getPipeline()
-      .then((data: any[]) => {
-        const active = data.filter((r: any) =>
-          ['accepted', 'submitted', 'interviewing'].includes(r.status)
+      .then((data: SeekerPipelineItem[]) => {
+        const active = data.filter((item: SeekerPipelineItem) =>
+          ['accepted', 'submitted', 'interviewing'].includes(item.referral.status)
         );
         setItems(active);
       })
@@ -63,7 +64,7 @@ export function MatchesScreen() {
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.referral.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
@@ -73,31 +74,30 @@ export function MatchesScreen() {
                 router.push({
                   pathname: '/chat',
                   params: {
-                    referralId: item.id,
-                    participantName: item.referrer?.user?.displayName ?? 'Referrer',
-                    participantAvatar: item.referrer?.user?.avatarUrl,
+                    referralId: item.referral.id,
+                    participantName: item.referrerName,
+                    participantAvatar: '',
                   }
                 })
               }
             >
               <Avatar
-                uri={item.referrer?.user?.avatarUrl}
-                displayName={item.referrer?.user?.displayName ?? '?'}
+                displayName={item.referrerName}
                 size="md"
               />
               <View style={styles.cardMeta}>
                 <Text style={styles.referrerName}>
-                  {item.referrer?.user?.displayName}
+                  {item.referrerName}
                 </Text>
                 <Text style={styles.referrerTitle}>
-                  {item.referrer?.jobTitle} at {item.company?.name}
+                  {item.referral.targetRole} at {item.companyName}
                 </Text>
                 <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
-                  <Text style={styles.statusText}>{item.status}</Text>
+                  <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.referral.status) }]} />
+                  <Text style={styles.statusText}>{item.referral.status}</Text>
                 </View>
               </View>
-              <Text style={styles.chatArrow}>→</Text>
+              <Text style={styles.chatArrow}>&#8594;</Text>
             </Pressable>
           )}
         />
