@@ -9,6 +9,13 @@ build/
 .expo/
 *.tsbuildinfo
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.gcp_temp_creds.json
+
 # Environment
 .env
 .env.local
