@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 import environ
 import os
 import json
@@ -64,7 +65,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'refr_api.wsgi.application'
 
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgresql://danusharun@localhost:5432/postgres')
+    'default': env.db('DATABASE_URL', default='postgresql://danusharun@localhost:5432/refr')
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -91,7 +92,22 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
+
+# Allow API paths without trailing slash (frontend sends both)
+APPEND_SLASH = True
 
 GOOGLE_CLOUD_PROJECT_ID = env('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_CLOUD_LOCATION = env('GOOGLE_CLOUD_LOCATION', default='')
