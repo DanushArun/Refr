@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR.parent / '.env', override=True)
+load_dotenv(BASE_DIR / '.env', override=True)
 
 env = environ.Env(DEBUG=(bool, False))
 
@@ -40,7 +40,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'refr_api.urls'
+ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
     {
@@ -57,7 +57,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'refr_api.wsgi.application'
+WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': env.db('DATABASE_URL')
