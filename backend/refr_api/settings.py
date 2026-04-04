@@ -63,7 +63,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'refr_api.wsgi.application'
 
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgresql://danusharun@localhost:5432/refr')
+    'default': env.db('DATABASE_URL')
 }
 
 AUTH_PASSWORD_VALIDATORS = [
