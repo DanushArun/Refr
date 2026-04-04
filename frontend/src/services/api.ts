@@ -1,7 +1,14 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { getSession, saveSession } from './auth';
-import type { FeedResponse, FeedRequest, BehaviorEvent } from '@refr/shared';
+import type {
+  FeedResponse,
+  FeedRequest,
+  BehaviorEvent,
+  ReferrerInboxItem,
+  SeekerPipelineItem,
+  Referral,
+} from '@refr/shared';
 
 function resolveBaseUrl(): string {
   const configured = Constants.expoConfig?.extra?.apiBaseUrl;
@@ -25,6 +32,25 @@ function resolveBaseUrl(): string {
 }
 
 const BASE_URL: string = resolveBaseUrl();
+
+export interface ReputationData {
+  kingmakerScore: number;
+  totalReferrals: number;
+  successfulHires: number;
+  department: string;
+  jobTitle: string;
+  verificationStatus: string;
+  user: { id: string; displayName: string };
+  company: { id: string; name: string };
+}
+
+export interface LeaderboardEntry {
+  kingmakerScore: number;
+  totalReferrals: number;
+  successfulHires: number;
+  user: { id: string; displayName: string };
+  company: { id: string; name: string };
+}
 
 // ─── HTTP helpers ───────────────────────────────────────────────────────────
 
@@ -161,35 +187,35 @@ export const referralsApi = {
     targetRole: string;
     seekerNote?: string;
   }) =>
-    request<{ data: unknown }>('/api/v1/referrals/', {
+    request<{ data: Referral }>('/api/v1/referrals/', {
       method: 'POST',
       body: JSON.stringify(payload),
     }).then((r) => r.data),
 
   getInbox: () =>
-    request<{ data: unknown[] }>('/api/v1/referrals/inbox/').then(
+    request<{ data: ReferrerInboxItem[] }>('/api/v1/referrals/inbox/').then(
       (r) => r.data,
     ),
 
   getPipeline: () =>
-    request<{ data: unknown[] }>('/api/v1/referrals/pipeline/').then(
-      (r) => r.data,
-    ),
+    request<{ data: SeekerPipelineItem[] }>(
+      '/api/v1/referrals/pipeline/',
+    ).then((r) => r.data),
 
   transition: (id: string, newStatus: string, note?: string) =>
-    request<{ data: unknown }>(`/api/v1/referrals/${id}/status/`, {
+    request<{ data: Referral }>(`/api/v1/referrals/${id}/status/`, {
       method: 'PATCH',
       body: JSON.stringify({ status: newStatus, note }),
     }).then((r) => r.data),
 
   getReputation: () =>
-    request<{ data: unknown }>('/api/v1/reputation/me/').then(
+    request<{ data: ReputationData }>('/api/v1/reputation/me/').then(
       (r) => r.data,
     ),
 
   getLeaderboard: (companyId?: string) => {
     const qs = companyId ? `?companyId=${companyId}` : '';
-    return request<{ data: unknown[] }>(
+    return request<{ data: LeaderboardEntry[] }>(
       `/api/v1/reputation/leaderboard/${qs}`,
     ).then((r) => r.data);
   },
@@ -199,28 +225,35 @@ export const referralApi = referralsApi;
 
 // ─── Chat ───────────────────────────────────────────────────────────────────
 
+export interface ChatMessage {
+  id: string;
+  body: string;
+  createdAt: string;
+  sender: { id: string; displayName: string; avatarUrl?: string };
+}
+
 export const chatApi = {
   getConversation: (referralId: string) =>
-    request<{ data: { id: string; messages: unknown[] } }>(
+    request<{ data: { id: string; messages: ChatMessage[] } }>(
       `/api/v1/chat/${referralId}/`,
     ).then((r) => r.data),
 
   sendMessage: (conversationId: string, body: string) =>
-    request<{ data: unknown }>(`/api/v1/chat/${conversationId}/messages/`, {
+    request<{ data: ChatMessage }>(`/api/v1/chat/${conversationId}/messages/`, {
       method: 'POST',
       body: JSON.stringify({ body }),
     }).then((r) => r.data),
 
   subscribeToMessages: (
     conversationId: string,
-    onMessage: (msg: unknown) => void,
+    onMessage: (msg: ChatMessage) => void,
   ) => {
     let lastMessageId: string | null = null;
 
     const poll = async () => {
       try {
         const data = await chatApi.getConversation(conversationId);
-        const messages = data.messages as Array<{ id: string }>;
+        const messages = data.messages;
         if (messages.length > 0) {
           const latest = messages[messages.length - 1];
           if (lastMessageId && latest.id !== lastMessageId) {

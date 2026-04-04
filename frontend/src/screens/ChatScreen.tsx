@@ -16,15 +16,10 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
-import { chatApi } from '../services/api';
+import { chatApi, type ChatMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
-interface Message {
-  id: string;
-  body: string;
-  createdAt: string;
-  sender: { id: string; displayName: string; avatarUrl?: string };
-}
+type Message = ChatMessage;
 
 /**
  * ChatScreen — real-time chat within a referral.

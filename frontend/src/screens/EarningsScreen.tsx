@@ -12,25 +12,11 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { StatCard } from '../components/common/StatCard';
-import { referralsApi } from '../services/api';
-
-interface ReputationData {
-  kingmakerScore: number;
-  totalReferrals: number;
-  successfulHires: number;
-  department: string;
-  jobTitle: string;
-  user: { displayName: string };
-  company: { name: string };
-}
-
-interface LeaderboardEntry {
-  kingmakerScore: number;
-  totalReferrals: number;
-  successfulHires: number;
-  user: { id: string; displayName: string };
-  company: { name: string };
-}
+import {
+  referralsApi,
+  type ReputationData,
+  type LeaderboardEntry,
+} from '../services/api';
 
 /**
  * EarningsScreen — the referrer's Kingmaker dashboard.
