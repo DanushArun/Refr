@@ -53,28 +53,77 @@ export async function getSession(): Promise<Session | null> {
 export async function signUpWithEmail(
   email: string,
   password: string,
-  metadata: { displayName: string; role: 'seeker' | 'referrer' }
+  metadata: {
+    displayName: string;
+    role: 'seeker' | 'referrer';
+    // Seeker profile fields
+    headline?: string;
+    yearsOfExperience?: number;
+    skills?: string[];
+    targetCompanies?: string[];
+    targetRoles?: string[];
+    whyLooking?: string;
+    // Referrer profile fields
+    company?: string;
+    department?: string;
+    jobTitle?: string;
+    yearsAtCompany?: number;
+    canReferTo?: string[];
+  }
 ): Promise<AuthResult> {
   try {
     const res = await fetch(`${BASE_URL}/api/users/register/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: email, // Use email as username for Django
+        username: email,
         email,
         password,
         display_name: metadata.displayName,
         role: metadata.role,
+        // Seeker fields
+        headline: metadata.headline || '',
+        skills: metadata.skills || [],
+        years_of_experience: metadata.yearsOfExperience || 0,
+        target_companies: metadata.targetCompanies || [],
+        target_roles: metadata.targetRoles || [],
+        why_looking: metadata.whyLooking || '',
+        // Referrer fields
+        company: metadata.company || '',
+        department: metadata.department || '',
+        job_title: metadata.jobTitle || '',
+        years_at_company: metadata.yearsAtCompany || 0,
+        can_refer_to: metadata.canReferTo || [],
       }),
     });
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.detail || 'Failed to sign up');
+      const errorMsg = typeof errorData === 'object'
+        ? Object.values(errorData).flat().join(', ')
+        : 'Failed to sign up';
+      throw new Error(errorMsg);
     }
 
-    // Auto sign-in after sign-up
-    return await signInWithEmail(email, password);
+    // Backend returns { access, refresh, user } directly from register
+    const data = await res.json();
+
+    const user: User = {
+      id: String(data.user?.id ?? ''),
+      email: data.user?.email ?? email,
+      displayName: data.user?.displayName ?? metadata.displayName,
+      role: data.user?.role ?? metadata.role,
+      avatarUrl: data.user?.avatarUrl ?? undefined,
+    };
+
+    const session: Session = {
+      access_token: data.access,
+      refresh_token: data.refresh,
+      user,
+    };
+
+    await saveSession(session);
+    return { session, user, error: null };
   } catch (error: any) {
     return { session: null, user: null, error };
   }
@@ -100,14 +149,15 @@ export async function signInWithEmail(
     }
 
     const data = await res.json();
-    
-    // Create dummy user from token for now since SimpleJWT doesn't return full user by default.
-    // In a real app, you'd fetch /api/v1/users/me/ after token success
+
+    // CustomTokenObtainPairView returns { access, refresh, user }
+    const userData = data.user;
     const user: User = {
-      id: 'django-user-id',
-      email: email,
-      displayName: email.split('@')[0],
-      role: 'seeker',
+      id: String(userData?.id ?? ''),
+      email: userData?.email ?? email,
+      displayName: userData?.displayName ?? email.split('@')[0],
+      role: userData?.role ?? 'seeker',
+      avatarUrl: userData?.avatarUrl ?? undefined,
     };
 
     const session: Session = {
@@ -139,13 +189,30 @@ export async function signOut(): Promise<{ error: Error | null }> {
 
 export const authApi = {
   signupSeeker: async (params: any) => {
-    const res = await signUpWithEmail(params.email, params.password, { displayName: params.displayName, role: 'seeker' });
+    const res = await signUpWithEmail(params.email, params.password, {
+      displayName: params.displayName,
+      role: 'seeker',
+      headline: params.headline,
+      yearsOfExperience: params.yearsOfExperience,
+      skills: params.skills,
+      targetCompanies: params.targetCompanies,
+      targetRoles: params.targetRoles,
+      whyLooking: params.whyLooking,
+    });
     if (res.error) throw res.error;
     return res;
   },
   signupReferrer: async (params: any) => {
-    const res = await signUpWithEmail(params.email, params.password, { displayName: params.displayName, role: 'referrer' });
+    const res = await signUpWithEmail(params.email, params.password, {
+      displayName: params.displayName,
+      role: 'referrer',
+      company: params.company,
+      department: params.department,
+      jobTitle: params.jobTitle,
+      yearsAtCompany: params.yearsAtCompany,
+      canReferTo: params.canReferTo,
+    });
     if (res.error) throw res.error;
     return res;
-  }
+  },
 };
