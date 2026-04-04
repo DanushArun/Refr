@@ -16,10 +16,12 @@ __pycache__/
 venv/
 .gcp_temp_creds.json
 
-# Environment
+# Environment & secrets
 .env
 .env.local
 .env.*.local
+.secret_key
+backend/.secret_key
 
 # IDE
 .vscode/
@@ -39,6 +41,7 @@ Thumbs.db
 *.docx
 docs/
 India-Job-Referral-Market-Research/
+docs/
 
 # Claude Code config
 CLAUDE.md

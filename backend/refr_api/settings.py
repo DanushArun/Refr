@@ -1,25 +1,39 @@
+import secrets
 from pathlib import Path
 from datetime import timedelta
 import environ
 import os
 import json
+import logging
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Initialize environment variables
 env = environ.Env(
     DEBUG=(bool, False)
 )
-# Read .env from the root directory
 env_file = BASE_DIR.parent / '.env'
 
 if env_file.exists():
     environ.Env.read_env(env_file)
 
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-m7drjt(kv_j+j*xf5gttsmw(&qy!au%1o^islmwwx(7vgf-3t^')
-DEBUG = env('DEBUG', default=True)
+SECRET_KEY = env('SECRET_KEY', default=None)
+if not SECRET_KEY:
+    _key_file = BASE_DIR / '.secret_key'
+    if _key_file.exists():
+        SECRET_KEY = _key_file.read_text().strip()
+    else:
+        SECRET_KEY = secrets.token_urlsafe(64)
+        _key_file.write_text(SECRET_KEY)
+        logging.warning(
+            "No SECRET_KEY in env -- generated one at %s. "
+            "Set SECRET_KEY in .env for production.",
+            _key_file,
+        )
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+DEBUG = env.bool('DEBUG', default=False)
+
+_default_hosts = ['*'] if DEBUG else ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=_default_hosts)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -86,7 +100,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.User'
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL', default=DEBUG)
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
+    'http://localhost:8081',
+    'http://localhost:19006',
+    'http://localhost:19000',
+])
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -95,12 +115,21 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/minute',
+        'user': '120/minute',
+    },
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
@@ -122,3 +151,46 @@ if GOOGLE_VERTEX_CREDENTIALS_JSON:
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(cred_file)
     except json.JSONDecodeError:
         pass
+
+# ─── Security hardening ──────────────────────────────────────────────────
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# ─── Logging ─────────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'api': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+    },
+}
