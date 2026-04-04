@@ -1,10 +1,6 @@
-import secrets
 from pathlib import Path
 from datetime import timedelta
 import environ
-import os
-import json
-import logging
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,19 +12,7 @@ env_file = BASE_DIR.parent / '.env'
 if env_file.exists():
     environ.Env.read_env(env_file)
 
-SECRET_KEY = env('SECRET_KEY', default=None)
-if not SECRET_KEY:
-    _key_file = BASE_DIR / '.secret_key'
-    if _key_file.exists():
-        SECRET_KEY = _key_file.read_text().strip()
-    else:
-        SECRET_KEY = secrets.token_urlsafe(64)
-        _key_file.write_text(SECRET_KEY)
-        logging.warning(
-            "No SECRET_KEY in env -- generated one at %s. "
-            "Set SECRET_KEY in .env for production.",
-            _key_file,
-        )
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env.bool('DEBUG', default=False)
 
@@ -140,17 +124,9 @@ APPEND_SLASH = True
 
 GOOGLE_CLOUD_PROJECT_ID = env('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_CLOUD_LOCATION = env('GOOGLE_CLOUD_LOCATION', default='')
-GOOGLE_VERTEX_CREDENTIALS_JSON = env('GOOGLE_VERTEX_CREDENTIALS_JSON', default='')
-
-if GOOGLE_VERTEX_CREDENTIALS_JSON:
-    cred_file = BASE_DIR / '.gcp_temp_creds.json'
-    try:
-        creds = json.loads(GOOGLE_VERTEX_CREDENTIALS_JSON)
-        with open(cred_file, 'w') as f:
-            json.dump(creds, f)
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(cred_file)
-    except json.JSONDecodeError:
-        pass
+GOOGLE_APPLICATION_CREDENTIALS = env(
+    'GOOGLE_APPLICATION_CREDENTIALS', default='',
+)
 
 # ─── Security hardening ──────────────────────────────────────────────────
 if not DEBUG:

@@ -317,8 +317,6 @@ class SeekerPipelineItemSerializer(serializers.Serializer):
 # ─── Chat ───────────────────────────────────────────────────────────────────
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.SerializerMethodField()
-
     class Meta:
         model = Message
         fields = ('id', 'body', 'created_at', 'sender')
@@ -335,20 +333,11 @@ class MessageSerializer(serializers.ModelSerializer):
             },
         }
 
-    def get_sender(self, obj):
-        return {
-            'id': str(obj.sender_id),
-            'displayName': obj.sender.display_name,
-            'avatarUrl': obj.sender.avatar_url,
-        }
-
 
 class ConversationSerializer(serializers.ModelSerializer):
-    messages = serializers.SerializerMethodField()
-
     class Meta:
         model = Conversation
-        fields = ('id', 'created_at', 'messages')
+        fields = ('id', 'created_at')
 
     def to_representation(self, instance):
         messages = instance.messages.select_related('sender').order_by('created_at')
@@ -357,12 +346,6 @@ class ConversationSerializer(serializers.ModelSerializer):
             'createdAt': instance.created_at.isoformat(),
             'messages': [MessageSerializer(m).data for m in messages],
         }
-
-    def get_messages(self, obj):
-        return [
-            MessageSerializer(m).data
-            for m in obj.messages.select_related('sender').order_by('created_at')
-        ]
 
 
 # ─── Reputation ─────────────────────────────────────────────────────────────
