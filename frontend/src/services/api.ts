@@ -1,6 +1,5 @@
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
 import { getSession, saveSession } from './auth';
+import { BASE_URL } from './baseUrl';
 import type {
   FeedResponse,
   FeedRequest,
@@ -9,29 +8,6 @@ import type {
   SeekerPipelineItem,
   Referral,
 } from '@refr/shared';
-
-function resolveBaseUrl(): string {
-  const configured = Constants.expoConfig?.extra?.apiBaseUrl;
-  if (configured && configured !== 'http://127.0.0.1:8000') {
-    return configured;
-  }
-  if (__DEV__) {
-    const debuggerHost =
-      Constants.expoConfig?.hostUri
-      ?? Constants.manifest2?.extra?.expoGo?.debuggerHost
-      ?? Constants.manifest?.debuggerHost;
-    if (debuggerHost) {
-      const lanIp = debuggerHost.split(':')[0];
-      return `http://${lanIp}:8000`;
-    }
-  }
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000';
-  }
-  return 'http://127.0.0.1:8000';
-}
-
-const BASE_URL: string = resolveBaseUrl();
 
 export interface ReputationData {
   kingmakerScore: number;
@@ -245,14 +221,14 @@ export const chatApi = {
     }).then((r) => r.data),
 
   subscribeToMessages: (
-    conversationId: string,
+    referralId: string,
     onMessage: (msg: ChatMessage) => void,
   ) => {
     let lastMessageId: string | null = null;
 
     const poll = async () => {
       try {
-        const data = await chatApi.getConversation(conversationId);
+        const data = await chatApi.getConversation(referralId);
         const messages = data.messages;
         if (messages.length > 0) {
           const latest = messages[messages.length - 1];

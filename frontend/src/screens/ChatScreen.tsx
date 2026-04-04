@@ -59,15 +59,15 @@ export function ChatScreen() {
       });
   }, [referralId, participantName]);
 
-  // Subscribe to Supabase Realtime for new messages
+  // Poll for new messages using the referral ID (backend API key)
   useEffect(() => {
     if (!conversationId) return;
-    const sub = chatApi.subscribeToMessages(conversationId, (msg: Message) => {
+    const sub = chatApi.subscribeToMessages(referralId, (msg: Message) => {
       setMessages((prev) => [...prev, msg]);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
     });
     return () => sub.unsubscribe();
-  }, [conversationId]);
+  }, [conversationId, referralId]);
 
   const handleSend = useCallback(async () => {
     const body = draft.trim();

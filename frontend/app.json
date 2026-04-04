@@ -16,9 +16,7 @@
       "package": "com.refr.app",
       "versionCode": 1
     },
-    "extra": {
-      "apiBaseUrl": "http://127.0.0.1:8000"
-    },
+    "extra": {},
     "plugins": [
       "expo-router"
     ]
