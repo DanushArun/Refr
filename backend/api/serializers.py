@@ -41,6 +41,23 @@ class UserRegistrationSerializer(serializers.Serializer):
     years_at_company = serializers.IntegerField(required=False, default=0)
     can_refer_to = serializers.ListField(child=serializers.CharField(), required=False, default=list)
 
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
+    def validate(self, data):
+        if data['role'] == 'referrer' and not data.get('company', '').strip():
+            raise serializers.ValidationError({
+                'company': 'Company name is required for referrers.',
+            })
+        return data
+
     def create(self, validated_data):
         role = validated_data['role']
 
@@ -64,33 +81,21 @@ class UserRegistrationSerializer(serializers.Serializer):
                 target_roles=validated_data.get('target_roles', []),
             )
         elif role == 'referrer':
-            company_name = validated_data.get('company', '')
-            company_obj = None
-            if company_name:
-                company_obj, _ = Company.objects.get_or_create(
-                    name=company_name,
-                    defaults={'domain': f'{company_name.lower().replace(" ", "")}.com'},
-                )
-            SeekerProfile.objects.get_or_create(
-                user=user,
+            company_name = validated_data['company'].strip()
+            company_obj, _ = Company.objects.get_or_create(
+                name=company_name,
                 defaults={
-                    'headline': '',
-                    'career_story': '',
-                    'skills': [],
-                    'years_of_experience': 0,
-                    'target_companies': [],
-                    'target_roles': [],
+                    'domain': f'{company_name.lower().replace(" ", "")}.com',
                 },
             )
-            if company_obj:
-                ReferrerProfile.objects.create(
-                    user=user,
-                    company=company_obj,
-                    department=validated_data.get('department', ''),
-                    job_title=validated_data.get('job_title', ''),
-                    years_at_company=validated_data.get('years_at_company', 0),
-                    can_refer_to=validated_data.get('can_refer_to', []),
-                )
+            ReferrerProfile.objects.create(
+                user=user,
+                company=company_obj,
+                department=validated_data.get('department', ''),
+                job_title=validated_data.get('job_title', ''),
+                years_at_company=validated_data.get('years_at_company', 0),
+                can_refer_to=validated_data.get('can_refer_to', []),
+            )
 
         return user
 
@@ -354,7 +359,10 @@ class ConversationSerializer(serializers.ModelSerializer):
         }
 
     def get_messages(self, obj):
-        return []
+        return [
+            MessageSerializer(m).data
+            for m in obj.messages.select_related('sender').order_by('created_at')
+        ]
 
 
 # ─── Reputation ─────────────────────────────────────────────────────────────
