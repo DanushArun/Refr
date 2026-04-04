@@ -21,6 +21,7 @@ import {
   JetBrainsMono_500Medium,
 } from '@expo-google-fonts/jetbrains-mono';
 import { colors } from '../src/theme/colors';
+import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,15 +46,17 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
-      <SafeAreaProvider>
-        <SystemBars style="light" hidden={false} />
-        <StatusBar style="light" backgroundColor="transparent" translucent />
-        <Stack screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }} />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+        <SafeAreaProvider>
+          <SystemBars style="light" hidden={false} />
+          <StatusBar style="light" backgroundColor="transparent" translucent />
+          <Stack screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }} />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
