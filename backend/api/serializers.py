@@ -25,8 +25,8 @@ class UserRegistrationSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=['seeker', 'referrer'])
 
     # Seeker profile fields (optional)
-    headline = serializers.CharField(max_length=120, required=False, default='')
-    career_story = serializers.CharField(required=False, default='')
+    headline = serializers.CharField(max_length=120, required=False, default='', allow_blank=True)
+    career_story = serializers.CharField(required=False, default='', allow_blank=True)
     skills = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     years_of_experience = serializers.IntegerField(required=False, default=0)
     current_company = serializers.CharField(required=False, default='', allow_blank=True)
