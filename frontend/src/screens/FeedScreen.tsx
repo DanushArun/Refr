@@ -21,7 +21,7 @@ import { referralsApi } from '../services/api';
 import type { FeedCard } from '@refr/shared';
 
 export function FeedScreen() {
-  const { cards, loading, refreshing, hasMore, fetchMore, refresh } = useFeed();
+  const { cards, loading, refreshing, hasMore, error, fetchMore, refresh } = useFeed();
 
   // Trigger initial load on mount
   useEffect(() => {

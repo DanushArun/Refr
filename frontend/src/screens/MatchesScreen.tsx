@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Pressable,
+  Alert,
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -33,6 +34,9 @@ export function MatchesScreen() {
           ['accepted', 'submitted', 'interviewing'].includes(item.referral.status)
         );
         setItems(active);
+      })
+      .catch(() => {
+        Alert.alert('Error', 'Failed to load matches');
       })
       .finally(() => setLoading(false));
   }, []);

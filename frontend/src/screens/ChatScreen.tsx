@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/colors';
@@ -50,11 +51,17 @@ export function ChatScreen() {
   const listRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    chatApi.getConversation(referralId).then((conv) => {
-      setConversationId(conv.id);
-      setMessages(conv.messages);
-      setLoading(false);
-    });
+    chatApi.getConversation(referralId)
+      .then((conv) => {
+        setConversationId(conv.id);
+        setMessages(conv.messages || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setMessages([]);
+        setLoading(false);
+        Alert.alert('Error', 'Failed to load conversation');
+      });
   }, [referralId, participantName]);
 
   // Subscribe to Supabase Realtime for new messages
@@ -77,7 +84,8 @@ export function ChatScreen() {
       await chatApi.sendMessage(conversationId, body);
       // Realtime subscription will add the message
     } catch {
-      setDraft(body); // Restore on failure
+      setDraft(body);
+      Alert.alert('Error', 'Failed to send message');
     } finally {
       setSending(false);
     }

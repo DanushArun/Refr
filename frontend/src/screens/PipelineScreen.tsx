@@ -5,8 +5,8 @@ import {
   StyleSheet,
   FlatList,
   SafeAreaView,
-  Pressable,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -44,6 +44,9 @@ export function PipelineScreen() {
   useEffect(() => {
     referralsApi.getPipeline()
       .then(setItems)
+      .catch(() => {
+        Alert.alert('Error', 'Failed to load pipeline');
+      })
       .finally(() => setLoading(false));
   }, []);
 

@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -52,6 +53,8 @@ export function EarningsScreen() {
     ]).then(([rep, lb]) => {
       setReputation(rep);
       setLeaderboard(lb);
+    }).catch(() => {
+      Alert.alert('Error', 'Failed to load earnings data');
     }).finally(() => setLoading(false));
   }, []);
 
