@@ -122,7 +122,7 @@ export function InboxScreen() {
               onAccept={handleAccept}
               onDecline={handleDecline}
               onChatPress={(referralId, name, avatar) =>
-                router.push({ pathname: '/Chat', params: { referralId, participantName: name, participantAvatar: avatar } })
+                router.push({ pathname: '/chat', params: { referralId, participantName: name, participantAvatar: avatar } })
               }
             />
           )}
