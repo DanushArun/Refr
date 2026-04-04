@@ -1,9 +1,30 @@
 import Constants from 'expo-constants';
-import { getSession } from './auth';
+import { Platform } from 'react-native';
+import { getSession, saveSession } from './auth';
 import type { FeedResponse, FeedRequest, BehaviorEvent } from '@refr/shared';
 
-const BASE_URL: string =
-  Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://127.0.0.1:8000';
+function resolveBaseUrl(): string {
+  const configured = Constants.expoConfig?.extra?.apiBaseUrl;
+  if (configured && configured !== 'http://127.0.0.1:8000') {
+    return configured;
+  }
+  if (__DEV__) {
+    const debuggerHost =
+      Constants.expoConfig?.hostUri
+      ?? Constants.manifest2?.extra?.expoGo?.debuggerHost
+      ?? Constants.manifest?.debuggerHost;
+    if (debuggerHost) {
+      const lanIp = debuggerHost.split(':')[0];
+      return `http://${lanIp}:8000`;
+    }
+  }
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:8000';
+  }
+  return 'http://127.0.0.1:8000';
+}
+
+const BASE_URL: string = resolveBaseUrl();
 
 // ─── HTTP helpers ───────────────────────────────────────────────────────────
 
@@ -27,7 +48,42 @@ class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshToken(): Promise<boolean> {
+  const session = await getSession();
+  if (!session?.refresh_token) return false;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/token/refresh/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh: session.refresh_token }),
+    });
+
+    if (!res.ok) {
+      await saveSession(null);
+      return false;
+    }
+
+    const data = await res.json();
+    await saveSession({
+      ...session,
+      access_token: data.access,
+      refresh_token: data.refresh ?? session.refresh_token,
+    });
+    return true;
+  } catch {
+    await saveSession(null);
+    return false;
+  }
+}
+
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
   const headers = await getAuthHeaders();
 
   const response = await fetch(`${BASE_URL}${path}`, {
@@ -35,10 +91,38 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers: { ...headers, ...options.headers },
   });
 
+  if (response.status === 401) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshToken().finally(() => {
+        isRefreshing = false;
+        refreshPromise = null;
+      });
+    }
+
+    const refreshed = await refreshPromise;
+    if (refreshed) {
+      const newHeaders = await getAuthHeaders();
+      const retry = await fetch(`${BASE_URL}${path}`, {
+        ...options,
+        headers: { ...newHeaders, ...options.headers },
+      });
+      if (retry.ok) {
+        return retry.json() as Promise<T>;
+      }
+    }
+
+    throw new ApiError(401, 'Session expired');
+  }
+
   if (!response.ok) {
     let body: unknown;
     try { body = await response.json(); } catch { body = null; }
-    throw new ApiError(response.status, `API ${options.method ?? 'GET'} ${path} → ${response.status}`, body);
+    throw new ApiError(
+      response.status,
+      `API ${options.method ?? 'GET'} ${path} -> ${response.status}`,
+      body,
+    );
   }
 
   return response.json() as Promise<T>;
@@ -52,74 +136,125 @@ export const feedApi = {
     if (params.cursor) query.set('cursor', params.cursor);
     if (params.limit) query.set('limit', String(params.limit));
     const qs = query.toString() ? `?${query.toString()}` : '';
-    return request<{ data: FeedResponse['cards']; meta: { cursor: string; hasMore: boolean } }>(`/api/v1/feed${qs}`)
-      .then((r: any) => ({ cards: r.data, cursor: r.meta.cursor, hasMore: r.meta.hasMore }));
+    return request<{
+      data: FeedResponse['cards'];
+      meta: { cursor: string; hasMore: boolean };
+    }>(`/api/v1/feed${qs}`).then((r) => ({
+      cards: r.data,
+      cursor: r.meta.cursor,
+      hasMore: r.meta.hasMore,
+    }));
   },
 
   trackBehavior: (events: BehaviorEvent[]): Promise<void> =>
-    request<void>('/api/v1/feed/events/batch', { method: 'POST', body: JSON.stringify({ events }) }),
+    request<void>('/api/v1/feed/events/batch', {
+      method: 'POST',
+      body: JSON.stringify({ events }),
+    }),
 };
 
 // ─── Referrals ──────────────────────────────────────────────────────────────
 
 export const referralsApi = {
-  createRequest: (payload: { feedCardId?: string; targetRole: string; seekerNote?: string }) =>
-    request<any>('/api/v1/referrals/', { method: 'POST', body: JSON.stringify(payload) })
-      .then((r: any) => r.data),
+  createRequest: (payload: {
+    feedCardId?: string;
+    targetRole: string;
+    seekerNote?: string;
+  }) =>
+    request<{ data: unknown }>('/api/v1/referrals/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).then((r) => r.data),
 
   getInbox: () =>
-    request<any>('/api/v1/referrals/inbox/').then((r: any) => r.data),
+    request<{ data: unknown[] }>('/api/v1/referrals/inbox/').then(
+      (r) => r.data,
+    ),
 
   getPipeline: () =>
-    request<any>('/api/v1/referrals/pipeline/').then((r: any) => r.data),
+    request<{ data: unknown[] }>('/api/v1/referrals/pipeline/').then(
+      (r) => r.data,
+    ),
 
-  transition: (id: string, status: string, note?: string) =>
-    request<any>(`/api/v1/referrals/${id}/status/`, {
+  transition: (id: string, newStatus: string, note?: string) =>
+    request<{ data: unknown }>(`/api/v1/referrals/${id}/status/`, {
       method: 'PATCH',
-      body: JSON.stringify({ status, note }),
-    }).then((r: any) => r.data),
+      body: JSON.stringify({ status: newStatus, note }),
+    }).then((r) => r.data),
 
   getReputation: () =>
-    request<any>('/api/v1/reputation/me/').then((r: any) => r.data),
+    request<{ data: unknown }>('/api/v1/reputation/me/').then(
+      (r) => r.data,
+    ),
 
   getLeaderboard: (companyId?: string) => {
     const qs = companyId ? `?companyId=${companyId}` : '';
-    return request<any>(`/api/v1/reputation/leaderboard/${qs}`).then((r: any) => r.data);
+    return request<{ data: unknown[] }>(
+      `/api/v1/reputation/leaderboard/${qs}`,
+    ).then((r) => r.data);
   },
 };
 
-// Legacy alias
 export const referralApi = referralsApi;
 
 // ─── Chat ───────────────────────────────────────────────────────────────────
 
 export const chatApi = {
   getConversation: (referralId: string) =>
-    request<any>(`/api/v1/chat/${referralId}/`).then((r: any) => r.data),
+    request<{ data: { id: string; messages: unknown[] } }>(
+      `/api/v1/chat/${referralId}/`,
+    ).then((r) => r.data),
 
   sendMessage: (conversationId: string, body: string) =>
-    request<any>(`/api/v1/chat/${conversationId}/messages/`, {
+    request<{ data: unknown }>(`/api/v1/chat/${conversationId}/messages/`, {
       method: 'POST',
       body: JSON.stringify({ body }),
-    }).then((r: any) => r.data),
+    }).then((r) => r.data),
 
-  subscribeToMessages: (conversationId: string, onMessage: (msg: any) => void) => {
-    // Dummy polling implementation as fallback for local dev
-    const interval = setInterval(async () => {
-      // Fetch latest and compare... 
-      // In a real Django setup without websockets, we poll. 
-    }, 5000);
+  subscribeToMessages: (
+    conversationId: string,
+    onMessage: (msg: unknown) => void,
+  ) => {
+    let lastMessageId: string | null = null;
+
+    const poll = async () => {
+      try {
+        const data = await chatApi.getConversation(conversationId);
+        const messages = data.messages as Array<{ id: string }>;
+        if (messages.length > 0) {
+          const latest = messages[messages.length - 1];
+          if (lastMessageId && latest.id !== lastMessageId) {
+            const newIdx = messages.findIndex(
+              (m) => m.id === lastMessageId,
+            );
+            const newMessages =
+              newIdx >= 0 ? messages.slice(newIdx + 1) : [latest];
+            newMessages.forEach((m) => onMessage(m));
+          }
+          lastMessageId = latest.id;
+        }
+      } catch {
+        // Silently skip poll failures
+      }
+    };
+
+    const interval = setInterval(poll, 3000);
+    poll();
+
     return { unsubscribe: () => clearInterval(interval) };
-  }
+  },
 };
 
 // ─── Profile ────────────────────────────────────────────────────────────────
 
 export const profileApi = {
-  getMe: () => request<any>('/api/v1/users/me/').then((r: any) => r.data),
+  getMe: () =>
+    request<{ data: unknown }>('/api/v1/users/me/').then((r) => r.data),
   updateMe: (data: unknown) =>
-    request<any>('/api/v1/users/me/', { method: 'PATCH', body: JSON.stringify(data) })
-      .then((r: any) => r.data),
+    request<{ data: unknown }>('/api/v1/users/me/', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }).then((r) => r.data),
 };
 
 export { ApiError };
