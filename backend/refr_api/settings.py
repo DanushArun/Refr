@@ -124,8 +124,8 @@ APPEND_SLASH = True
 
 GOOGLE_CLOUD_PROJECT_ID = env('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_CLOUD_LOCATION = env('GOOGLE_CLOUD_LOCATION', default='')
-GOOGLE_APPLICATION_CREDENTIALS = env(
-    'GOOGLE_APPLICATION_CREDENTIALS', default='',
+GOOGLE_VERTEX_CREDENTIALS_JSON = env(
+    'GOOGLE_VERTEX_CREDENTIALS_JSON', default='',
 )
 
 # ─── Security hardening ──────────────────────────────────────────────────
