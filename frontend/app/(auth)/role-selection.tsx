@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '../../src/theme/colors';
@@ -91,6 +92,15 @@ export default function RoleSelectionScreen() {
             fullWidth
             disabled={!selected}
           />
+          <View style={styles.signInRow}>
+            <Text style={styles.signInLabel}>Already have an account?</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/login')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.signInLink}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -196,5 +206,21 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: spacing[6],
+    gap: spacing[4],
+  },
+  signInRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing[1],
+  },
+  signInLabel: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+  },
+  signInLink: {
+    ...typography.bodySmall,
+    color: colors.accent,
+    fontFamily: 'Outfit-SemiBold',
   },
 });

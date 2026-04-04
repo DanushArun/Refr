@@ -16,7 +16,7 @@ export default function Index() {
   }
 
   if (!session || !user) {
-    return <Redirect href="/(auth)/role-selection" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   if (user.role === 'seeker') {
