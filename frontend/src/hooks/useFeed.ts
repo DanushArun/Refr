@@ -58,9 +58,12 @@ export function useFeed(): UseFeedReturn {
           limit: PAGE_SIZE,
         });
 
-        setCards((prev) =>
-          isRefresh ? response.cards : [...prev, ...response.cards]
-        );
+        setCards((prev) => {
+          if (isRefresh) return response.cards;
+          const seen = new Set(prev.map((c) => c.id));
+          const fresh = response.cards.filter((c) => !seen.has(c.id));
+          return [...prev, ...fresh];
+        });
         setCursor(response.cursor);
         setHasMore(response.hasMore);
       } catch (err) {
