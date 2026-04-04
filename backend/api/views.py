@@ -1,9 +1,10 @@
+import logging
 import math
 import random
 from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -23,6 +24,8 @@ from .serializers import (
     ReputationSerializer, LeaderboardEntrySerializer,
     BehaviorEventSerializer,
 )
+
+logger = logging.getLogger('api')
 
 
 # ─── Auth ───────────────────────────────────────────────────────────────────
@@ -194,7 +197,10 @@ def feed_list(request):
     Response: { data: FeedCard[], meta: { cursor, hasMore } }
     """
     cursor = request.query_params.get('cursor')
-    limit = min(int(request.query_params.get('limit', 20)), 50)
+    try:
+        limit = min(int(request.query_params.get('limit', 20)), 50)
+    except (ValueError, TypeError):
+        limit = 20
     pool_size = min(limit * 5, 200)
 
     queryset = ContentCard.objects.filter(is_removed=False).order_by('-created_at')
@@ -380,11 +386,20 @@ def referral_pipeline(request):
     })
 
 
+def _user_is_referral_participant(user, referral):
+    """Check if user is the seeker or referrer on this referral."""
+    return (
+        referral.seeker.user_id == user.id
+        or referral.referrer.user_id == user.id
+    )
+
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def referral_transition(request, pk):
     """Advance referral state machine.
     Body: { status, note? }
+    Only the seeker or referrer on this referral may transition it.
     """
     try:
         referral = Referral.objects.select_related(
@@ -394,6 +409,12 @@ def referral_transition(request, pk):
         return Response(
             {'error': 'Referral not found'},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if not _user_is_referral_participant(request.user, referral):
+        return Response(
+            {'error': 'Not authorized to modify this referral'},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     new_status = request.data.get('status')
@@ -410,7 +431,8 @@ def referral_transition(request, pk):
 
     if new_status not in valid_next:
         return Response(
-            {'error': f'Cannot transition from {current} to {new_status}. Valid: {valid_next}'},
+            {'error': f'Cannot transition from {current} to {new_status}. '
+                      f'Valid: {valid_next}'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -421,25 +443,32 @@ def referral_transition(request, pk):
         referral.accepted_at = now
     elif new_status == 'submitted':
         referral.submitted_at = now
-        # Update referrer stats
-        referrer = referral.referrer
-        referrer.total_referrals += 1
-        referrer.kingmaker_score += 2
-        referrer.save()
+        ReferrerProfile.objects.filter(
+            id=referral.referrer_id,
+        ).update(
+            total_referrals=F('total_referrals') + 1,
+            kingmaker_score=F('kingmaker_score') + 2,
+        )
     elif new_status == 'interviewing':
         referral.interviewing_at = now
     elif new_status in ('hired', 'rejected', 'withdrawn', 'expired'):
         referral.outcome_at = now
         if new_status == 'hired':
-            referrer = referral.referrer
-            referrer.successful_hires += 1
-            referrer.kingmaker_score += 10
-            referrer.save()
+            ReferrerProfile.objects.filter(
+                id=referral.referrer_id,
+            ).update(
+                successful_hires=F('successful_hires') + 1,
+                kingmaker_score=F('kingmaker_score') + 10,
+            )
 
     if note:
         referral.referrer_note = note
 
     referral.save()
+    logger.info(
+        "Referral %d transitioned %s -> %s by user %d",
+        pk, current, new_status, request.user.id,
+    )
 
     return Response({
         'data': ReferralBaseSerializer(referral).data,
@@ -448,24 +477,42 @@ def referral_transition(request, pk):
 
 # ─── Chat ───────────────────────────────────────────────────────────────────
 
+def _user_is_conversation_participant(user, conversation):
+    """Check if user is seeker or referrer on the conversation's referral."""
+    referral = conversation.referral
+    return (
+        referral.seeker.user_id == user.id
+        or referral.referrer.user_id == user.id
+    )
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def chat_conversation(request, referral_id):
-    """Get conversation + message history for a referral."""
+    """Get conversation + message history for a referral.
+    Only participants (seeker/referrer) may view.
+    """
     try:
-        conversation = Conversation.objects.select_related('referral').get(
-            referral_id=referral_id,
-        )
+        conversation = Conversation.objects.select_related(
+            'referral', 'referral__seeker', 'referral__referrer',
+        ).get(referral_id=referral_id)
     except Conversation.DoesNotExist:
-        # Auto-create if missing
         try:
-            referral = Referral.objects.get(id=referral_id)
+            referral = Referral.objects.select_related(
+                'seeker', 'referrer',
+            ).get(id=referral_id)
             conversation = Conversation.objects.create(referral=referral)
         except Referral.DoesNotExist:
             return Response(
                 {'error': 'Referral not found'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+    if not _user_is_conversation_participant(request.user, conversation):
+        return Response(
+            {'error': 'Not authorized to view this conversation'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     return Response({
         'data': ConversationSerializer(conversation).data,
@@ -477,6 +524,7 @@ def chat_conversation(request, referral_id):
 def chat_send_message(request, conversation_id):
     """Send a message in a conversation.
     Body: { body }
+    Only participants (seeker/referrer) may send messages.
     """
     body = request.data.get('body', '').strip()
     if not body or len(body) > 4000:
@@ -486,11 +534,19 @@ def chat_send_message(request, conversation_id):
         )
 
     try:
-        conversation = Conversation.objects.get(id=conversation_id)
+        conversation = Conversation.objects.select_related(
+            'referral', 'referral__seeker', 'referral__referrer',
+        ).get(id=conversation_id)
     except Conversation.DoesNotExist:
         return Response(
             {'error': 'Conversation not found'},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if not _user_is_conversation_participant(request.user, conversation):
+        return Response(
+            {'error': 'Not authorized to send messages here'},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     message = Message.objects.create(
