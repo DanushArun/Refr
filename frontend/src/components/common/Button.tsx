@@ -80,13 +80,13 @@ export function Button({
         onPress={onPress}
         disabled={isDisabled}
         activeOpacity={0.8}
-        style={[baseContainer, style]}
+        style={[baseContainer, { overflow: 'hidden' }, style]}
       >
         <LinearGradient
           colors={['#9333ea', '#7c3aed', '#6d28d9']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, { borderRadius: height / 2 }]}
         />
         {loading ? (
           <ActivityIndicator color={colors.text} size="small" />

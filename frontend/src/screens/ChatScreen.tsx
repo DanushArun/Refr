@@ -80,16 +80,38 @@ export function ChatScreen() {
 
     setSending(true);
     setDraft('');
+
+    const optimisticMsg: Message = {
+      id: `temp-${Date.now()}`,
+      body,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: user?.id ?? '',
+        displayName: user?.displayName ?? '',
+        avatarUrl: user?.avatarUrl,
+      },
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setTimeout(
+      () => listRef.current?.scrollToEnd({ animated: true }),
+      50,
+    );
+
     try {
-      await chatApi.sendMessage(conversationId, body);
-      // Realtime subscription will add the message
+      const sent = await chatApi.sendMessage(conversationId, body) as Message;
+      setMessages((prev) =>
+        prev.map((m) => (m.id === optimisticMsg.id ? sent : m)),
+      );
     } catch {
+      setMessages((prev) =>
+        prev.filter((m) => m.id !== optimisticMsg.id),
+      );
       setDraft(body);
       Alert.alert('Error', 'Failed to send message');
     } finally {
       setSending(false);
     }
-  }, [draft, conversationId, sending]);
+  }, [draft, conversationId, sending, user]);
 
   if (loading) {
     return (

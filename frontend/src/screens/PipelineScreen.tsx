@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -40,15 +40,21 @@ const STATUS_COLORS: Record<string, string> = {
 export function PipelineScreen() {
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    referralsApi.getPipeline()
-      .then(setItems)
-      .catch(() => {
-        Alert.alert('Error', 'Failed to load pipeline');
-      })
-      .finally(() => setLoading(false));
+  const loadPipeline = useCallback(async () => {
+    try {
+      const data = await referralsApi.getPipeline();
+      setItems(data as SeekerPipelineItem[]);
+    } catch {
+      Alert.alert('Error', 'Failed to load pipeline');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  useEffect(() => { loadPipeline(); }, [loadPipeline]);
 
   if (loading) {
     return (
@@ -77,6 +83,11 @@ export function PipelineScreen() {
           data={items}
           keyExtractor={(item) => item.referral.id}
           contentContainerStyle={styles.list}
+          onRefresh={() => {
+            setRefreshing(true);
+            loadPipeline();
+          }}
+          refreshing={refreshing}
           renderItem={({ item }) => (
             <PipelineItem item={item} />
           )}

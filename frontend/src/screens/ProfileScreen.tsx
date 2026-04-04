@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   SafeAreaView,
-  Pressable,
+  ActivityIndicator,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -15,10 +16,64 @@ import { Avatar } from '../components/common/Avatar';
 import { GlassCard } from '../components/common/GlassCard';
 import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
-import type { UserProfile, ReferrerProfile, SeekerProfile } from '@refr/shared';
+import { profileApi } from '../services/api';
+
+interface FullProfile {
+  id: number;
+  email: string;
+  displayName: string;
+  role: string;
+  avatarUrl?: string;
+  headline?: string;
+  kingmakerScore?: number;
+  jobTitle?: string;
+  companyName?: string;
+  seekerProfile?: {
+    headline: string;
+    career_story: string;
+    skills: string[];
+    years_of_experience: number;
+    target_companies: string[];
+    target_roles: string[];
+    is_open_to_work: boolean;
+  };
+  referrerProfile?: {
+    company: { id: number; name: string };
+    department: string;
+    job_title: string;
+    kingmaker_score: number;
+    total_referrals: number;
+    successful_hires: number;
+    verification_status: string;
+  };
+}
 
 export function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<FullProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const data = await profileApi.getMe() as FullProfile;
+      setProfile(data);
+    } catch {
+      Alert.alert('Error', 'Failed to load profile');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleSignOut = () => {
     Alert.alert('Sign out?', 'You will need to sign in again.', [
@@ -29,21 +84,42 @@ export function ProfileScreen() {
 
   if (!user) return null;
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const isReferrer = user.role === 'referrer';
-  const profile = user as unknown as UserProfile;
+  const displayName = profile?.displayName ?? user.displayName ?? 'User';
+  const avatarUrl = profile?.avatarUrl ?? user.avatarUrl;
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.accent}
+          />
+        }
       >
-        {/* Profile card */}
         <GlassCard style={styles.profileCard}>
           <View style={styles.profileHeader}>
-            <Avatar uri={user.avatarUrl} displayName={user.displayName || 'User'} size="xl" />
+            <Avatar
+              uri={avatarUrl}
+              displayName={displayName}
+              size="xl"
+            />
             <View style={styles.profileMeta}>
-              <Text style={styles.displayName}>{user.displayName}</Text>
+              <Text style={styles.displayName}>{displayName}</Text>
               <View style={styles.roleBadge}>
                 <Text style={styles.roleBadgeText}>
                   {isReferrer ? 'Referrer' : 'Job Seeker'}
@@ -52,29 +128,61 @@ export function ProfileScreen() {
             </View>
           </View>
 
-          {isReferrer && 'jobTitle' in profile && (
+          {isReferrer && profile?.referrerProfile && (
             <View style={styles.profileDetail}>
               <Text style={styles.profileDetailText}>
-                {(profile as ReferrerProfile).jobTitle} at {(profile as ReferrerProfile).company}
+                {profile.referrerProfile.job_title} at{' '}
+                {profile.referrerProfile.company.name}
               </Text>
               <Text style={styles.profileDetailSub}>
-                Kingmaker Score: {(profile as ReferrerProfile).kingmakerScore}
+                Kingmaker Score: {profile.referrerProfile.kingmaker_score}
               </Text>
+              <View style={styles.statsRow}>
+                <StatPill
+                  label="Referrals"
+                  value={profile.referrerProfile.total_referrals}
+                />
+                <StatPill
+                  label="Hires"
+                  value={profile.referrerProfile.successful_hires}
+                />
+                <StatPill
+                  label="Status"
+                  value={profile.referrerProfile.verification_status}
+                />
+              </View>
             </View>
           )}
 
-          {!isReferrer && 'headline' in profile && (
-            <Text style={styles.headline} numberOfLines={2}>
-              {(profile as SeekerProfile).headline}
-            </Text>
+          {!isReferrer && profile?.seekerProfile && (
+            <View style={styles.profileDetail}>
+              {profile.seekerProfile.headline ? (
+                <Text style={styles.headline} numberOfLines={2}>
+                  {profile.seekerProfile.headline}
+                </Text>
+              ) : null}
+              {profile.seekerProfile.skills.length > 0 && (
+                <Text style={styles.profileDetailText}>
+                  Skills: {profile.seekerProfile.skills.join(', ')}
+                </Text>
+              )}
+              {profile.seekerProfile.target_companies.length > 0 && (
+                <Text style={styles.profileDetailSub}>
+                  Targeting:{' '}
+                  {profile.seekerProfile.target_companies.join(', ')}
+                </Text>
+              )}
+            </View>
           )}
         </GlassCard>
 
-        {/* Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           <SettingsRow label="Email" value={user.email} />
-          <SettingsRow label="Role" value={isReferrer ? 'Referrer' : 'Seeker'} />
+          <SettingsRow
+            label="Role"
+            value={isReferrer ? 'Referrer' : 'Seeker'}
+          />
         </View>
 
         <View style={styles.section}>
@@ -96,7 +204,13 @@ export function ProfileScreen() {
   );
 }
 
-function SettingsRow({ label, value }: { label: string; value: string }) {
+function SettingsRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
     <View style={styles.settingsRow}>
       <Text style={styles.settingsLabel}>{label}</Text>
@@ -105,8 +219,28 @@ function SettingsRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function StatPill({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <View style={styles.statPill}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   content: {
     padding: layout.screenPaddingH,
     paddingTop: spacing[8],
@@ -114,7 +248,11 @@ const styles = StyleSheet.create({
     gap: spacing[6],
   },
   profileCard: { gap: spacing[4] },
-  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing[4] },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[4],
+  },
   profileMeta: { flex: 1, gap: spacing[2] },
   displayName: { ...typography.h3, color: colors.text },
   roleBadge: {
@@ -126,11 +264,48 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.accentDim,
   },
-  roleBadgeText: { ...typography.caption, color: colors.accent, fontFamily: 'Outfit-SemiBold' },
-  profileDetail: { gap: spacing[1] },
-  profileDetailText: { ...typography.body, color: colors.textSecondary },
-  profileDetailSub: { ...typography.caption, color: colors.accent },
-  headline: { ...typography.body, color: colors.textSecondary, lineHeight: 22 },
+  roleBadgeText: {
+    ...typography.caption,
+    color: colors.accent,
+    fontFamily: 'Outfit-SemiBold',
+  },
+  profileDetail: { gap: spacing[2] },
+  profileDetailText: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  profileDetailSub: {
+    ...typography.caption,
+    color: colors.accent,
+  },
+  headline: {
+    ...typography.body,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    marginTop: spacing[2],
+  },
+  statPill: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing[2],
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statValue: {
+    ...typography.h4,
+    color: colors.text,
+    fontFamily: 'JetBrainsMono-Regular',
+  },
+  statLabel: {
+    ...typography.caption,
+    color: colors.textTertiary,
+  },
   section: {
     gap: spacing[2],
     backgroundColor: colors.surface,
