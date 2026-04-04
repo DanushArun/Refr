@@ -60,15 +60,21 @@ class ContentCard(models.Model):
         MILESTONE = 'milestone', _('Milestone')
         EDITORIAL = 'editorial', _('Editorial')
 
-    type = models.CharField(max_length=50, choices=ContentType.choices)
+    type = models.CharField(max_length=50, choices=ContentType.choices, db_index=True)
     score = models.FloatField(default=0)
     reaction_count = models.IntegerField(default=0)
     payload = models.JSONField()
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='content_cards')
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='content_cards')
-    is_removed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    is_removed = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.type} #{self.id}"
 
 class Referral(models.Model):
     class ReferralStatus(models.TextChoices):
@@ -85,17 +91,24 @@ class Referral(models.Model):
     referrer = models.ForeignKey(ReferrerProfile, on_delete=models.CASCADE, related_name='referrals')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='referrals')
     target_role = models.CharField(max_length=100)
-    status = models.CharField(max_length=20, choices=ReferralStatus.choices, default=ReferralStatus.REQUESTED)
+    status = models.CharField(max_length=20, choices=ReferralStatus.choices, default=ReferralStatus.REQUESTED, db_index=True)
     match_score = models.IntegerField(default=0)
     seeker_note = models.CharField(max_length=500, blank=True, null=True)
     referrer_note = models.TextField(blank=True, null=True)
     feed_card = models.ForeignKey(ContentCard, on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
-    
-    requested_at = models.DateTimeField(auto_now_add=True)
+
+    requested_at = models.DateTimeField(auto_now_add=True, db_index=True)
     accepted_at = models.DateTimeField(null=True, blank=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
     interviewing_at = models.DateTimeField(null=True, blank=True)
     outcome_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [('seeker', 'referrer', 'company')]
+        ordering = ['-requested_at']
+
+    def __str__(self):
+        return f"Referral #{self.id} ({self.status})"
 
 class Conversation(models.Model):
     referral = models.OneToOneField(Referral, on_delete=models.CASCADE, related_name='conversation')
@@ -109,14 +122,14 @@ class Message(models.Model):
 
 class BehaviorEvent(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='behavior_events')
-    event_type = models.CharField(max_length=50)
-    card_id = models.UUIDField(null=True, blank=True)
+    event_type = models.CharField(max_length=50, db_index=True)
+    card_id = models.BigIntegerField(null=True, blank=True)
     card_type = models.CharField(max_length=50, null=True, blank=True)
     position_in_feed = models.IntegerField(null=True, blank=True)
     duration_ms = models.IntegerField(null=True, blank=True)
     action = models.CharField(max_length=50, null=True, blank=True)
     payload = models.JSONField(null=True, blank=True)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(db_index=True)
 
 class ModerationQueue(models.Model):
     class ModerationStatus(models.TextChoices):
