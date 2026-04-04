@@ -1,16 +1,13 @@
 from pathlib import Path
 from datetime import timedelta
 import environ
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env(
-    DEBUG=(bool, False)
-)
-env_file = BASE_DIR.parent / '.env'
+load_dotenv(BASE_DIR.parent / '.env', override=True)
 
-if env_file.exists():
-    environ.Env.read_env(env_file)
+env = environ.Env(DEBUG=(bool, False))
 
 SECRET_KEY = env('SECRET_KEY')
 
@@ -124,8 +121,8 @@ APPEND_SLASH = True
 
 GOOGLE_CLOUD_PROJECT_ID = env('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_CLOUD_LOCATION = env('GOOGLE_CLOUD_LOCATION', default='')
-GOOGLE_VERTEX_CREDENTIALS_PATH = env(
-    'GOOGLE_VERTEX_CREDENTIALS_PATH', default='',
+GOOGLE_VERTEX_CREDENTIALS_JSON = env(
+    'GOOGLE_VERTEX_CREDENTIALS_JSON', default='',
 )
 
 # ─── Security hardening ──────────────────────────────────────────────────
