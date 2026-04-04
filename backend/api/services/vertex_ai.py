@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 
 from django.conf import settings
 from google.oauth2.service_account import Credentials
@@ -10,14 +11,19 @@ VERTEX_SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
 
 
 def _load_credentials() -> Credentials | None:
-    raw = settings.GOOGLE_VERTEX_CREDENTIALS_JSON
-    if not raw:
+    cred_path = settings.GOOGLE_VERTEX_CREDENTIALS_PATH
+    if not cred_path:
+        return None
+    path = Path(cred_path)
+    if not path.is_file():
+        logger.error("GCP credentials file not found: %s", cred_path)
         return None
     try:
-        info = json.loads(raw)
-        return Credentials.from_service_account_info(info, scopes=VERTEX_SCOPES)
+        return Credentials.from_service_account_file(
+            str(path), scopes=VERTEX_SCOPES,
+        )
     except (json.JSONDecodeError, ValueError) as exc:
-        logger.error("Invalid GOOGLE_VERTEX_CREDENTIALS_JSON: %s", exc)
+        logger.error("Invalid GCP credentials file: %s", exc)
         return None
 
 
@@ -34,7 +40,7 @@ class VertexAIService:
         if not self.enabled:
             return {
                 "error": "Vertex AI not configured",
-                "message": "Set GOOGLE_VERTEX_CREDENTIALS_JSON in .env",
+                "message": "Set GOOGLE_VERTEX_CREDENTIALS_PATH in .env",
             }
 
         try:

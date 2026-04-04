@@ -16,10 +16,12 @@ __pycache__/
 venv/
 .gcp_temp_creds.json
 
-# Environment
+# Environment & credentials
 .env
 .env.local
 .env.*.local
+gcp-credentials.json
+*-credentials.json
 
 # IDE
 .vscode/
