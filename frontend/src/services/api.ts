@@ -8,6 +8,19 @@ import type {
   SeekerPipelineItem,
   Referral,
 } from '@refr/shared';
+import {
+  isDemoScreen,
+  DEMO,
+  MOCK_FEED_RESPONSE,
+  MOCK_PIPELINE,
+  MOCK_INBOX,
+  MOCK_CHAT_CONVERSATION_ID,
+  MOCK_CHAT_MESSAGES,
+  MOCK_REPUTATION,
+  MOCK_LEADERBOARD,
+  MOCK_SEEKER_PROFILE,
+  MOCK_REFERRER_PROFILE,
+} from '../config/demo';
 
 export interface ReputationData {
   kingmakerScore: number;
@@ -28,8 +41,7 @@ export interface LeaderboardEntry {
   company: { id: string; name: string };
 }
 
-// ─── HTTP helpers ───────────────────────────────────────────────────────────
-
+// ─── HTTP helpers ───────────────────────────────────────────────────────
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const session = await getSession();
   const token = session?.access_token;
@@ -130,10 +142,91 @@ async function request<T>(
   return response.json() as Promise<T>;
 }
 
-// ─── Feed ───────────────────────────────────────────────────────────────────
+// ─── Demo helpers ───────────────────────────────────────────────────────
+function buildMockReferral(targetRole: string): Referral {
+  return {
+    id: `ref-demo-${Date.now()}`,
+    seekerId: '1',
+    referrerId: '2',
+    companyId: 'c-1',
+    targetRole,
+    status: 'requested',
+    matchScore: 85,
+    requestedAt: new Date().toISOString(),
+  };
+}
 
+function buildTransitionResult(
+  id: string,
+  newStatus: string,
+  note?: string,
+): Referral {
+  const allItems = [...MOCK_PIPELINE, ...MOCK_INBOX.map((i) => ({
+    referral: i.referral,
+  }))];
+  const found = allItems.find((i) => i.referral.id === id);
+  const base = found?.referral ?? buildMockReferral('Unknown');
+  return {
+    ...base,
+    id,
+    status: newStatus as Referral['status'],
+    referrerNote: note ?? base.referrerNote,
+  };
+}
+
+function buildMockChatMessage(body: string): ChatMessage {
+  const sender = DEMO.demoRole === 'seeker'
+    ? { id: '1', displayName: 'Arjun Mehta' }
+    : { id: '2', displayName: 'Ravi Kumar' };
+  return {
+    id: `msg-demo-${Date.now()}`,
+    body,
+    createdAt: new Date().toISOString(),
+    sender,
+  };
+}
+
+function pollForMessages(
+  referralId: string,
+  onMessage: (msg: ChatMessage) => void,
+) {
+  let lastMessageId: string | null = null;
+
+  const poll = async () => {
+    try {
+      const data = await chatApi.getConversation(referralId);
+      const messages = data.messages;
+      if (messages.length === 0) return;
+      const latest = messages[messages.length - 1];
+      if (!lastMessageId || latest.id === lastMessageId) {
+        lastMessageId = latest.id;
+        return;
+      }
+      const newIdx = messages.findIndex(
+        (m) => m.id === lastMessageId,
+      );
+      const fresh = newIdx >= 0
+        ? messages.slice(newIdx + 1)
+        : [latest];
+      fresh.forEach((m) => onMessage(m));
+      lastMessageId = latest.id;
+    } catch {
+      // Silently skip poll failures
+    }
+  };
+
+  const interval = setInterval(poll, 3000);
+  poll();
+
+  return { unsubscribe: () => clearInterval(interval) };
+}
+
+// ─── Feed ───────────────────────────────────────────────────────────────
 export const feedApi = {
   getFeed: (params: FeedRequest = {}): Promise<FeedResponse> => {
+    if (isDemoScreen('feed')) {
+      return Promise.resolve(MOCK_FEED_RESPONSE);
+    }
     const query = new URLSearchParams();
     if (params.cursor) query.set('cursor', params.cursor);
     if (params.limit) query.set('limit', String(params.limit));
@@ -148,48 +241,83 @@ export const feedApi = {
     }));
   },
 
-  trackBehavior: (events: BehaviorEvent[]): Promise<void> =>
-    request<void>('/api/v1/feed/events/batch', {
+  trackBehavior: (events: BehaviorEvent[]): Promise<void> => {
+    if (isDemoScreen('feed')) return Promise.resolve();
+    return request<void>('/api/v1/feed/events/batch', {
       method: 'POST',
       body: JSON.stringify({ events }),
-    }),
+    });
+  },
 };
 
-// ─── Referrals ──────────────────────────────────────────────────────────────
-
+// ─── Referrals ──────────────────────────────────────────────────────────
 export const referralsApi = {
   createRequest: (payload: {
     feedCardId?: string;
     targetRole: string;
     seekerNote?: string;
-  }) =>
-    request<{ data: Referral }>('/api/v1/referrals/', {
+  }): Promise<Referral> => {
+    if (DEMO.enabled) {
+      return Promise.resolve(buildMockReferral(payload.targetRole));
+    }
+    return request<{ data: Referral }>('/api/v1/referrals/', {
       method: 'POST',
       body: JSON.stringify(payload),
-    }).then((r) => r.data),
+    }).then((r) => r.data);
+  },
 
-  getInbox: () =>
-    request<{ data: ReferrerInboxItem[] }>('/api/v1/referrals/inbox/').then(
-      (r) => r.data,
-    ),
+  getInbox: (): Promise<ReferrerInboxItem[]> => {
+    if (isDemoScreen('inbox')) {
+      return Promise.resolve(MOCK_INBOX);
+    }
+    return request<{ data: ReferrerInboxItem[] }>(
+      '/api/v1/referrals/inbox/',
+    ).then((r) => r.data);
+  },
 
-  getPipeline: () =>
-    request<{ data: SeekerPipelineItem[] }>(
+  getPipeline: (): Promise<SeekerPipelineItem[]> => {
+    if (isDemoScreen('pipeline')) {
+      return Promise.resolve(MOCK_PIPELINE);
+    }
+    return request<{ data: SeekerPipelineItem[] }>(
       '/api/v1/referrals/pipeline/',
-    ).then((r) => r.data),
+    ).then((r) => r.data);
+  },
 
-  transition: (id: string, newStatus: string, note?: string) =>
-    request<{ data: Referral }>(`/api/v1/referrals/${id}/status/`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: newStatus, note }),
-    }).then((r) => r.data),
+  transition: (
+    id: string,
+    newStatus: string,
+    note?: string,
+  ): Promise<Referral> => {
+    if (DEMO.enabled) {
+      return Promise.resolve(
+        buildTransitionResult(id, newStatus, note),
+      );
+    }
+    return request<{ data: Referral }>(
+      `/api/v1/referrals/${id}/status/`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus, note }),
+      },
+    ).then((r) => r.data);
+  },
 
-  getReputation: () =>
-    request<{ data: ReputationData }>('/api/v1/reputation/me/').then(
-      (r) => r.data,
-    ),
+  getReputation: (): Promise<ReputationData> => {
+    if (isDemoScreen('earnings')) {
+      return Promise.resolve(MOCK_REPUTATION);
+    }
+    return request<{ data: ReputationData }>(
+      '/api/v1/reputation/me/',
+    ).then((r) => r.data);
+  },
 
-  getLeaderboard: (companyId?: string) => {
+  getLeaderboard: (
+    companyId?: string,
+  ): Promise<LeaderboardEntry[]> => {
+    if (isDemoScreen('earnings')) {
+      return Promise.resolve(MOCK_LEADERBOARD);
+    }
     const qs = companyId ? `?companyId=${companyId}` : '';
     return request<{ data: LeaderboardEntry[] }>(
       `/api/v1/reputation/leaderboard/${qs}`,
@@ -198,9 +326,7 @@ export const referralsApi = {
 };
 
 export const referralApi = referralsApi;
-
-// ─── Chat ───────────────────────────────────────────────────────────────────
-
+// ─── Chat ───────────────────────────────────────────────────────────────
 export interface ChatMessage {
   id: string;
   body: string;
@@ -209,61 +335,66 @@ export interface ChatMessage {
 }
 
 export const chatApi = {
-  getConversation: (referralId: string) =>
-    request<{ data: { id: string; messages: ChatMessage[] } }>(
-      `/api/v1/chat/${referralId}/`,
-    ).then((r) => r.data),
+  getConversation: (
+    referralId: string,
+  ): Promise<{ id: string; messages: ChatMessage[] }> => {
+    if (isDemoScreen('chat')) {
+      return Promise.resolve({
+        id: MOCK_CHAT_CONVERSATION_ID,
+        messages: MOCK_CHAT_MESSAGES,
+      });
+    }
+    return request<{
+      data: { id: string; messages: ChatMessage[] };
+    }>(`/api/v1/chat/${referralId}/`).then((r) => r.data);
+  },
 
-  sendMessage: (conversationId: string, body: string) =>
-    request<{ data: ChatMessage }>(`/api/v1/chat/${conversationId}/messages/`, {
-      method: 'POST',
-      body: JSON.stringify({ body }),
-    }).then((r) => r.data),
+  sendMessage: (
+    conversationId: string,
+    body: string,
+  ): Promise<ChatMessage> => {
+    if (isDemoScreen('chat')) {
+      return Promise.resolve(buildMockChatMessage(body));
+    }
+    return request<{ data: ChatMessage }>(
+      `/api/v1/chat/${conversationId}/messages/`,
+      { method: 'POST', body: JSON.stringify({ body }) },
+    ).then((r) => r.data);
+  },
 
   subscribeToMessages: (
     referralId: string,
     onMessage: (msg: ChatMessage) => void,
   ) => {
-    let lastMessageId: string | null = null;
-
-    const poll = async () => {
-      try {
-        const data = await chatApi.getConversation(referralId);
-        const messages = data.messages;
-        if (messages.length > 0) {
-          const latest = messages[messages.length - 1];
-          if (lastMessageId && latest.id !== lastMessageId) {
-            const newIdx = messages.findIndex(
-              (m) => m.id === lastMessageId,
-            );
-            const newMessages =
-              newIdx >= 0 ? messages.slice(newIdx + 1) : [latest];
-            newMessages.forEach((m) => onMessage(m));
-          }
-          lastMessageId = latest.id;
-        }
-      } catch {
-        // Silently skip poll failures
-      }
-    };
-
-    const interval = setInterval(poll, 3000);
-    poll();
-
-    return { unsubscribe: () => clearInterval(interval) };
+    if (isDemoScreen('chat')) {
+      return { unsubscribe: () => {} };
+    }
+    return pollForMessages(referralId, onMessage);
   },
 };
 
-// ─── Profile ────────────────────────────────────────────────────────────────
-
+// ─── Profile ────────────────────────────────────────────────────────────
 export const profileApi = {
-  getMe: () =>
-    request<{ data: unknown }>('/api/v1/users/me/').then((r) => r.data),
-  updateMe: (data: unknown) =>
-    request<{ data: unknown }>('/api/v1/users/me/', {
+  getMe: (): Promise<unknown> => {
+    if (isDemoScreen('profile')) {
+      const profile = DEMO.demoRole === 'seeker'
+        ? MOCK_SEEKER_PROFILE
+        : MOCK_REFERRER_PROFILE;
+      return Promise.resolve(profile);
+    }
+    return request<{ data: unknown }>(
+      '/api/v1/users/me/',
+    ).then((r) => r.data);
+  },
+  updateMe: (data: unknown): Promise<unknown> => {
+    if (isDemoScreen('profile')) {
+      return Promise.resolve(data);
+    }
+    return request<{ data: unknown }>('/api/v1/users/me/', {
       method: 'PATCH',
       body: JSON.stringify(data),
-    }).then((r) => r.data),
+    }).then((r) => r.data);
+  },
 };
 
 export { ApiError };

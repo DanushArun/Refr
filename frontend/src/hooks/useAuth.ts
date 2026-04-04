@@ -1,5 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getSession, subscribeToAuth, signOut as authSignOut, Session, User } from '../services/auth';
+import {
+  getSession,
+  subscribeToAuth,
+  signOut as authSignOut,
+  Session,
+  User,
+} from '../services/auth';
+import {
+  isDemoScreen,
+  DEMO,
+  MOCK_SEEKER_SESSION,
+  MOCK_REFERRER_SESSION,
+} from '../config/demo';
 
 export type AuthUser = User;
 
@@ -10,17 +22,31 @@ interface UseAuthReturn {
   signOut: () => Promise<void>;
 }
 
+function getDemoSession(): Session {
+  return DEMO.demoRole === 'seeker'
+    ? MOCK_SEEKER_SESSION
+    : MOCK_REFERRER_SESSION;
+}
+
 export function useAuth(): UseAuthReturn {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const demoActive = isDemoScreen('auth');
+  const demoSession = demoActive ? getDemoSession() : null;
+
+  const [session, setSession] = useState<Session | null>(
+    demoSession,
+  );
+  const [user, setUser] = useState<AuthUser | null>(
+    demoSession?.user ?? null,
+  );
+  const [loading, setLoading] = useState(!demoActive);
 
   useEffect(() => {
-    // Initial load
+    if (demoActive) return;
+
     getSession()
       .then((s) => {
         setSession(s);
-        setUser(s?.user || null);
+        setUser(s?.user ?? null);
         setLoading(false);
       })
       .catch((e) => {
@@ -30,19 +56,19 @@ export function useAuth(): UseAuthReturn {
         setLoading(false);
       });
 
-    // Subscribe to changes
     const unsubscribe = subscribeToAuth((newSession) => {
       setSession(newSession);
-      setUser(newSession?.user || null);
+      setUser(newSession?.user ?? null);
       setLoading(false);
     });
 
     return () => { unsubscribe(); };
-  }, []);
+  }, [demoActive]);
 
   const signOut = useCallback(async () => {
+    if (demoActive) return;
     await authSignOut();
-  }, []);
+  }, [demoActive]);
 
   return { session, user, loading, signOut };
 }

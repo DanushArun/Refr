@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './baseUrl';
+import {
+  isDemoScreen,
+  DEMO,
+  MOCK_SEEKER_SESSION,
+  MOCK_REFERRER_SESSION,
+} from '../config/demo';
 
 export interface User {
   id: string;
@@ -34,6 +40,12 @@ export const subscribeToAuth = (listener: AuthListener) => {
   return () => listeners.delete(listener);
 };
 
+function getDemoSession(): Session {
+  return DEMO.demoRole === 'seeker'
+    ? MOCK_SEEKER_SESSION
+    : MOCK_REFERRER_SESSION;
+}
+
 export async function saveSession(session: Session | null) {
   if (session) {
     await AsyncStorage.setItem('auth_session', JSON.stringify(session));
@@ -44,6 +56,7 @@ export async function saveSession(session: Session | null) {
 }
 
 export async function getSession(): Promise<Session | null> {
+  if (isDemoScreen('auth')) return getDemoSession();
   const json = await AsyncStorage.getItem('auth_session');
   return json ? JSON.parse(json) : null;
 }
@@ -69,6 +82,11 @@ export async function signUpWithEmail(
     canReferTo?: string[];
   }
 ): Promise<AuthResult> {
+  if (isDemoScreen('auth')) {
+    const session = getDemoSession();
+    notifyAuthChange(session);
+    return { session, user: session.user, error: null };
+  }
   try {
     const res = await fetch(`${BASE_URL}/api/users/register/`, {
       method: 'POST',
@@ -131,6 +149,11 @@ export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<AuthResult> {
+  if (isDemoScreen('auth')) {
+    const session = getDemoSession();
+    notifyAuthChange(session);
+    return { session, user: session.user, error: null };
+  }
   try {
     const res = await fetch(`${BASE_URL}/api/token/`, {
       method: 'POST',
@@ -181,6 +204,7 @@ export async function verifyPhoneOtp(phone: string, token: string): Promise<Auth
 }
 
 export async function signOut(): Promise<{ error: Error | null }> {
+  if (isDemoScreen('auth')) return { error: null };
   await saveSession(null);
   return { error: null };
 }
