@@ -52,8 +52,6 @@ const styles = StyleSheet.create({
     marginVertical: spacing[2],
   },
   cardHire: {
-    borderColor: colors.success,
-    borderWidth: 1,
     backgroundColor: colors.successLight,
   },
   inner: {

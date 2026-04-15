@@ -40,12 +40,14 @@ function getInitials(name: string): string {
 /** Generate a deterministic background color from name string */
 function getAvatarColor(name: string): string {
   const palette = [
-    '#7c3aed', // violet
-    '#3b82f6', // blue
-    '#059669', // emerald
-    '#d97706', // amber
-    '#dc2626', // red
-    '#7c3aed', // violet (repeat to weight)
+    '#6366f1', // indigo
+    '#8b5cf6', // violet
+    '#ec4899', // pink
+    '#f43f5e', // rose
+    '#14b8a6', // teal
+    '#06b6d4', // cyan
+    '#f97316', // orange
+    '#84cc16', // lime
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {

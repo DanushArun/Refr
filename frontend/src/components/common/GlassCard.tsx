@@ -34,7 +34,7 @@ export function GlassCard({
     <View
       style={[
         styles.card,
-        !square && styles.rounded,
+        square && { borderRadius: 0 },
         { padding: paddingMap[padding] },
         accentBorder
           ? { borderColor: accentBorder, borderWidth: 1 }
@@ -49,12 +49,9 @@ export function GlassCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  rounded: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 0,
     borderRadius: layout.cardBorderRadius,
+    overflow: 'hidden',
   },
 });

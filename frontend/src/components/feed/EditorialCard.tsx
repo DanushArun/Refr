@@ -62,9 +62,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[2.5],
     paddingVertical: spacing[0.5],
     borderRadius: 6,
-    backgroundColor: colors.accentLight,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
+    backgroundColor: 'rgba(124, 58, 237, 0.12)',
   },
   badgeText: {
     ...typography.caption,

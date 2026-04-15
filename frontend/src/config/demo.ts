@@ -20,7 +20,7 @@ export const DEMO = {
   enabled: true,
 
   /** Which role to simulate: 'seeker' shows seeker tabs, 'referrer' shows referrer tabs */
-  demoRole: 'seeker' as 'seeker' | 'referrer',
+  demoRole: 'referrer' as 'referrer' | 'seeker',
 
   /** Per-screen toggles. Each controls one API surface area. */
   screens: {

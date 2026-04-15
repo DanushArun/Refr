@@ -65,6 +65,11 @@ export const colors = {
   scoreMiddle: '#f59e0b',
   scoreHigh: '#22c55e',
 
+  // Surface elevation (dark theme depth)
+  surfaceLevel1: 'rgba(255, 255, 255, 0.04)',
+  surfaceLevel2: 'rgba(255, 255, 255, 0.07)',
+  surfaceInset: 'rgba(255, 255, 255, 0.03)',
+
   // Chat
   chatBubbleSent: '#7c3aed',
   chatBubbleReceived: 'rgba(255, 255, 255, 0.08)',

@@ -219,12 +219,12 @@ const styles = StyleSheet.create({
     padding: spacing[3],
     gap: spacing[2],
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: 'rgba(255, 255, 255, 0.04)',
     backgroundColor: colors.background,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
     borderRadius: 22,
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[2.5],
@@ -232,8 +232,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     fontSize: 15,
     maxHeight: 120,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   sendBtn: {
     width: 44,

@@ -260,9 +260,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[0.5],
     borderRadius: 100,
-    backgroundColor: colors.accentLight,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
+    backgroundColor: 'rgba(124, 58, 237, 0.12)',
   },
   roleBadgeText: {
     ...typography.caption,
@@ -292,10 +290,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing[2],
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   statValue: {
     ...typography.h4,
@@ -308,10 +304,8 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: spacing[2],
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: layout.cardBorderRadius,
-    borderWidth: 1,
-    borderColor: colors.border,
     overflow: 'hidden',
   },
   sectionTitle: {
@@ -327,7 +321,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.cardPadding,
     paddingVertical: spacing[3.5],
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: 'rgba(255, 255, 255, 0.04)',
   },
   settingsLabel: { ...typography.body, color: colors.text },
   settingsValue: { ...typography.body, color: colors.textSecondary },

@@ -211,10 +211,8 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   noteInput: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing[4],
     color: colors.text,
     fontFamily: 'Outfit-Regular',

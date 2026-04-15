@@ -87,7 +87,7 @@ export default function ActiveRoute() {
                     <Text style={styles.seekerHeadline} numberOfLines={1}>{item.seekerHeadline}</Text>
                     <Text style={styles.targetRole}>{item.referral.targetRole}</Text>
                   </View>
-                  <View style={[styles.statusBadge, { borderColor: statusColor }]}>
+                  <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
                     <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
                   </View>
                 </View>
@@ -137,10 +137,8 @@ const styles = StyleSheet.create({
   emptyTitle: { ...typography.h4, color: colors.textSecondary },
   emptyBody: { ...typography.body, color: colors.textTertiary, textAlign: 'center', lineHeight: 24 },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: layout.cardBorderRadius,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: layout.cardPadding,
     gap: spacing[3],
   },
@@ -153,7 +151,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[0.5],
     borderRadius: 100,
-    borderWidth: 1,
   },
   statusText: { ...typography.caption, fontFamily: 'Outfit-SemiBold' },
 });
