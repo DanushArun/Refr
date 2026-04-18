@@ -15,12 +15,16 @@ import {
   MOCK_PIPELINE,
   MOCK_INBOX,
   MOCK_CHAT_CONVERSATION_ID,
-  MOCK_CHAT_MESSAGES,
   MOCK_REPUTATION,
   MOCK_LEADERBOARD,
   MOCK_SEEKER_PROFILE,
   MOCK_REFERRER_PROFILE,
+  chatForReferral,
+  appendChatMessage,
+  referrerByCompany,
+  referrerById,
 } from '../config/demo';
+import type { FeedCard } from '@refr/shared';
 
 export interface ReputationData {
   kingmakerScore: number;
@@ -143,41 +147,80 @@ async function request<T>(
 }
 
 // ─── Demo helpers ───────────────────────────────────────────────────────
-function buildMockReferral(targetRole: string): Referral {
+// Demo mode mutates the mock arrays so the demo feels stateful across
+// screens (accept in Inbox -> visible in Active Referrals, etc.).
+
+function targetReferrerForCard(card?: FeedCard): { id: string; companyId: string } {
+  if (card && card.type === 'company_intel') {
+    const r = referrerByCompany(card.companyId);
+    if (r) return { id: r.id, companyId: r.company.id };
+  }
+  return { id: '2', companyId: 'c-1' };
+}
+
+function buildMockReferral(
+  targetRole: string,
+  opts: { feedCardId?: string; seekerNote?: string; card?: FeedCard } = {},
+): Referral {
+  const target = targetReferrerForCard(opts.card);
   return {
     id: `ref-demo-${Date.now()}`,
-    seekerId: '1',
-    referrerId: '2',
-    companyId: 'c-1',
+    seekerId: DEMO.demoRole === 'seeker' ? '1' : '1',
+    referrerId: target.id,
+    companyId: target.companyId,
     targetRole,
     status: 'requested',
     matchScore: 85,
     requestedAt: new Date().toISOString(),
+    feedCardId: opts.feedCardId,
+    seekerNote: opts.seekerNote,
   };
 }
 
-function buildTransitionResult(
+function findReferralInStores(id: string): Referral | undefined {
+  const p = MOCK_PIPELINE.find((i) => i.referral.id === id);
+  if (p) return p.referral;
+  const inbox = MOCK_INBOX.find((i) => i.referral.id === id);
+  if (inbox) return inbox.referral;
+  return undefined;
+}
+
+/** Apply a status transition to the in-memory demo stores (mutates). */
+function applyDemoTransition(
   id: string,
-  newStatus: string,
+  newStatus: Referral['status'],
   note?: string,
 ): Referral {
-  const allItems = [...MOCK_PIPELINE, ...MOCK_INBOX.map((i) => ({
-    referral: i.referral,
-  }))];
-  const found = allItems.find((i) => i.referral.id === id);
-  const base = found?.referral ?? buildMockReferral('Unknown');
-  return {
+  const now = new Date().toISOString();
+  const existing = findReferralInStores(id);
+  const base: Referral = existing ?? buildMockReferral('Unknown');
+
+  const updated: Referral = {
     ...base,
     id,
-    status: newStatus as Referral['status'],
+    status: newStatus,
     referrerNote: note ?? base.referrerNote,
+    acceptedAt: newStatus === 'accepted' && !base.acceptedAt ? now : base.acceptedAt,
+    submittedAt: newStatus === 'submitted' && !base.submittedAt ? now : base.submittedAt,
+    outcomeAt:
+      (newStatus === 'hired' || newStatus === 'rejected')
+        ? now
+        : base.outcomeAt,
   };
+
+  // Mutate pipeline + inbox so other screens see the change.
+  const pIdx = MOCK_PIPELINE.findIndex((i) => i.referral.id === id);
+  if (pIdx >= 0) MOCK_PIPELINE[pIdx] = { ...MOCK_PIPELINE[pIdx], referral: updated };
+  const iIdx = MOCK_INBOX.findIndex((i) => i.referral.id === id);
+  if (iIdx >= 0) MOCK_INBOX[iIdx] = { ...MOCK_INBOX[iIdx], referral: updated };
+
+  return updated;
 }
 
 function buildMockChatMessage(body: string): ChatMessage {
   const sender = DEMO.demoRole === 'seeker'
-    ? { id: '1', displayName: 'Arjun Mehta' }
-    : { id: '2', displayName: 'Ravi Kumar' };
+    ? { id: '1', displayName: 'Danush Arun' }
+    : { id: '2', displayName: 'Nivrant Goswami' };
   return {
     id: `msg-demo-${Date.now()}`,
     body,
@@ -256,13 +299,30 @@ export const referralsApi = {
     feedCardId?: string;
     targetRole: string;
     seekerNote?: string;
+    /** Demo-only: the feed card that triggered the request. */
+    card?: FeedCard;
   }): Promise<Referral> => {
     if (DEMO.enabled) {
-      return Promise.resolve(buildMockReferral(payload.targetRole));
+      const referral = buildMockReferral(payload.targetRole, {
+        feedCardId: payload.feedCardId,
+        seekerNote: payload.seekerNote,
+        card: payload.card,
+      });
+      const referrer = referrerById(referral.referrerId);
+      MOCK_PIPELINE.unshift({
+        referral,
+        referrerName: referrer?.name ?? 'REFR Referrer',
+        companyName: referrer?.company.name ?? 'Razorpay',
+      });
+      return Promise.resolve(referral);
     }
     return request<{ data: Referral }>('/api/v1/referrals/', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        feedCardId: payload.feedCardId,
+        targetRole: payload.targetRole,
+        seekerNote: payload.seekerNote,
+      }),
     }).then((r) => r.data);
   },
 
@@ -291,7 +351,7 @@ export const referralsApi = {
   ): Promise<Referral> => {
     if (DEMO.enabled) {
       return Promise.resolve(
-        buildTransitionResult(id, newStatus, note),
+        applyDemoTransition(id, newStatus as Referral['status'], note),
       );
     }
     return request<{ data: Referral }>(
@@ -340,8 +400,8 @@ export const chatApi = {
   ): Promise<{ id: string; messages: ChatMessage[] }> => {
     if (isDemoScreen('chat')) {
       return Promise.resolve({
-        id: MOCK_CHAT_CONVERSATION_ID,
-        messages: MOCK_CHAT_MESSAGES,
+        id: `conv-${referralId}`,
+        messages: chatForReferral(referralId),
       });
     }
     return request<{
@@ -354,7 +414,13 @@ export const chatApi = {
     body: string,
   ): Promise<ChatMessage> => {
     if (isDemoScreen('chat')) {
-      return Promise.resolve(buildMockChatMessage(body));
+      const msg = buildMockChatMessage(body);
+      // conversationId shape is `conv-<referralId>` in demo mode.
+      const referralId = conversationId.startsWith('conv-')
+        ? conversationId.slice(5)
+        : conversationId;
+      appendChatMessage(referralId, msg);
+      return Promise.resolve(msg);
     }
     return request<{ data: ChatMessage }>(
       `/api/v1/chat/${conversationId}/messages/`,
@@ -364,12 +430,12 @@ export const chatApi = {
 
   subscribeToMessages: (
     referralId: string,
-    onMessage: (msg: ChatMessage) => void,
+    _onMessage: (msg: ChatMessage) => void,
   ) => {
     if (isDemoScreen('chat')) {
       return { unsubscribe: () => {} };
     }
-    return pollForMessages(referralId, onMessage);
+    return pollForMessages(referralId, _onMessage);
   },
 };
 

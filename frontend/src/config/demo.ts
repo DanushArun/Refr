@@ -62,4 +62,10 @@ export {
   MOCK_LEADERBOARD,
   MOCK_SEEKER_PROFILE,
   MOCK_REFERRER_PROFILE,
+  DEMO_REFERRERS,
+  chatForReferral,
+  appendChatMessage,
+  referrerByCompany,
+  referrerById,
 } from './mockData';
+export type { DemoReferrer } from './mockData';

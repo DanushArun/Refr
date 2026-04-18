@@ -49,6 +49,7 @@ export function FeedScreen() {
         feedCardId: card.id,
         targetRole: card.targetRoles?.[0] ?? 'Software Engineer',
         seekerNote: note,
+        card,
       });
       setReferModal({ visible: false, card: null, note: '', submitting: false });
       Alert.alert(

@@ -135,8 +135,8 @@ npx expo start
 
 | Role | Email | Password |
 |------|-------|----------|
-| Seeker | `arjun@gmail.com` | `password123` |
-| Referrer | `ravi@razorpay.com` | `password123` |
+| Seeker | `danush@gmail.com` | `password123` |
+| Referrer | `nivrant@razorpay.com` | `password123` |
 
 ## API reference
 
