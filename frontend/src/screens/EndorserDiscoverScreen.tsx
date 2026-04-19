@@ -1,43 +1,45 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { SwipeDeck } from '../components/discover/SwipeDeck';
-import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
+import { SwipeDeck, type SwipeDirection } from '../components/discover/SwipeDeck';
+import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import {
-  buildEndorserCards,
-  type EndorserCard,
-} from '../components/discover/endorserCardData';
+  buildSeekerCards,
+  type SeekerCard,
+} from '../components/discover/seekerCardData';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 
 /**
- * Seeker Discover — Tinder-style swipe stack of Endorsers.
- * Right swipe records an endorsement request; left swipe is a private pass.
+ * Endorser Discover — swipe stack of Seeker career stories.
+ * Swipe right = private "I'd endorse this person" (mutual match opens chat).
+ * Swipe left = pass, removed from queue.
+ * Designed for batch review during commute / coffee breaks (UX spec § 6).
  */
-export function DiscoverScreen() {
+export function EndorserDiscoverScreen() {
   const [queueKey, setQueueKey] = useState(0);
-  const cards = useMemo(() => buildEndorserCards('1'), [queueKey]);
+  const cards = useMemo(() => buildSeekerCards('2'), [queueKey]);
   const [remaining, setRemaining] = useState<number>(cards.length);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
   const handleSwipe = useCallback(
-    (card: EndorserCard, direction: 'request' | 'pass') => {
+    (card: SeekerCard, direction: SwipeDirection) => {
       setRemaining((r) => Math.max(0, r - 1));
       if (direction === 'request') {
-        setLastAction(`Request sent to ${card.name}`);
-        // Fire-and-forget: the demo-mode createRequest resolves locally.
+        setLastAction(`Endorsement pledge sent for ${card.name}`);
+        // Fire demo API — endorsement moves to post-match flow once seeker also swipes right
         referralsApi
           .createRequest({
-            feedCardId: `endorser-${card.id}`,
-            targetRole: card.jobTitle,
-            seekerNote: `Hi ${card.name.split(' ')[0]}, saw your profile and would love an endorsement for ${card.companyName}.`,
+            feedCardId: `seeker-${card.id}`,
+            targetRole: card.targetRole,
+            seekerNote: card.headline,
           })
           .catch(() => {});
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => {},
-        );
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        ).catch(() => {});
       } else {
         setLastAction(null);
       }
@@ -57,7 +59,7 @@ export function DiscoverScreen() {
         <View>
           <Text style={styles.wordmark}>ENDORSLY</Text>
           <Text style={styles.subtitle}>
-            Swipe right to request · left to pass
+            Swipe right to endorse · left to pass
           </Text>
         </View>
         <View style={styles.counter}>
@@ -67,15 +69,15 @@ export function DiscoverScreen() {
       </View>
 
       <View style={styles.deckFrame}>
-        <SwipeDeck<EndorserCard>
+        <SwipeDeck<SeekerCard>
           items={cards}
           keyOf={(c) => c.id}
           onSwipe={handleSwipe}
           onRefresh={handleRefresh}
-          emptyTitle="You're caught up"
-          emptyBody="No more Endorsers in today's queue. Check back later, or broaden your target companies."
+          emptyTitle="Inbox empty"
+          emptyBody="No more Seekers in your queue. New career stories appear daily."
           renderCard={({ item, isTop, stackIndex, onSwiped }) => (
-            <EndorserCardView
+            <SeekerCardView
               card={item}
               isTop={isTop}
               stackIndex={stackIndex}
@@ -87,7 +89,7 @@ export function DiscoverScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.footerHint}>
-          {lastAction ?? 'Double opt-in: chat opens only when they swipe right too.'}
+          {lastAction ?? 'Double opt-in: chat opens only if they swipe right too.'}
         </Text>
       </View>
     </SafeAreaView>

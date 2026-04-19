@@ -58,7 +58,7 @@ export interface DemoReferrer {
 }
 
 export const DEMO_REFERRERS: DemoReferrer[] = [
-  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, kingmakerScore: 72, totalReferrals: 24, successfulHires: 8 },
+  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, kingmakerScore: 86, totalReferrals: 28, successfulHires: 9 },
   { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, kingmakerScore: 63, totalReferrals: 19, successfulHires: 6 },
   { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, kingmakerScore: 47, totalReferrals: 12, successfulHires: 3 },
   { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, kingmakerScore: 41, totalReferrals: 15, successfulHires: 3 },
@@ -82,7 +82,7 @@ export function referrerById(id: string): DemoReferrer | undefined {
 }
 
 // ── Seekers (12) ──────────────────────────────────────────────────────
-interface DemoSeeker {
+export interface DemoSeeker {
   id: string;
   name: string;
   email: string;
@@ -99,7 +99,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     id: '1',
     name: 'Danush Arun',
     email: 'danush@gmail.com',
-    headline: 'Left Amazon after 4 years. Here is why Bangalore startups won.',
+    headline: 'Backend Engineer, 6y at Amazon Pay',
     story:
       '4 years building payment infra at Amazon Pay. The scale was incredible '
       + 'but pace of shipping felt glacial. Quit last month to explore '

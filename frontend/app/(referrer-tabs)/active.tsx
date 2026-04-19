@@ -1,36 +1,60 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
+import { router } from 'expo-router';
+import type { ReferrerInboxItem, ReferralStatus } from '@refr/shared';
+import { referralsApi } from '../../src/services/api';
+import { Button } from '../../src/components/common/Button';
+import { MatchCard, type MatchCardData } from '../../src/components/activity/MatchCard';
+import type { PipelineStage } from '../../src/components/activity/PipelineStepper';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
-import { Avatar } from '../../src/components/common/Avatar';
-import { Button } from '../../src/components/common/Button';
-import { referralsApi } from '../../src/services/api';
-import { router } from 'expo-router';
-import type { ReferrerInboxItem, ReferralStatus } from '@refr/shared';
 
-type ActiveStatus = 'accepted' | 'submitted' | 'interviewing';
-const ACTIVE_STATUSES: ActiveStatus[] = ['accepted', 'submitted', 'interviewing'];
+const PAYOUT_PER_HIRE = 22000;
 
-const STATUS_LABELS: Record<ActiveStatus, string> = {
-  accepted: 'Accepted',
-  submitted: 'Submitted to HR',
-  interviewing: 'Interviewing',
-};
+// Everything that's post-match (match established, whether or not submitted yet)
+const ACTIVE_STATES: Set<ReferralStatus> = new Set([
+  'accepted',      // legacy: treat as matched
+  'submitted',
+  'interviewing',
+  'hired',
+]);
 
-const STATUS_COLORS: Record<ActiveStatus, string> = {
-  accepted: colors.pipelineAccepted,
-  submitted: colors.pipelineSubmitted,
-  interviewing: colors.pipelineInterviewing,
-};
+function timeAgo(iso?: string | null): string {
+  if (!iso) return 'Just now';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function stageLabelFor(status: ReferralStatus): string {
+  if (status === 'accepted' || status === 'requested') return 'Matched';
+  if (status === 'submitted') return 'Submitted';
+  if (status === 'interviewing') return 'Interviewing';
+  if (status === 'hired') return 'Hired';
+  return status;
+}
+
+function latestTimestampForStage(r: ReferrerInboxItem['referral']): string | undefined {
+  // Use the most recent stamp for the "X ago" display
+  if (r.status === 'hired') return r.outcomeAt ?? r.submittedAt ?? r.acceptedAt;
+  if (r.status === 'interviewing') return r.submittedAt ?? r.acceptedAt;
+  if (r.status === 'submitted') return r.submittedAt ?? r.acceptedAt;
+  return r.acceptedAt ?? r.requestedAt;
+}
 
 export default function ActiveRoute() {
   const [items, setItems] = useState<ReferrerInboxItem[]>([]);
@@ -42,13 +66,9 @@ export default function ActiveRoute() {
     setError(null);
     try {
       const data = await referralsApi.getInbox();
-      setItems(
-        data.filter((item) =>
-          ACTIVE_STATUSES.includes(item.referral.status as ActiveStatus),
-        ),
-      );
+      setItems(data.filter((i) => ACTIVE_STATES.has(i.referral.status)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load active referrals');
+      setError(err instanceof Error ? err.message : 'Failed to load activity');
     } finally {
       setLoading(false);
     }
@@ -56,22 +76,36 @@ export default function ActiveRoute() {
 
   useEffect(() => { load(); }, [load]);
 
-  const transitionItem = useCallback(
-    async (id: string, next: ReferralStatus, successMessage: string) => {
+  const { pendingValue, paidValue, hiredThisMonth } = useMemo(() => {
+    let pending = 0;
+    let paid = 0;
+    let thisMonth = 0;
+    const start = new Date();
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+    for (const it of items) {
+      if (it.referral.status === 'hired') {
+        paid += PAYOUT_PER_HIRE;
+        const t = it.referral.outcomeAt ? new Date(it.referral.outcomeAt).getTime() : 0;
+        if (t >= start.getTime()) thisMonth += 1;
+      } else {
+        pending += PAYOUT_PER_HIRE;
+      }
+    }
+    return { pendingValue: pending, paidValue: paid, hiredThisMonth: thisMonth };
+  }, [items]);
+
+  const transition = useCallback(
+    async (id: string, next: ReferralStatus, message: string) => {
       setPendingId(id);
       try {
         const updated = await referralsApi.transition(id, next);
-        const stillActive = ACTIVE_STATUSES.includes(updated.status as ActiveStatus);
         setItems((prev) =>
-          stillActive
-            ? prev.map((item) =>
-                item.referral.id === id
-                  ? { ...item, referral: updated }
-                  : item,
-              )
-            : prev.filter((item) => item.referral.id !== id),
+          prev
+            .map((i) => (i.referral.id === id ? { ...i, referral: updated } : i))
+            .filter((i) => ACTIVE_STATES.has(i.referral.status)),
         );
-        Alert.alert('Updated', successMessage);
+        Alert.alert('Updated', message);
       } catch (err) {
         Alert.alert(
           'Could not update',
@@ -84,72 +118,70 @@ export default function ActiveRoute() {
     [],
   );
 
-  const confirmSubmit = (item: ReferrerInboxItem) => {
-    Alert.alert(
-      `Submit ${item.seekerName} to HR?`,
-      'This marks the referral as formally submitted to the company. The seeker will see it move forward on their pipeline.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Submit',
-          onPress: () =>
-            transitionItem(
-              item.referral.id,
-              'submitted',
-              `${item.seekerName} marked as submitted.`,
-            ),
-        },
-      ],
-    );
-  };
+  const handleAction = useCallback(
+    (item: ReferrerInboxItem, kind: 'submit' | 'interviewing' | 'outcome' | 'view') => {
+      if (kind === 'submit') {
+        Alert.alert(
+          `Submit ${item.seekerName} to HR?`,
+          'Marks the endorsement as formally submitted. The seeker sees it move forward.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Submit',
+              onPress: () =>
+                transition(item.referral.id, 'submitted', `${item.seekerName} submitted to HR.`),
+            },
+          ],
+        );
+        return;
+      }
+      if (kind === 'interviewing') {
+        Alert.alert('Mark interviewing?', 'Confirms the seeker has started interviews.', [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Confirm',
+            onPress: () =>
+              transition(item.referral.id, 'interviewing', `${item.seekerName} now interviewing.`),
+          },
+        ]);
+        return;
+      }
+      if (kind === 'outcome') {
+        Alert.alert('Record outcome', `Outcome for ${item.seekerName}?`, [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Rejected',
+            style: 'destructive',
+            onPress: () =>
+              transition(item.referral.id, 'rejected', 'Outcome recorded.'),
+          },
+          {
+            text: 'Hired +10',
+            onPress: () =>
+              transition(item.referral.id, 'hired', `${item.seekerName} hired. Endorsement +10.`),
+          },
+        ]);
+        return;
+      }
+      // view — noop in Phase 1, could route to detail
+    },
+    [transition],
+  );
 
-  const confirmInterviewing = (item: ReferrerInboxItem) => {
-    Alert.alert(
-      'Move to Interviewing?',
-      'Confirms the seeker has started interviews.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () =>
-            transitionItem(
-              item.referral.id,
-              'interviewing',
-              `${item.seekerName} is now interviewing.`,
-            ),
-        },
-      ],
-    );
-  };
-
-  const confirmOutcome = (item: ReferrerInboxItem) => {
-    Alert.alert(
-      'Mark outcome',
-      `What was the outcome for ${item.seekerName}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Rejected',
-          style: 'destructive',
-          onPress: () =>
-            transitionItem(
-              item.referral.id,
-              'rejected',
-              'Outcome recorded. Score unchanged.',
-            ),
-        },
-        {
-          text: 'Hired  +10',
-          onPress: () =>
-            transitionItem(
-              item.referral.id,
-              'hired',
-              `${item.seekerName} hired. Endorsement +10.`,
-            ),
-        },
-      ],
-    );
-  };
+  const handleChat = useCallback((item: ReferrerInboxItem) => {
+    router.push({
+      pathname: '/chat',
+      params: {
+        referralId: item.referral.id,
+        participantName: item.seekerName,
+        participantAvatar: item.seekerAvatar,
+        participantSubtitle: item.seekerHeadline,
+        targetRole: item.referral.targetRole,
+        companyName: 'Razorpay',
+        stage: item.referral.status,
+      },
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -163,7 +195,7 @@ export default function ActiveRoute() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
-          <Text style={styles.title}>Active Referrals</Text>
+          <Text style={styles.title}>Activity</Text>
         </View>
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Something went wrong</Text>
@@ -174,122 +206,91 @@ export default function ActiveRoute() {
     );
   }
 
+  const formatINR = (n: number) =>
+    n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : n >= 1000 ? `₹${Math.round(n / 1000)}K` : `₹${n}`;
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.title}>Active Referrals</Text>
+        <Text style={styles.title}>Activity</Text>
         <Text style={styles.subtitle}>
-          {items.length} in progress
+          {items.length} in flight · {hiredThisMonth} hired this month
         </Text>
       </View>
 
       {items.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No active referrals</Text>
+          <Text style={styles.emptyTitle}>Nothing active</Text>
           <Text style={styles.emptyBody}>
-            Accept requests from your inbox to start the referral process.
+            Swipe right on Seekers in Discover. Matches that pass through their chat land here.
           </Text>
         </View>
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.referral.id}
+          keyExtractor={(i) => i.referral.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onRefresh={load}
           refreshing={loading}
-          renderItem={({ item }) => (
-            <ActiveCard
-              item={item}
-              pending={pendingId === item.referral.id}
-              onSubmit={() => confirmSubmit(item)}
-              onInterviewing={() => confirmInterviewing(item)}
-              onOutcome={() => confirmOutcome(item)}
-              onChat={() =>
-                router.push({
-                  pathname: '/chat',
-                  params: {
-                    referralId: item.referral.id,
-                    participantName: item.seekerName,
-                    participantAvatar: item.seekerAvatar,
-                  },
-                })
-              }
-            />
-          )}
+          ListHeaderComponent={
+            <View style={styles.summaryRow}>
+              <SummaryTile label="Pending" value={formatINR(pendingValue)} accent />
+              <SummaryTile label="Earned" value={formatINR(paidValue)} success />
+              <SummaryTile label="In flight" value={String(items.length)} />
+            </View>
+          }
+          renderItem={({ item }) => {
+            const status = item.referral.status as ReferralStatus;
+            const stageLabel = stageLabelFor(status);
+            const ts = latestTimestampForStage(item.referral);
+            const card: MatchCardData = {
+              id: item.referral.id,
+              counterpartName: item.seekerName,
+              counterpartAvatar: item.seekerAvatar,
+              counterpartSubtitle: item.seekerHeadline,
+              targetRole: item.referral.targetRole,
+              companyName: 'Razorpay',
+              stage: status as PipelineStage,
+              timeInStageLabel: `${stageLabel} · ${timeAgo(ts)}`,
+              payoutPending: PAYOUT_PER_HIRE,
+            };
+            return (
+              <MatchCard
+                match={card}
+                viewerRole="endorser"
+                pending={pendingId === item.referral.id}
+                onAction={(kind) => handleAction(item, kind)}
+                onChat={() => handleChat(item)}
+              />
+            );
+          }}
         />
       )}
     </SafeAreaView>
   );
 }
 
-function ActiveCard({
-  item,
-  pending,
-  onSubmit,
-  onInterviewing,
-  onOutcome,
-  onChat,
+function SummaryTile({
+  label,
+  value,
+  accent,
+  success,
 }: {
-  item: ReferrerInboxItem;
-  pending: boolean;
-  onSubmit: () => void;
-  onInterviewing: () => void;
-  onOutcome: () => void;
-  onChat: () => void;
+  label: string;
+  value: string;
+  accent?: boolean;
+  success?: boolean;
 }) {
-  const status = item.referral.status as ActiveStatus;
-  const color = STATUS_COLORS[status];
-  const label = STATUS_LABELS[status];
-
-  const primaryAction = (() => {
-    switch (status) {
-      case 'accepted':
-        return { label: 'Submit to HR', onPress: onSubmit };
-      case 'submitted':
-        return { label: 'Mark Interviewing', onPress: onInterviewing };
-      case 'interviewing':
-        return { label: 'Record Outcome', onPress: onOutcome };
-      default:
-        return null;
-    }
-  })();
-
+  const valueColor = success
+    ? colors.success
+    : accent
+    ? colors.accent
+    : colors.text;
   return (
-    <View style={styles.card}>
-      <View style={styles.cardRow}>
-        <Avatar uri={item.seekerAvatar} displayName={item.seekerName} size="md" />
-        <View style={styles.cardMeta}>
-          <Text style={styles.seekerName}>{item.seekerName}</Text>
-          <Text style={styles.seekerHeadline} numberOfLines={1}>
-            {item.seekerHeadline}
-          </Text>
-          <Text style={styles.targetRole}>{item.referral.targetRole}</Text>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: color + '15' }]}>
-          <Text style={[styles.statusText, { color }]}>{label}</Text>
-        </View>
-      </View>
-
-      <View style={styles.actionRow}>
-        {primaryAction && (
-          <Button
-            label={pending ? 'Updating...' : primaryAction.label}
-            onPress={primaryAction.onPress}
-            variant="primary"
-            size="medium"
-            disabled={pending}
-            style={styles.primaryBtn}
-          />
-        )}
-        <Button
-          label="Chat"
-          onPress={onChat}
-          variant="secondary"
-          size="medium"
-          style={styles.chatBtn}
-        />
-      </View>
+    <View style={styles.tile}>
+      <Text style={[styles.tileValue, { color: valueColor }]}>{value}</Text>
+      <Text style={styles.tileLabel}>{label}</Text>
     </View>
   );
 }
@@ -303,9 +304,39 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[4],
     gap: spacing[1],
   },
-  title: { ...typography.h2, color: colors.text },
+  title: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 32,
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
   subtitle: { ...typography.caption, color: colors.textSecondary },
   list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: spacing[20] },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    marginBottom: spacing[4],
+  },
+  tile: {
+    flex: 1,
+    backgroundColor: colors.surfaceLevel1,
+    borderRadius: 12,
+    padding: spacing[3],
+    alignItems: 'center',
+    gap: 2,
+  },
+  tileValue: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 20,
+    letterSpacing: -0.3,
+  },
+  tileLabel: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    fontSize: 10,
+  },
   empty: {
     flex: 1,
     alignItems: 'center',
@@ -315,24 +346,4 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { ...typography.h4, color: colors.textSecondary },
   emptyBody: { ...typography.body, color: colors.textTertiary, textAlign: 'center', lineHeight: 24 },
-  card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: layout.cardBorderRadius,
-    padding: layout.cardPadding,
-    gap: spacing[3],
-  },
-  cardRow: { flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' },
-  cardMeta: { flex: 1, gap: spacing[0.5] },
-  seekerName: { ...typography.bodyLarge, color: colors.text, fontFamily: 'Outfit-SemiBold' },
-  seekerHeadline: { ...typography.bodySmall, color: colors.textSecondary },
-  targetRole: { ...typography.caption, color: colors.accent, marginTop: spacing[1] },
-  statusBadge: {
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[0.5],
-    borderRadius: 100,
-  },
-  statusText: { ...typography.caption, fontFamily: 'Outfit-SemiBold' },
-  actionRow: { flexDirection: 'row', gap: spacing[2] },
-  primaryBtn: { flex: 2 },
-  chatBtn: { flex: 1 },
 });

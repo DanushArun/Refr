@@ -26,10 +26,10 @@ export default function ReferrerTabsLayout() {
       <Tabs.Screen
         name="inbox"
         options={{
-          title: 'Inbox',
+          title: 'Discover',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? 'mail' : 'mail-outline'}
+              name={focused ? 'compass' : 'compass-outline'}
               size={24}
               color={color}
             />

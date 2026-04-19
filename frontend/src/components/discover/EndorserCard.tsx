@@ -16,7 +16,9 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, layout } from '../../theme/spacing';
 import { SwipeStamp } from './SwipeStamp';
+import type { SwipeDirection } from './SwipeDeck';
 import type { EndorserCard as EndorserCardData } from './endorserCardData';
+import { TierBadge } from '../tier/TierBadge';
 
 const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
 const COMMIT_THRESHOLD = WINDOW_WIDTH * 0.32;
@@ -24,8 +26,6 @@ const FLY_OFF_X = WINDOW_WIDTH * 1.3;
 
 // Cards are a consistent rectangle. Sized for iPhone 14 Pro / 15, scales down.
 const CARD_HEIGHT = Math.min(560, Math.round(WINDOW_HEIGHT * 0.62));
-
-export type SwipeDirection = 'request' | 'pass';
 
 interface EndorserCardProps {
   card: EndorserCardData;
@@ -119,10 +119,7 @@ export function EndorserCard({ card, isTop, stackIndex, onSwiped }: EndorserCard
                   {card.companyName} · Bangalore
                 </Text>
               </View>
-              <View style={styles.trustChip}>
-                <Text style={styles.trustLabel}>TRUST</Text>
-                <Text style={styles.trustValue}>{card.trustScore.toFixed(1)}</Text>
-              </View>
+              <TierBadge score={card.trustScore} size="md" />
             </View>
 
             <View style={styles.verifiedRow}>
@@ -196,7 +193,13 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
   headMeta: { flex: 1, gap: spacing[0.5] },
-  name: { ...typography.h3, color: colors.text, fontFamily: 'InstrumentSerif-Regular' },
+  name: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 22,
+    lineHeight: 26,
+    letterSpacing: -0.4,
+    color: colors.text,
+  },
   role: { ...typography.body, color: colors.textSecondary },
   company: { ...typography.caption, color: colors.accent },
   trustChip: {
@@ -215,8 +218,15 @@ const styles = StyleSheet.create({
   },
   trustValue: {
     fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 18,
+    fontSize: 20,
+    lineHeight: 22,
     color: colors.text,
+  },
+  trustDenom: {
+    fontFamily: 'JetBrainsMono-Regular',
+    fontSize: 10,
+    color: colors.textTertiary,
+    letterSpacing: 0.3,
   },
   verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   verifiedDot: {

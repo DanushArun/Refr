@@ -33,7 +33,7 @@ export const DEMO: DemoConfig = {
   enabled: true,
 
   /** Which role to simulate: 'seeker' or 'referrer' */
-  demoRole: 'seeker',
+  demoRole: 'referrer',
 
   /** Per-screen toggles. Each controls one API surface area. */
   screens: {
@@ -68,9 +68,10 @@ export {
   MOCK_SEEKER_PROFILE,
   MOCK_REFERRER_PROFILE,
   DEMO_REFERRERS,
+  DEMO_SEEKERS,
   chatForReferral,
   appendChatMessage,
   referrerByCompany,
   referrerById,
 } from './mockData';
-export type { DemoReferrer } from './mockData';
+export type { DemoReferrer, DemoSeeker } from './mockData';

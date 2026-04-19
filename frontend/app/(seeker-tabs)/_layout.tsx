@@ -54,10 +54,10 @@ export default function SeekerTabsLayout() {
       <Tabs.Screen
         name="pipeline"
         options={{
-          title: 'Pipeline',
+          title: 'Activity',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? 'git-branch' : 'git-branch-outline'}
+              name={focused ? 'pulse' : 'pulse-outline'}
               size={24}
               color={color}
             />

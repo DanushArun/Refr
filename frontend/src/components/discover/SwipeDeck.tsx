@@ -1,47 +1,61 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, type ReactElement } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { EndorserCard, type SwipeDirection } from './EndorserCard';
-import type { EndorserCard as EndorserCardData } from './endorserCardData';
 import { Button } from '../common/Button';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, layout } from '../../theme/spacing';
 
-interface SwipeDeckProps {
-  cards: EndorserCardData[];
-  /** Fires when the top card leaves the screen. Receives card + direction. */
-  onSwipe: (card: EndorserCardData, direction: SwipeDirection) => void;
-  /** Optional reset action shown on empty state. */
+export type SwipeDirection = 'request' | 'pass';
+
+export interface SwipeDeckRenderArgs<T> {
+  item: T;
+  isTop: boolean;
+  stackIndex: number;
+  onSwiped: (direction: SwipeDirection) => void;
+}
+
+interface SwipeDeckProps<T> {
+  items: T[];
+  keyOf: (item: T) => string;
+  renderCard: (args: SwipeDeckRenderArgs<T>) => ReactElement;
+  onSwipe: (item: T, direction: SwipeDirection) => void;
   onRefresh?: () => void;
+  emptyTitle?: string;
+  emptyBody?: string;
 }
 
 /**
- * Manages the card stack. Renders only the top 3 cards for perf.
- * Increments index on each completed swipe, triggers onSwipe callback.
- * Shows an empty state when the queue is exhausted.
+ * Generic swipe deck — renders any card type via the renderCard prop.
+ * Owns the stack index state; fires onSwipe after each committed gesture.
+ * Only the top card accepts gestures (see isTop flag passed to renderCard).
  */
-export function SwipeDeck({ cards, onSwipe, onRefresh }: SwipeDeckProps) {
+export function SwipeDeck<T>({
+  items,
+  keyOf,
+  renderCard,
+  onSwipe,
+  onRefresh,
+  emptyTitle = "You're caught up",
+  emptyBody = 'No more cards in today\'s queue. Check back later.',
+}: SwipeDeckProps<T>) {
   const [index, setIndex] = useState(0);
 
   const handleSwiped = useCallback(
     (direction: SwipeDirection) => {
-      const card = cards[index];
-      if (card) onSwipe(card, direction);
+      const item = items[index];
+      if (item) onSwipe(item, direction);
       setIndex((i) => i + 1);
     },
-    [cards, index, onSwipe],
+    [items, index, onSwipe],
   );
 
-  const visible = cards.slice(index, index + 3);
+  const visible = items.slice(index, index + 3);
 
   if (visible.length === 0) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>You're caught up</Text>
-        <Text style={styles.emptyBody}>
-          No more Endorsers in today's queue. Check back later, or broaden your
-          target companies.
-        </Text>
+        <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+        <Text style={styles.emptyBody}>{emptyBody}</Text>
         {onRefresh && (
           <Button
             label="Refresh queue"
@@ -60,18 +74,18 @@ export function SwipeDeck({ cards, onSwipe, onRefresh }: SwipeDeckProps) {
 
   return (
     <View style={styles.deck}>
-      {/* Render in reverse so the top card is last = on top */}
       {visible
-        .map((card, i) => ({ card, stackIndex: i }))
+        .map((item, i) => ({ item, stackIndex: i }))
         .reverse()
-        .map(({ card, stackIndex }) => (
-          <EndorserCard
-            key={`${card.id}-${index + stackIndex}`}
-            card={card}
-            isTop={stackIndex === 0}
-            stackIndex={stackIndex}
-            onSwiped={handleSwiped}
-          />
+        .map(({ item, stackIndex }) => (
+          <React.Fragment key={`${keyOf(item)}-${index + stackIndex}`}>
+            {renderCard({
+              item,
+              isTop: stackIndex === 0,
+              stackIndex,
+              onSwiped: handleSwiped,
+            })}
+          </React.Fragment>
         ))}
     </View>
   );
@@ -89,7 +103,8 @@ const styles = StyleSheet.create({
   emptyTitle: {
     ...typography.h3,
     color: colors.text,
-    fontFamily: 'InstrumentSerif-Regular',
+    fontFamily: 'Outfit-Bold',
+    letterSpacing: -0.3,
   },
   emptyBody: {
     ...typography.body,

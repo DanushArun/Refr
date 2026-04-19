@@ -14,6 +14,7 @@ import { spacing, layout } from '../theme/spacing';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem } from '@refr/shared';
 import type { ReferralStatus } from '@refr/shared';
+import { PipelineStepper as SharedStepper, type PipelineStage } from '../components/activity/PipelineStepper';
 
 const STATUS_LABELS: Record<string, string> = {
   requested: 'Waiting',
@@ -67,15 +68,15 @@ export function PipelineScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.title}>My Pipeline</Text>
-        <Text style={styles.subtitle}>{items.length} referral{items.length !== 1 ? 's' : ''}</Text>
+        <Text style={styles.title}>Activity</Text>
+        <Text style={styles.subtitle}>{items.length} endorsement{items.length !== 1 ? 's' : ''} in flight</Text>
       </View>
 
       {items.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No referrals yet</Text>
+          <Text style={styles.emptyTitle}>No activity yet</Text>
           <Text style={styles.emptyBody}>
-            Scroll the feed and tap "Endorse" on Seeker cards to request endorsements.
+            Swipe right on an Endorser in Discover to request your first endorsement.
           </Text>
         </View>
       ) : (
@@ -120,7 +121,7 @@ function PipelineItem({ item }: { item: SeekerPipelineItem }) {
         <Text style={styles.referrerTitle}>{item.referrerName} at {item.companyName}</Text>
       </View>
 
-      <PipelineStepper status={item.referral.status as ReferralStatus} />
+      <SharedStepper stage={item.referral.status as PipelineStage} />
     </View>
   );
 }
