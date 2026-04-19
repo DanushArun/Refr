@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   View,
   Text,
@@ -55,7 +56,7 @@ export function PipelineScreen() {
     }
   }, []);
 
-  useEffect(() => { loadPipeline(); }, [loadPipeline]);
+  useFocusEffect(useCallback(() => { loadPipeline(); }, [loadPipeline]));
 
   if (loading) {
     return (

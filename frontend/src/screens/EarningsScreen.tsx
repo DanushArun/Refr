@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
@@ -10,7 +11,12 @@ import {
 } from 'react-native';
 import { Avatar } from '../components/common/Avatar';
 import { TierBadge } from '../components/tier/TierBadge';
-import { TierProgress } from '../components/tier/TierProgress';
+import {
+  nextTier,
+  pointsToNextTier,
+  progressToNextTier,
+  tierForScore,
+} from '../components/tier/tiers';
 import {
   referralsApi,
   type LeaderboardEntry,
@@ -29,7 +35,7 @@ const PAYOUT_PER_HIRE = 22000;
  *   1. HERO       — lifetime earnings, this month, pending (the ₹ story)
  *   2. PAYOUTS    — list of recent successful hires with amounts + dates
  *   3. SCORE      — Endorsement Score as a secondary card (was the hero before)
- *   4. LEADERBOARD — top 10 Bangalore, viewer's row highlighted
+ *   4. LEADERBOARD — top 10 endorsers, viewer's row highlighted
  *
  * The Endorsement Score is NOT the star here; money is. The Score is a
  * reputation multiplier that appears secondary to the ₹ story.
@@ -39,7 +45,8 @@ export function EarningsScreen() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
     Promise.all([
       referralsApi.getReputation(),
       referralsApi.getLeaderboard(),
@@ -53,6 +60,8 @@ export function EarningsScreen() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const payouts = useMemo(() => buildMockPayouts(reputation?.successfulHires ?? 0), [reputation]);
 
@@ -118,35 +127,14 @@ export function EarningsScreen() {
           )}
         </View>
 
-        {/* 3 · TIER — gamified progression, not just a score */}
-        <View style={styles.scoreCard}>
-          <View style={styles.scoreCardTop}>
-            <View style={{ gap: spacing[1] }}>
-              <Text style={styles.scoreCardLabel}>TIER</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}>
-                <TierBadge score={reputation.kingmakerScore} size="lg" />
-                {rankPosition > 0 && (
-                  <View style={styles.rankChip}>
-                    <Text style={styles.rankChipText}>#{rankPosition} Bangalore</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
+        {/* 3 · TIER — single cohesive card; score is hero, tier + rank context, progression bar, rules */}
+        <TierCard score={reputation.kingmakerScore} rank={rankPosition} />
 
-          <TierProgress score={reputation.kingmakerScore} variant="full" />
-
-          <View style={styles.scoreRules}>
-            <ScoreRule label="Per match" delta="+2" />
-            <ScoreRule label="Per hire" delta="+10" />
-            <ScoreRule label="2wks inactive" delta="−1/wk" negative />
-          </View>
-        </View>
 
         {/* 4 · LEADERBOARD */}
         <View style={styles.section}>
           <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Bangalore Endorser Board</Text>
+            <Text style={styles.sectionTitle}>Endorser Leaderboard</Text>
             <Text style={styles.sectionCount}>top 10</Text>
           </View>
           {leaderboard.slice(0, 10).map((entry, idx) => (
@@ -258,6 +246,101 @@ function ScoreRule({ label, delta, negative }: { label: string; delta: string; n
       <Text style={[styles.scoreRuleDelta, { color: negative ? colors.error : colors.success }]}>
         {delta}
       </Text>
+    </View>
+  );
+}
+
+/**
+ * Single-card tier visual.
+ * Score is the visual hero. Tier + rank appear as one context line below.
+ * The progress bar is bookended by the current and next tier — no orphan badges.
+ * Rules sit as a tight row at the bottom.
+ */
+function TierCard({ score, rank }: { score: number; rank: number }) {
+  const current = tierForScore(score);
+  const next = nextTier(score);
+  const pct = progressToNextTier(score);
+  const remaining = pointsToNextTier(score);
+
+  return (
+    <View style={styles.tierCard}>
+      {/* Hero: the score */}
+      <Text style={styles.tierScoreLabel}>ENDORSEMENT SCORE</Text>
+      <Text style={styles.tierScoreValue}>{score}</Text>
+      <View style={styles.tierContextRow}>
+        <TierBadge score={score} size="md" />
+        {rank > 0 && (
+          <>
+            <Text style={styles.tierContextDot}>·</Text>
+            <Text style={styles.tierContextRank}>
+              #{rank} <Text style={{ color: colors.textTertiary }}>rank</Text>
+            </Text>
+          </>
+        )}
+      </View>
+
+      {/* Progression rail */}
+      {next && (
+        <View style={styles.progressBlock}>
+          <View style={styles.progressEnds}>
+            <View style={styles.progressEndLeft}>
+              <Text style={[styles.progressTierName, { color: current.color }]}>
+                {current.name.toUpperCase()}
+              </Text>
+              <Text style={styles.progressEndNum}>{current.min}</Text>
+            </View>
+            <View style={styles.progressEndRight}>
+              <Text style={[styles.progressTierName, { color: next.color }]}>
+                {next.name.toUpperCase()}
+              </Text>
+              <Text style={styles.progressEndNum}>{next.min}</Text>
+            </View>
+          </View>
+
+          <View style={styles.progressRailWrap}>
+            <View style={styles.progressRail}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${pct * 100}%`, backgroundColor: current.glow },
+                ]}
+              />
+              {/* Knob at the progress tip */}
+              <View
+                style={[
+                  styles.progressKnob,
+                  {
+                    left: `${pct * 100}%`,
+                    borderColor: current.glow,
+                  },
+                ]}
+              >
+                <Text style={styles.progressKnobNum}>{score}</Text>
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.progressHint}>
+            <Text style={{ color: next.color, fontFamily: 'JetBrainsMono-Medium' }}>
+              {remaining} pts
+            </Text>
+            <Text style={{ color: colors.textSecondary }}> to {next.name}</Text>
+          </Text>
+        </View>
+      )}
+
+      {!next && (
+        <Text style={[styles.progressHint, { color: current.color, marginTop: spacing[2] }]}>
+          Top tier reached. Keep endorsing — score decays after 14 days idle.
+        </Text>
+      )}
+
+      {/* Rules */}
+      <View style={styles.scoreRules}>
+        <ScoreRule label="Per match" delta="+2" />
+        <ScoreRule label="Per hire" delta="+10" />
+        <ScoreRule label="2wks idle" delta="−1/wk" negative />
+      </View>
     </View>
   );
 }
@@ -418,46 +501,103 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  /* Score card */
-  scoreCard: {
+  /* Tier card (redesigned) */
+  tierCard: {
     backgroundColor: colors.surfaceLevel1,
     borderRadius: layout.cardBorderRadius,
     padding: spacing[5],
     gap: spacing[4],
+    alignItems: 'center',
   },
-  scoreCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  scoreCardLabel: {
+  tierScoreLabel: {
     fontFamily: 'Outfit-SemiBold',
     fontSize: 10,
     color: colors.textTertiary,
+    letterSpacing: 1.5,
+  },
+  tierScoreValue: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 64,
+    lineHeight: 68,
+    color: colors.text,
+    letterSpacing: -2,
+    marginTop: -spacing[1],
+  },
+  tierContextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
+  tierContextDot: {
+    color: colors.textTertiary,
+    fontSize: 16,
+  },
+  tierContextRank: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 13,
+    color: colors.text,
+  },
+  progressBlock: {
+    alignSelf: 'stretch',
+    gap: spacing[2],
+    marginTop: spacing[1],
+  },
+  progressEnds: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressEndLeft: { alignItems: 'flex-start', gap: 2 },
+  progressEndRight: { alignItems: 'flex-end', gap: 2 },
+  progressTierName: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 11,
     letterSpacing: 0.6,
   },
-  scoreCardValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 36,
-    lineHeight: 40,
-    color: colors.text,
-    letterSpacing: -1,
-  },
-  scoreRankRow: { alignItems: 'flex-end', gap: spacing[1] },
-  rankChip: {
-    backgroundColor: colors.accentLight,
-    borderRadius: 100,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-  },
-  rankChipText: {
-    fontFamily: 'Outfit-SemiBold',
+  progressEndNum: {
+    fontFamily: 'JetBrainsMono-Regular',
     fontSize: 11,
-    color: colors.accent,
+    color: colors.textTertiary,
+  },
+  progressRailWrap: {
+    paddingHorizontal: 2,
+  },
+  progressRail: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.surfaceInset,
+    position: 'relative',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressKnob: {
+    position: 'absolute',
+    top: -10,
+    marginLeft: -16,
+    width: 32,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.backgroundElevated,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressKnobNum: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 10,
+    color: colors.text,
+  },
+  progressHint: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: spacing[1],
   },
   scoreRules: {
+    alignSelf: 'stretch',
     flexDirection: 'row',
     gap: spacing[2],
+    marginTop: spacing[2],
   },
   scoreRule: {
     flex: 1,

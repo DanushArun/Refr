@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
@@ -40,13 +41,23 @@ function timeAgo(iso?: string | null): string {
   return `${days}d ago`;
 }
 
-function stageLabelFor(status: ReferralStatus): string {
-  if (status === 'accepted' || status === 'requested') return 'Matched';
-  if (status === 'submitted') return 'Submitted';
-  if (status === 'interviewing') return 'Interviewing';
-  if (status === 'hired') return 'Hired';
-  return status;
-}
+const STAGE_LABELS: Partial<Record<ReferralStatus, string>> = {
+  accepted: 'Matched',
+  requested: 'Matched',
+  submitted: 'Submitted',
+  interviewing: 'Interviewing',
+  hired: 'Hired',
+};
+
+/** Sort order: closest-to-hired first, hired (done) at the bottom.
+ *  Drives urgency — interviewing needs action soonest, hired is celebratory. */
+const STAGE_SORT_RANK: Record<string, number> = {
+  interviewing: 0,
+  submitted: 1,
+  accepted: 2,
+  requested: 2,
+  hired: 3,
+};
 
 function latestTimestampForStage(r: ReferrerInboxItem['referral']): string | undefined {
   // Use the most recent stamp for the "X ago" display
@@ -74,12 +85,25 @@ export default function ActiveRoute() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const { pendingValue, paidValue, hiredThisMonth } = useMemo(() => {
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const rankA = STAGE_SORT_RANK[a.referral.status] ?? 99;
+      const rankB = STAGE_SORT_RANK[b.referral.status] ?? 99;
+      if (rankA !== rankB) return rankA - rankB;
+      // Secondary — most recently active within same stage
+      const tA = latestTimestampForStage(a.referral);
+      const tB = latestTimestampForStage(b.referral);
+      return new Date(tB ?? 0).getTime() - new Date(tA ?? 0).getTime();
+    });
+  }, [items]);
+
+  const { pendingValue, paidValue, hiredThisMonth, inFlightCount } = useMemo(() => {
     let pending = 0;
     let paid = 0;
     let thisMonth = 0;
+    let inFlight = 0;
     const start = new Date();
     start.setDate(1);
     start.setHours(0, 0, 0, 0);
@@ -90,9 +114,10 @@ export default function ActiveRoute() {
         if (t >= start.getTime()) thisMonth += 1;
       } else {
         pending += PAYOUT_PER_HIRE;
+        inFlight += 1;
       }
     }
-    return { pendingValue: pending, paidValue: paid, hiredThisMonth: thisMonth };
+    return { pendingValue: pending, paidValue: paid, hiredThisMonth: thisMonth, inFlightCount: inFlight };
   }, [items]);
 
   const transition = useCallback(
@@ -214,7 +239,7 @@ export default function ActiveRoute() {
       <View style={styles.header}>
         <Text style={styles.title}>Activity</Text>
         <Text style={styles.subtitle}>
-          {items.length} in flight · {hiredThisMonth} hired this month
+          {inFlightCount} in flight · {hiredThisMonth} hired this month
         </Text>
       </View>
 
@@ -227,7 +252,7 @@ export default function ActiveRoute() {
         </View>
       ) : (
         <FlatList
-          data={items}
+          data={sortedItems}
           keyExtractor={(i) => i.referral.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
@@ -237,12 +262,12 @@ export default function ActiveRoute() {
             <View style={styles.summaryRow}>
               <SummaryTile label="Pending" value={formatINR(pendingValue)} accent />
               <SummaryTile label="Earned" value={formatINR(paidValue)} success />
-              <SummaryTile label="In flight" value={String(items.length)} />
+              <SummaryTile label="In flight" value={String(inFlightCount)} />
             </View>
           }
           renderItem={({ item }) => {
             const status = item.referral.status as ReferralStatus;
-            const stageLabel = stageLabelFor(status);
+            const stageLabel = STAGE_LABELS[status] ?? status;
             const ts = latestTimestampForStage(item.referral);
             const card: MatchCardData = {
               id: item.referral.id,

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -29,15 +29,13 @@ const CARD_HEIGHT = Math.min(560, Math.round(WINDOW_HEIGHT * 0.62));
 
 interface EndorserCardProps {
   card: EndorserCardData;
-  /** True only for the top card — only this one responds to gestures. */
   isTop: boolean;
-  /** Stack position 0 = top, 1 = behind, 2 = further behind. Drives scale. */
   stackIndex: number;
-  /** Fires after the card flies off screen. */
   onSwiped: (direction: SwipeDirection) => void;
+  onTap?: () => void;
 }
 
-export function EndorserCard({ card, isTop, stackIndex, onSwiped }: EndorserCardProps) {
+export function EndorserCard({ card, isTop, stackIndex, onSwiped, onTap }: EndorserCardProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
@@ -52,6 +50,7 @@ export function EndorserCard({ card, isTop, stackIndex, onSwiped }: EndorserCard
 
   const gesture = Gesture.Pan()
     .enabled(isTop)
+    .activeOffsetX([-15, 15])    // let taps through for quick presses
     .onUpdate((e) => {
       translateX.value = e.translationX;
       translateY.value = e.translationY;
@@ -104,64 +103,70 @@ export function EndorserCard({ card, isTop, stackIndex, onSwiped }: EndorserCard
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.card, cardStyle]}>
-        {/* Behind cards render an empty shell — no content bleed */}
-        {isTop ? (
+        {isTop && (
           <>
             <SwipeStamp translateX={translateX} kind="request" />
             <SwipeStamp translateX={translateX} kind="pass" />
+          </>
+        )}
 
-            <View style={styles.row}>
-              <Avatar displayName={card.name} size="lg" />
-              <View style={styles.headMeta}>
-                <Text style={styles.name} numberOfLines={1}>{card.name}</Text>
-                <Text style={styles.role} numberOfLines={1}>{card.jobTitle}</Text>
-                <Text style={styles.company} numberOfLines={1}>
-                  {card.companyName} · Bangalore
+        <Pressable onPress={isTop ? onTap : undefined} style={styles.tapArea}>
+          {isTop ? (
+            <>
+              <View style={styles.row}>
+                <Avatar displayName={card.name} size="lg" />
+                <View style={styles.headMeta}>
+                  <Text style={styles.name} numberOfLines={1}>{card.name}</Text>
+                  <Text style={styles.role} numberOfLines={1}>{card.jobTitle}</Text>
+                  <Text style={styles.company} numberOfLines={1}>
+                    {card.companyName}
+                  </Text>
+                </View>
+                <TierBadge score={card.trustScore} size="md" />
+              </View>
+
+              <View style={styles.verifiedRow}>
+                <View style={styles.verifiedDot} />
+                <Text style={styles.verifiedText} numberOfLines={1}>
+                  Verified employee at {card.companyName}
                 </Text>
               </View>
-              <TierBadge score={card.trustScore} size="md" />
-            </View>
 
-            <View style={styles.verifiedRow}>
-              <View style={styles.verifiedDot} />
-              <Text style={styles.verifiedText} numberOfLines={1}>
-                Verified employee at {card.companyName}
-              </Text>
-            </View>
-
-            <View style={styles.statGrid}>
-              <StatCell label="Response" value={card.responseTime} />
-              <StatCell label="Accepts" value={`${card.acceptanceRate}%`} />
-              <StatCell label="Hires" value={String(card.hires)} />
-            </View>
-
-            <View style={styles.skills}>
-              {card.skills.map((s) => (
-                <View key={s} style={styles.skill}>
-                  <Text style={styles.skillText}>{s}</Text>
-                </View>
-              ))}
-            </View>
-
-            <View style={{ flex: 1 }} />
-
-            <View style={styles.matchRow}>
-              <Text style={styles.matchLabel}>MATCH</Text>
-              <View style={styles.matchBar}>
-                <View
-                  style={[styles.matchFill, { width: `${card.matchPercent}%` }]}
-                />
+              <View style={styles.statGrid}>
+                <StatCell label="Response" value={card.responseTime} />
+                <StatCell label="Accepts" value={`${card.acceptanceRate}%`} />
+                <StatCell label="Hires" value={String(card.hires)} />
               </View>
-              <Text style={styles.matchPercent}>{card.matchPercent}%</Text>
+
+              <View style={styles.skills}>
+                {card.skills.map((s) => (
+                  <View key={s} style={styles.skill}>
+                    <Text style={styles.skillText}>{s}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={{ flex: 1 }} />
+
+              <View style={styles.matchRow}>
+                <Text style={styles.matchLabel}>MATCH</Text>
+                <View style={styles.matchBar}>
+                  <View
+                    style={[styles.matchFill, { width: `${card.matchPercent}%` }]}
+                  />
+                </View>
+                <Text style={styles.matchPercent}>{card.matchPercent}%</Text>
+              </View>
+
+              <Text style={styles.tapHint}>Tap for full profile</Text>
+            </>
+          ) : (
+            <View style={styles.row}>
+              <Avatar displayName={card.name} size="lg" />
+              <View style={styles.headMeta} />
             </View>
-          </>
-        ) : (
-          // Empty shell with a single anchored avatar for visual continuity
-          <View style={styles.row}>
-            <Avatar displayName={card.name} size="lg" />
-            <View style={styles.headMeta} />
-          </View>
-        )}
+          )}
+        </Pressable>
       </Animated.View>
     </GestureDetector>
   );
@@ -188,8 +193,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     padding: layout.cardPadding,
-    gap: spacing[4],
     overflow: 'hidden',
+  },
+  tapArea: { flex: 1, gap: spacing[4] },
+  tapHint: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    fontSize: 10,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginTop: spacing[1],
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
   headMeta: { flex: 1, gap: spacing[0.5] },

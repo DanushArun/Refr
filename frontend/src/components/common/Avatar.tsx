@@ -37,8 +37,15 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+/** Explicit avatar colors for primary demo personas. Falls through to hash otherwise. */
+const NAME_COLOR_OVERRIDES: Record<string, string> = {
+  'Danush Arun': '#ef4444', // red — primary seeker
+};
+
 /** Generate a deterministic background color from name string */
 function getAvatarColor(name: string): string {
+  const override = NAME_COLOR_OVERRIDES[name.trim()];
+  if (override) return override;
   const palette = [
     '#6366f1', // indigo
     '#8b5cf6', // violet

@@ -73,7 +73,7 @@ export function FeedScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.wordmark}>ENDORSLY</Text>
-        <Text style={styles.headerSub}>Bangalore tech · live feed</Text>
+        <Text style={styles.headerSub}>Tech · live feed</Text>
       </View>
 
       <FeedList

@@ -116,7 +116,7 @@ export function FeedList({
       <View style={styles.empty}>
         <Text style={styles.emptyTitle}>Feed loading...</Text>
         <Text style={styles.emptySubtitle}>
-          Bangalore tech intel is on its way.
+          Tech intel is on its way.
         </Text>
       </View>
     );

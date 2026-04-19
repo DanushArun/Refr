@@ -16,9 +16,21 @@
       "package": "com.refr.app",
       "versionCode": 1
     },
-    "extra": {},
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bf756b53-1804-4c83-8690-f6c6df0452d9"
+      }
+    },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "owner": "danush07",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bf756b53-1804-4c83-8690-f6c6df0452d9"
+    }
   }
 }

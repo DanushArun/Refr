@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { SwipeDeck } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
+import { EndorserProfileSheet } from '../components/discover/ProfileSheet';
 import {
   buildEndorserCards,
   type EndorserCard,
@@ -19,37 +20,54 @@ import { spacing, layout } from '../theme/spacing';
 export function DiscoverScreen() {
   const [queueKey, setQueueKey] = useState(0);
   const cards = useMemo(() => buildEndorserCards('1'), [queueKey]);
-  const [remaining, setRemaining] = useState<number>(cards.length);
+  const [index, setIndex] = useState(0);
   const [lastAction, setLastAction] = useState<string | null>(null);
+  const [previewCard, setPreviewCard] = useState<EndorserCard | null>(null);
 
-  const handleSwipe = useCallback(
+  const remaining = Math.max(0, cards.length - index);
+
+  const commitSwipe = useCallback(
     (card: EndorserCard, direction: 'request' | 'pass') => {
-      setRemaining((r) => Math.max(0, r - 1));
       if (direction === 'request') {
         setLastAction(`Request sent to ${card.name}`);
-        // Fire-and-forget: the demo-mode createRequest resolves locally.
         referralsApi
-          .createRequest({
-            feedCardId: `endorser-${card.id}`,
-            targetRole: card.jobTitle,
-            seekerNote: `Hi ${card.name.split(' ')[0]}, saw your profile and would love an endorsement for ${card.companyName}.`,
-          })
+          .recordSeekerSwipe(
+            {
+              id: card.id,
+              name: card.name,
+              companyId: card.companyId,
+              companyName: card.companyName,
+              jobTitle: card.jobTitle,
+            },
+            `Hi ${card.name.split(' ')[0]}, saw your profile — would love an endorsement for ${card.companyName}.`,
+          )
           .catch(() => {});
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => {},
-        );
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       } else {
         setLastAction(null);
       }
+      setIndex((i) => i + 1);
     },
     [],
   );
 
   const handleRefresh = useCallback(() => {
     setQueueKey((k) => k + 1);
-    setRemaining(cards.length);
+    setIndex(0);
     setLastAction(null);
-  }, [cards.length]);
+  }, []);
+
+  const handleCardTap = useCallback((card: EndorserCard) => {
+    setPreviewCard(card);
+  }, []);
+
+  const handlePreviewCommit = useCallback(
+    (direction: 'request' | 'pass') => {
+      if (previewCard) commitSwipe(previewCard, direction);
+      setPreviewCard(null);
+    },
+    [previewCard, commitSwipe],
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -69,17 +87,20 @@ export function DiscoverScreen() {
       <View style={styles.deckFrame}>
         <SwipeDeck<EndorserCard>
           items={cards}
+          index={index}
           keyOf={(c) => c.id}
-          onSwipe={handleSwipe}
+          onSwipe={commitSwipe}
+          onCardTap={handleCardTap}
           onRefresh={handleRefresh}
           emptyTitle="You're caught up"
           emptyBody="No more Endorsers in today's queue. Check back later, or broaden your target companies."
-          renderCard={({ item, isTop, stackIndex, onSwiped }) => (
+          renderCard={({ item, isTop, stackIndex, onSwiped, onTap }) => (
             <EndorserCardView
               card={item}
               isTop={isTop}
               stackIndex={stackIndex}
               onSwiped={onSwiped}
+              onTap={onTap}
             />
           )}
         />
@@ -90,6 +111,14 @@ export function DiscoverScreen() {
           {lastAction ?? 'Double opt-in: chat opens only when they swipe right too.'}
         </Text>
       </View>
+
+      <EndorserProfileSheet
+        visible={previewCard !== null}
+        card={previewCard}
+        onClose={() => setPreviewCard(null)}
+        onPass={() => handlePreviewCommit('pass')}
+        onCommit={() => handlePreviewCommit('request')}
+      />
     </SafeAreaView>
   );
 }

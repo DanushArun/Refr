@@ -1,5 +1,5 @@
 /**
- * Mock data for REFR demo mode. Bangalore tech narrative.
+ * Mock data for REFR demo mode. India tech narrative.
  *
  * Primary personas:
  *   - Seeker  Danush Arun  (id '1')  -- ex-Amazon Pay, targeting fintech
@@ -39,7 +39,7 @@ const COMPANY = {
   cred: { id: 'c-6', name: 'CRED' },
   meesho: { id: 'c-7', name: 'Meesho' },
   groww: { id: 'c-8', name: 'Groww' },
-  google: { id: 'c-9', name: 'Google Bangalore' },
+  google: { id: 'c-9', name: 'Google India' },
   microsoft: { id: 'c-10', name: 'Microsoft IDC' },
   atlassian: { id: 'c-11', name: 'Atlassian India' },
   coinbase: { id: 'c-12', name: 'Coinbase India' },
@@ -103,7 +103,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     story:
       '4 years building payment infra at Amazon Pay. The scale was incredible '
       + 'but pace of shipping felt glacial. Quit last month to explore '
-      + 'Bangalore startups where I can own a system end-to-end.',
+      + 'fast-moving startups where I can own a system end-to-end.',
     skills: ['Go', 'PostgreSQL', 'Kafka', 'AWS', 'System Design'],
     yearsOfExperience: 6,
     targetRoles: ['Senior Backend Engineer', 'Staff Engineer'],
@@ -191,7 +191,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     skills: ['Kubernetes', 'Terraform', 'Go', 'Prometheus', 'ArgoCD'],
     yearsOfExperience: 6,
     targetRoles: ['Platform Engineer', 'Staff Engineer'],
-    targetCompanies: ['Razorpay', 'Atlassian India', 'Google Bangalore'],
+    targetCompanies: ['Razorpay', 'Atlassian India', 'Google India'],
   },
   {
     id: '11',
@@ -219,7 +219,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     skills: ['Python', 'PyTorch', 'Spark', 'SQL', 'MLOps'],
     yearsOfExperience: 4,
     targetRoles: ['ML Engineer', 'Applied Scientist'],
-    targetCompanies: ['Flipkart', 'Swiggy', 'Google Bangalore'],
+    targetCompanies: ['Flipkart', 'Swiggy', 'Google India'],
   },
   {
     id: '13',
@@ -437,7 +437,7 @@ const FEED_CARDS: FeedCard[] = [
     score: 0.80,
     reactionCount: 312,
     isBookmarked: false,
-    title: 'Bangalore Backend Salaries Q1 2026: The Real Numbers',
+    title: 'India Backend Salaries Q1 2026: The Real Numbers',
     body:
       'We aggregated 340 verified offer letters. Median TC for 4-6 YOE '
       + 'backend engineers: 38L. Top quartile at Razorpay, Flipkart, and '
@@ -485,7 +485,7 @@ const FEED_CARDS: FeedCard[] = [
     companyId: COMPANY.cred.id,
     companyName: COMPANY.cred.name,
     authorLabel: 'Verified employee at CRED',
-    title: 'CRED hires differently from the rest of Bangalore',
+    title: 'CRED hires differently from the rest of the industry',
     body:
       'Your portfolio matters more than your DSA. They review your GitHub '
       + 'and Dribbble live during the interview. Mobile team is under 30 '
@@ -502,7 +502,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     referrerDisplayName: 'Vikram Rao',
     seekerDisplayName: 'Rohan B.',
-    companyName: 'Google Bangalore',
+    companyName: 'Google India',
     eventDescription: 'referred Rohan to the SRE team',
   },
   {
@@ -543,7 +543,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     title: 'Priya Sharma crossed 8 successful hires',
     description:
-      'She is now the #1 Endorser in Bangalore. Flipkart platform is '
+      'She is now the #1 Endorser on Endorsly. Flipkart platform is '
       + 'quietly being built by Priya\'s referrals.',
     relatedUserId: '20',
   },
@@ -567,7 +567,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     companyId: COMPANY.google.id,
     companyName: COMPANY.google.name,
-    authorLabel: 'Verified employee at Google Bangalore',
+    authorLabel: 'Verified employee at Google India',
     title: 'L4 to L5 promo: what the committee actually looks for',
     body:
       'You need one project with cross-team impact, documented. A GUM '
@@ -658,7 +658,7 @@ const FEED_CARDS: FeedCard[] = [
     body:
       'Flat structure, direct line to the CTO. If you are strong in '
       + 'ranking models and comfortable owning production inference, this '
-      + 'is the most high-leverage ML team I have seen in Bangalore.',
+      + 'is the most high-leverage ML team I have seen in the market.',
     tags: ['ml', 'team', 'hiring'],
   },
   {
@@ -669,7 +669,7 @@ const FEED_CARDS: FeedCard[] = [
     score: 0.44,
     reactionCount: 256,
     isBookmarked: false,
-    title: 'State of Bangalore Hiring: Q2 2026',
+    title: 'State of India Hiring: Q2 2026',
     body:
       'Backend/platform up 40% QoQ. ML hiring cooled after the initial '
       + 'hype. Fintech is the most aggressive - Razorpay, PhonePe, Groww '
@@ -699,7 +699,7 @@ const FEED_CARDS: FeedCard[] = [
     companyId: COMPANY.microsoft.id,
     companyName: COMPANY.microsoft.name,
     authorLabel: 'Verified employee at Microsoft IDC',
-    title: 'L62 compensation in Bangalore: what is actually on offer',
+    title: 'L62 compensation in India: what is actually on offer',
     body:
       'Base 55-65L, stock vesting 40-80L over 4 years, annual bonus '
       + '10-20%. Lower than US but absolute top of Indian market. '
@@ -717,7 +717,7 @@ const FEED_CARDS: FeedCard[] = [
     title: '100 endorsements submitted this week on Endorsly',
     description:
       'New high-water mark. 27 of them converted to first-round interviews '
-      + 'within 5 days. Bangalore is moving fast.',
+      + 'within 5 days. The market is moving fast.',
   },
 ];
 
@@ -872,7 +872,7 @@ const baseReferrerReferral = {
 function inboxFromSeeker(seekerId: string, overrides: {
   id: string;
   targetRole: string;
-  status: 'requested' | 'accepted' | 'submitted' | 'interviewing';
+  status: 'requested' | 'accepted' | 'submitted' | 'interviewing' | 'hired';
   matchScore: number;
   requestedHoursAgo: number;
   acceptedHoursAgo?: number;
@@ -950,25 +950,38 @@ export const MOCK_INBOX: ReferrerInboxItem[] = [
   inboxFromSeeker('7', {
     id: 'ref-i5',
     targetRole: 'Senior Data Engineer',
-    status: 'accepted',
+    status: 'submitted',
     matchScore: 83,
-    requestedHoursAgo: 72,
-    acceptedHoursAgo: 60,
+    requestedHoursAgo: 96,
+    acceptedHoursAgo: 84,
+    submittedHoursAgo: 48,
     seekerNote:
-      'Hi! Flipkart data engineer looking at Razorpay\'s analytics team. '
+      'Hi! Flipkart data engineer looking at Razorpay analytics team. '
       + 'Spark/Airflow background.',
   }),
   inboxFromSeeker('8', {
     id: 'ref-i6',
     targetRole: 'Senior Backend Engineer',
-    status: 'submitted',
+    status: 'interviewing',
     matchScore: 86,
-    requestedHoursAgo: 96,
-    acceptedHoursAgo: 84,
-    submittedHoursAgo: 36,
+    requestedHoursAgo: 168,
+    acceptedHoursAgo: 156,
+    submittedHoursAgo: 120,
     seekerNote:
       'Hey, ex-Walmart Labs, 5y JVM backend. Looking at Razorpay for '
       + 'the payments platform team.',
+  }),
+  inboxFromSeeker('11', {
+    id: 'ref-i7',
+    targetRole: 'Senior Product Manager',
+    status: 'hired',
+    matchScore: 91,
+    requestedHoursAgo: 720,
+    acceptedHoursAgo: 712,
+    submittedHoursAgo: 696,
+    seekerNote:
+      'Hey, Swiggy Instamart PM with 4y. Looking at Razorpay for a '
+      + 'consumer-payments product role.',
   }),
 ];
 

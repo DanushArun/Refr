@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,46 +7,44 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SystemBars } from 'react-native-edge-to-edge';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
-import {
-  InstrumentSerif_400Regular,
-  InstrumentSerif_400Regular_Italic,
-} from '@expo-google-fonts/instrument-serif';
-import {
   JetBrainsMono_400Regular,
   JetBrainsMono_500Medium,
 } from '@expo-google-fonts/jetbrains-mono';
 import { colors } from '../src/theme/colors';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
+import { loadDemoRole } from '../src/services/demoRoleStorage';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [demoRoleReady, setDemoRoleReady] = useState(false);
+  useEffect(() => {
+    loadDemoRole().finally(() => setDemoRoleReady(true));
+  }, []);
+
   const [fontsLoaded, fontError] = useFonts({
-    // Body + UI — Inter, the modern fintech/SaaS standard (Vercel, Linear, Notion)
-    'Outfit-Regular': Inter_400Regular,
-    'Outfit-Medium': Inter_500Medium,
-    'Outfit-SemiBold': Inter_600SemiBold,
-    'Outfit-Bold': Inter_700Bold,
-    // Reserved for hero/editorial moments (splash, match modal, earnings hero label)
-    'InstrumentSerif-Regular': InstrumentSerif_400Regular,
-    'InstrumentSerif-Italic': InstrumentSerif_400Regular_Italic,
-    // Numbers + stats — JetBrains Mono (closest free cousin of Geist Mono)
+    // Body + UI — Satoshi (the free Gilroy; CRED-grade geometric sans)
+    // Aliased to legacy "Outfit-*" keys so existing components render without edits
+    'Outfit-Regular': require('../assets/fonts/Satoshi-Regular.otf'),
+    'Outfit-Medium': require('../assets/fonts/Satoshi-Medium.otf'),
+    'Outfit-SemiBold': require('../assets/fonts/Satoshi-Bold.otf'),
+    'Outfit-Bold': require('../assets/fonts/Satoshi-Black.otf'),
+    // Hero / editorial — Clash Display (replaces Instrument Serif)
+    // CRED does not use a serif — geometric display is the correct brand move
+    'InstrumentSerif-Regular': require('../assets/fonts/ClashDisplay-Semibold.otf'),
+    'InstrumentSerif-Italic': require('../assets/fonts/ClashDisplay-Medium.otf'),
+    // Numbers + stats — JetBrains Mono retained (CRED uses a mono for amounts)
     'JetBrainsMono-Regular': JetBrainsMono_400Regular,
     'JetBrainsMono-Medium': JetBrainsMono_500Medium,
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if ((fontsLoaded || fontError) && demoRoleReady) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, demoRoleReady]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if ((!fontsLoaded && !fontError) || !demoRoleReady) return null;
 
   return (
     <ErrorBoundary>

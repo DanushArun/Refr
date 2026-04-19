@@ -1,9 +1,12 @@
 /**
- * REFR Design System — Typography
+ * Endorsly Design System — Typography (CRED-grade stack)
  *
- * Instrument Serif  — headings, narrative content, emotional beats
- * Outfit            — body text, UI labels, navigation
- * JetBrains Mono    — numbers, stats, earnings, scores
+ * Clash Display   — headings, hero moments, editorial beats (aliased as "heading")
+ * Satoshi         — body text, UI labels, navigation (aliased as "body*")
+ * JetBrains Mono  — numbers, stats, earnings, Endorsement Score
+ *
+ * Font keys kept as legacy "Outfit-*" / "InstrumentSerif-*" so 30+ existing
+ * components render without edits — see app/_layout.tsx for the alias table.
  */
 
 export const fontFamilies = {
@@ -55,7 +58,7 @@ export const lineHeights = {
 } as const;
 
 export const letterSpacings = {
-  tight: -0.5,
+  tight: -0.8,
   normal: 0,
   wide: 0.3,
   wider: 0.6,

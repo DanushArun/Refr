@@ -1,4 +1,4 @@
-import React, { useCallback, useState, type ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Button } from '../common/Button';
 import { colors } from '../../theme/colors';
@@ -12,42 +12,49 @@ export interface SwipeDeckRenderArgs<T> {
   isTop: boolean;
   stackIndex: number;
   onSwiped: (direction: SwipeDirection) => void;
+  onTap?: () => void;
 }
 
 interface SwipeDeckProps<T> {
   items: T[];
+  /** Current top-of-deck pointer — lifted to parent so modal commits can advance. */
+  index: number;
   keyOf: (item: T) => string;
   renderCard: (args: SwipeDeckRenderArgs<T>) => ReactElement;
+  /** Called when a gesture commits. Parent should record the action and advance. */
   onSwipe: (item: T, direction: SwipeDirection) => void;
+  /** Called when top card is tapped (not dragged). */
+  onCardTap?: (item: T) => void;
+  /** Called when the deck runs out and user taps refresh. */
   onRefresh?: () => void;
   emptyTitle?: string;
   emptyBody?: string;
 }
 
 /**
- * Generic swipe deck — renders any card type via the renderCard prop.
- * Owns the stack index state; fires onSwipe after each committed gesture.
- * Only the top card accepts gestures (see isTop flag passed to renderCard).
+ * Generic swipe deck. Renders top 3 cards for performance.
+ * Parent owns the index — letting modal actions / external triggers advance the deck.
  */
 export function SwipeDeck<T>({
   items,
+  index,
   keyOf,
   renderCard,
   onSwipe,
+  onCardTap,
   onRefresh,
   emptyTitle = "You're caught up",
-  emptyBody = 'No more cards in today\'s queue. Check back later.',
+  emptyBody = "No more cards in today's queue.",
 }: SwipeDeckProps<T>) {
-  const [index, setIndex] = useState(0);
+  const handleSwiped = (direction: SwipeDirection) => {
+    const item = items[index];
+    if (item) onSwipe(item, direction);
+  };
 
-  const handleSwiped = useCallback(
-    (direction: SwipeDirection) => {
-      const item = items[index];
-      if (item) onSwipe(item, direction);
-      setIndex((i) => i + 1);
-    },
-    [items, index, onSwipe],
-  );
+  const handleTap = () => {
+    const item = items[index];
+    if (item && onCardTap) onCardTap(item);
+  };
 
   const visible = items.slice(index, index + 3);
 
@@ -59,10 +66,7 @@ export function SwipeDeck<T>({
         {onRefresh && (
           <Button
             label="Refresh queue"
-            onPress={() => {
-              setIndex(0);
-              onRefresh();
-            }}
+            onPress={onRefresh}
             variant="secondary"
             size="medium"
             fullWidth={false}
@@ -84,6 +88,7 @@ export function SwipeDeck<T>({
               isTop: stackIndex === 0,
               stackIndex,
               onSwiped: handleSwiped,
+              onTap: stackIndex === 0 ? handleTap : undefined,
             })}
           </React.Fragment>
         ))}

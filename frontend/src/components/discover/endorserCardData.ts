@@ -8,6 +8,7 @@ export interface EndorserCard {
   id: string;
   name: string;
   jobTitle: string;
+  companyId: string;
   companyName: string;
   trustScore: number;        // 0 – 100 integer, same scale as Endorsement Score
   acceptanceRate: number;    // 0 – 100%, derived from hires / referrals
@@ -56,6 +57,7 @@ export function buildEndorserCard(
     id: referrer.id,
     name: referrer.name,
     jobTitle: referrer.jobTitle,
+    companyId: referrer.company.id,
     companyName: referrer.company.name,
     trustScore: Math.min(100, Math.max(0, Math.round(referrer.kingmakerScore))),
     acceptanceRate: referrer.totalReferrals > 0

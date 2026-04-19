@@ -2,6 +2,9 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuth } from '../src/hooks/useAuth';
+import { WelcomeScreen } from '../src/screens/WelcomeScreen';
+import { hasPickedRole } from '../src/services/demoRoleStorage';
+import { DEMO } from '../src/config/demo';
 import { colors } from '../src/theme/colors';
 
 export default function Index() {
@@ -15,13 +18,17 @@ export default function Index() {
     );
   }
 
+  // Demo mode: show branded welcome until the reviewer taps Get started
+  if (DEMO.enabled && !hasPickedRole()) {
+    return <WelcomeScreen />;
+  }
+
   if (!session || !user) {
     return <Redirect href="/(auth)/login" />;
   }
 
   if (user.role === 'seeker') {
     return <Redirect href="/(seeker-tabs)/discover" />;
-  } else {
-    return <Redirect href="/(referrer-tabs)/inbox" />;
   }
+  return <Redirect href="/(referrer-tabs)/inbox" />;
 }

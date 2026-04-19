@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -29,15 +29,10 @@ interface SeekerCardProps {
   isTop: boolean;
   stackIndex: number;
   onSwiped: (direction: SwipeDirection) => void;
+  onTap?: () => void;
 }
 
-/**
- * Seeker-facing card rendered in the Endorser's Discover deck.
- * Swipe right = "I want to endorse this person."
- * Swipe left = pass.
- * Card compresses the 3-second vetting decision per UX spec § P2.
- */
-export function SeekerCard({ card, isTop, stackIndex, onSwiped }: SeekerCardProps) {
+export function SeekerCard({ card, isTop, stackIndex, onSwiped, onTap }: SeekerCardProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
@@ -52,6 +47,7 @@ export function SeekerCard({ card, isTop, stackIndex, onSwiped }: SeekerCardProp
 
   const gesture = Gesture.Pan()
     .enabled(isTop)
+    .activeOffsetX([-15, 15])
     .onUpdate((e) => {
       translateX.value = e.translationX;
       translateY.value = e.translationY;
@@ -103,10 +99,15 @@ export function SeekerCard({ card, isTop, stackIndex, onSwiped }: SeekerCardProp
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.card, cardStyle]}>
-        {isTop ? (
+        {isTop && (
           <>
             <SwipeStamp translateX={translateX} kind="request" />
             <SwipeStamp translateX={translateX} kind="pass" />
+          </>
+        )}
+        <Pressable onPress={isTop ? onTap : undefined} style={styles.tapArea}>
+          {isTop ? (
+            <>
 
             <View style={styles.headerRow}>
               <Avatar displayName={card.name} size="lg" />
@@ -160,6 +161,7 @@ export function SeekerCard({ card, isTop, stackIndex, onSwiped }: SeekerCardProp
               <Text style={styles.targetRoleLabel}>Target role</Text>
               <Text style={styles.targetRoleValue}>{card.targetRole}</Text>
             </View>
+            <Text style={styles.tapHint}>Tap for full profile</Text>
           </>
         ) : (
           <View style={styles.headerRow}>
@@ -167,6 +169,7 @@ export function SeekerCard({ card, isTop, stackIndex, onSwiped }: SeekerCardProp
             <View style={styles.headerMeta} />
           </View>
         )}
+        </Pressable>
       </Animated.View>
     </GestureDetector>
   );
@@ -184,8 +187,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     padding: layout.cardPadding,
-    gap: spacing[3],
     overflow: 'hidden',
+  },
+  tapArea: { flex: 1, gap: spacing[3] },
+  tapHint: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 10,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginTop: spacing[1],
   },
   headerRow: {
     flexDirection: 'row',

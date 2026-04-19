@@ -25,7 +25,7 @@ const ROLES: Array<{
     id: 'seeker',
     title: 'I am looking',
     subtitle: 'Job Seeker',
-    description: 'Get referred to Bangalore\'s best tech companies. Your story reaches referrers at places you want to work.',
+    description: 'Get referred to the best tech companies. Your story reaches employees at places you want to work.',
   },
   {
     id: 'referrer',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { Avatar } from '../components/common/Avatar';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem } from '@refr/shared';
 
@@ -27,11 +27,12 @@ export function MatchesScreen() {
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
     referralsApi.getPipeline()
       .then((data: SeekerPipelineItem[]) => {
         const active = data.filter((item: SeekerPipelineItem) =>
-          ['accepted', 'submitted', 'interviewing'].includes(item.referral.status)
+          ['accepted', 'submitted', 'interviewing'].includes(item.referral.status),
         );
         setItems(active);
       })
@@ -40,6 +41,8 @@ export function MatchesScreen() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   if (loading) {
     return (
@@ -81,7 +84,10 @@ export function MatchesScreen() {
                     referralId: item.referral.id,
                     participantName: item.referrerName,
                     participantAvatar: '',
-                  }
+                    targetRole: item.referral.targetRole,
+                    companyName: item.companyName,
+                    stage: item.referral.status,
+                  },
                 })
               }
             >

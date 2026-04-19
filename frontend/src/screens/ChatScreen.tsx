@@ -30,6 +30,12 @@ import { spacing, layout } from '../theme/spacing';
 type Message = ChatMessage;
 type DeliveryState = 'sending' | 'sent' | 'delivered' | 'read';
 
+let _chatUid = 0;
+function chatUid(prefix: string): string {
+  _chatUid += 1;
+  return `${prefix}-${Date.now()}-${_chatUid}`;
+}
+
 const REACTION_EMOJIS = ['❤️', '👍', '😂', '😮', '🙏', '🎉'];
 
 /**
@@ -117,7 +123,7 @@ export function ChatScreen() {
     setSending(true);
     setDraft('');
 
-    const tempId = `temp-${Date.now()}`;
+    const tempId = chatUid('temp');
     const optimistic: Message = {
       id: tempId,
       body,
@@ -454,7 +460,7 @@ function appendSystemMessage(
   setMessages((prev) => [
     ...prev,
     {
-      id: `sys-${Date.now()}`,
+      id: chatUid('sys'),
       body,
       createdAt: new Date().toISOString(),
       sender: { id: SYSTEM_SENDER_ID, displayName: 'Endorsly' },
@@ -477,7 +483,7 @@ function scheduleSimulatedReply(args: {
     setMessages((prev) => [
       ...prev,
       {
-        id: `auto-${Date.now()}`,
+        id: chatUid('auto'),
         body: reply,
         createdAt: new Date().toISOString(),
         sender: { id: 'counterpart', displayName: counterpartName },
