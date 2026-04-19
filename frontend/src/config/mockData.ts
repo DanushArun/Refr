@@ -382,7 +382,7 @@ const FEED_CARDS: FeedCard[] = [
     score: 0.89,
     reactionCount: 187,
     isBookmarked: false,
-    title: 'Neha got hired at Swiggy through REFR',
+    title: 'Neha got hired at Swiggy through Endorsly',
     description:
       'After a referral from Vikram, Neha cleared all 4 rounds and joined '
       + 'as a Senior Data Engineer. Referral to offer: 18 days.',
@@ -443,7 +443,7 @@ const FEED_CARDS: FeedCard[] = [
       + 'backend engineers: 38L. Top quartile at Razorpay, Flipkart, and '
       + 'PhonePe: 52-65L. Startups like Zepto and Groww competing on RSU '
       + 'upside.',
-    author: 'REFR Editorial',
+    author: 'Endorsly Editorial',
     tags: ['salary', 'market-data', 'backend'],
   },
   {
@@ -543,7 +543,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     title: 'Priya Sharma crossed 8 successful hires',
     description:
-      'She is now the #1 Kingmaker in Bangalore. Flipkart platform is '
+      'She is now the #1 Endorser in Bangalore. Flipkart platform is '
       + 'quietly being built by Priya\'s referrals.',
     relatedUserId: '20',
   },
@@ -585,11 +585,11 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     title: 'Why your referral matters more than your resume',
     body:
-      'Data from 500+ REFR referrals: referred candidates are 4.2x more '
+      'Data from 500+ Endorsly endorsements: endorsed candidates are 4.2x more '
       + 'likely to get an interview and 2.8x more likely to get an offer. '
       + 'A referrer puts their reputation on the line. That changes '
       + 'everything.',
-    author: 'REFR Editorial',
+    author: 'Endorsly Editorial',
     tags: ['referrals', 'data', 'career-advice'],
   },
   {
@@ -675,7 +675,7 @@ const FEED_CARDS: FeedCard[] = [
       + 'hype. Fintech is the most aggressive - Razorpay, PhonePe, Groww '
       + 'leading. Average time-to-hire for senior roles: 18 days. '
       + 'Referrals drive 3x the hire rate of job boards.',
-    author: 'REFR Editorial',
+    author: 'Endorsly Editorial',
     tags: ['market-trends', 'hiring'],
   },
   {
@@ -714,7 +714,7 @@ const FEED_CARDS: FeedCard[] = [
     score: 0.32,
     reactionCount: 412,
     isBookmarked: false,
-    title: '100 referrals submitted this week on REFR',
+    title: '100 endorsements submitted this week on Endorsly',
     description:
       'New high-water mark. 27 of them converted to first-round interviews '
       + 'within 5 days. Bangalore is moving fast.',

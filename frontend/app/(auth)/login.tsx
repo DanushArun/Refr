@@ -70,7 +70,7 @@ export default function LoginScreen() {
           keyboardDismissMode="interactive"
         >
           <View style={styles.header}>
-            <Text style={styles.wordmark}>REFR</Text>
+            <Text style={styles.wordmark}>ENDORSLY</Text>
             <Text style={styles.heading}>Welcome back</Text>
             <Text style={styles.subheading}>
               Sign in to your account to continue building your network.

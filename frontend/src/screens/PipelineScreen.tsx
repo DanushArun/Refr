@@ -75,7 +75,7 @@ export function PipelineScreen() {
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>No referrals yet</Text>
           <Text style={styles.emptyBody}>
-            Scroll the feed and tap "I can refer" on seeker cards to request referrals.
+            Scroll the feed and tap "Endorse" on Seeker cards to request endorsements.
           </Text>
         </View>
       ) : (

@@ -72,7 +72,7 @@ export function FeedScreen() {
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.wordmark}>REFR</Text>
+        <Text style={styles.wordmark}>ENDORSLY</Text>
         <Text style={styles.headerSub}>Bangalore tech · live feed</Text>
       </View>
 
@@ -99,10 +99,10 @@ export function FeedScreen() {
               <>
                 <View style={styles.modalHandle} />
                 <Text style={styles.modalTitle}>
-                  Refer {referModal.card.seekerName}?
+                  Endorse {referModal.card.seekerName}?
                 </Text>
                 <Text style={styles.modalSubtitle}>
-                  You'll be able to chat with them once they accept. Your Kingmaker Score increases when you submit.
+                  You'll be able to chat with them once they accept. Your Endorsement Score increases when you submit.
                 </Text>
 
                 <View style={styles.seekerStats}>
@@ -118,7 +118,7 @@ export function FeedScreen() {
 
                 <TextInput
                   style={styles.noteInput}
-                  placeholder="Add a note to the seeker (optional)..."
+                  placeholder="Add a note to the Seeker (optional)..."
                   placeholderTextColor={colors.textTertiary}
                   value={referModal.note}
                   onChangeText={(v) => setReferModal((s) => ({ ...s, note: v }))}
@@ -128,7 +128,7 @@ export function FeedScreen() {
                 />
 
                 <Button
-                  label={referModal.submitting ? 'Sending...' : 'Send referral request'}
+                  label={referModal.submitting ? 'Sending...' : 'Send endorsement request'}
                   onPress={handleReferSubmit}
                   variant="primary"
                   size="large"

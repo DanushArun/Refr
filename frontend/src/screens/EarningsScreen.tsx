@@ -57,7 +57,7 @@ export function EarningsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.scoreHero}>
-          <Text style={styles.scoreLabel}>KINGMAKER SCORE</Text>
+          <Text style={styles.scoreLabel}>ENDORSEMENT SCORE</Text>
           <Text style={styles.scoreValue}>
             {reputation.kingmakerScore}
           </Text>
@@ -106,7 +106,7 @@ export function EarningsScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Bangalore Kingmaker Board
+            Bangalore Endorser Board
           </Text>
           {leaderboard.slice(0, 20).map((entry, idx) => (
             <LeaderboardRow

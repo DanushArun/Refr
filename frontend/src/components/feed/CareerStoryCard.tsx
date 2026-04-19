@@ -94,7 +94,7 @@ export function CareerStoryCard({ card, onReferPress, onCardPress }: CareerStory
       {/* CTA row */}
       <View style={styles.ctaRow}>
         <Button
-          label="I can refer"
+          label="Endorse"
           onPress={handleReferPress}
           variant="primary"
           size="medium"

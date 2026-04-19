@@ -311,7 +311,7 @@ export const referralsApi = {
       const referrer = referrerById(referral.referrerId);
       MOCK_PIPELINE.unshift({
         referral,
-        referrerName: referrer?.name ?? 'REFR Referrer',
+        referrerName: referrer?.name ?? 'Endorsly Endorser',
         companyName: referrer?.company.name ?? 'Razorpay',
       });
       return Promise.resolve(referral);

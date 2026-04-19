@@ -144,7 +144,7 @@ export default function ActiveRoute() {
             transitionItem(
               item.referral.id,
               'hired',
-              `${item.seekerName} hired. Kingmaker +10.`,
+              `${item.seekerName} hired. Endorsement +10.`,
             ),
         },
       ],
