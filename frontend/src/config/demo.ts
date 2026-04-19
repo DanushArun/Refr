@@ -33,7 +33,7 @@ export const DEMO: DemoConfig = {
   enabled: true,
 
   /** Which role to simulate: 'seeker' or 'referrer' */
-  demoRole: 'referrer',
+  demoRole: 'seeker',
 
   /** Per-screen toggles. Each controls one API surface area. */
   screens: {

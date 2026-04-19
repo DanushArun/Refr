@@ -272,17 +272,14 @@ export function ChatScreen() {
         >
           <Ionicons name="chevron-back" size={26} color={colors.text} />
         </Pressable>
-        <View style={{ position: 'relative' }}>
-          <Avatar displayName={participantName} uri={participantAvatar} size="md" />
-          <View style={styles.onlineDot} />
-        </View>
+        <Avatar displayName={participantName} uri={participantAvatar} size="md" />
         <View style={styles.headerMeta}>
           <Text style={styles.headerName} numberOfLines={1}>{participantName}</Text>
           <Text style={styles.headerSub} numberOfLines={1}>
             {typing ? (
               <Text style={{ color: colors.accent }}>typing…</Text>
             ) : (
-              <>Online · {targetRole ? `${targetRole} · ${companyName}` : companyName}</>
+              <>{targetRole ? `${targetRole} · ${companyName}` : companyName}</>
             )}
           </Text>
         </View>
@@ -720,17 +717,6 @@ const styles = StyleSheet.create({
     width: 32, height: 32,
     alignItems: 'center', justifyContent: 'center',
     marginLeft: -spacing[2],
-  },
-  onlineDot: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: colors.success,
-    borderWidth: 2,
-    borderColor: colors.background,
   },
   headerMeta: { flex: 1, gap: 2 },
   headerName: {
