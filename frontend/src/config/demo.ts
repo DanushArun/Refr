@@ -1,44 +1,49 @@
 /**
- * REFR Demo Mode Configuration
+ * Endorsly Demo Mode Configuration
  *
  * HOW TO USE:
  * 1. Set `enabled: true` to activate demo mode globally.
- * 2. Set `demoRole` to 'seeker' or 'referrer' to switch personas.
+ * 2. Set `demoRole` to 'seeker' or 'referrer' — just the word.
  * 3. Toggle individual screens on/off in the `screens` object.
  *    - When a screen flag is true AND enabled is true: mock data is used.
  *    - When a screen flag is false: real API is called even in demo mode.
  *
- * This lets you demo any screen without the backend running,
- * disable a broken screen while showing the rest, or switch
- * roles instantly.
- *
  * IMPORTANT: Keep `enabled: false` for production / real testing.
  */
 
-export const DEMO = {
+type DemoRole = 'seeker' | 'referrer';
+
+interface DemoConfig {
+  enabled: boolean;
+  demoRole: DemoRole;
+  screens: {
+    auth: boolean;
+    feed: boolean;
+    pipeline: boolean;
+    inbox: boolean;
+    chat: boolean;
+    earnings: boolean;
+    profile: boolean;
+    matches: boolean;
+  };
+}
+
+export const DEMO: DemoConfig = {
   /** Master switch -- must be true for any mock data to activate */
   enabled: true,
 
-  /** Which role to simulate: 'seeker' shows seeker tabs, 'referrer' shows referrer tabs */
-  demoRole: 'referrer' as 'referrer' | 'seeker',
+  /** Which role to simulate: 'seeker' or 'referrer' */
+  demoRole: 'seeker',
 
   /** Per-screen toggles. Each controls one API surface area. */
   screens: {
-    /** Bypass login, use mock session */
     auth: true,
-    /** Mock feed cards */
     feed: true,
-    /** Mock seeker pipeline items */
     pipeline: true,
-    /** Mock referrer inbox items */
     inbox: true,
-    /** Mock chat messages */
     chat: true,
-    /** Mock reputation + leaderboard */
     earnings: true,
-    /** Mock profile data */
     profile: true,
-    /** Mock matches (derives from pipeline) */
     matches: true,
   },
 };
