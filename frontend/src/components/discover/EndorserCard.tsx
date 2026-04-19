@@ -18,9 +18,12 @@ import { spacing, layout } from '../../theme/spacing';
 import { SwipeStamp } from './SwipeStamp';
 import type { EndorserCard as EndorserCardData } from './endorserCardData';
 
-const { width: WINDOW_WIDTH } = Dimensions.get('window');
+const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
 const COMMIT_THRESHOLD = WINDOW_WIDTH * 0.32;
 const FLY_OFF_X = WINDOW_WIDTH * 1.3;
+
+// Cards are a consistent rectangle. Sized for iPhone 14 Pro / 15, scales down.
+const CARD_HEIGHT = Math.min(560, Math.round(WINDOW_HEIGHT * 0.62));
 
 export type SwipeDirection = 'request' | 'pass';
 
@@ -73,11 +76,11 @@ export function EndorserCard({ card, isTop, stackIndex, onSwiped }: EndorserCard
       }
     });
 
-  // Top-card transform: follows the gesture, rotates up to 15°.
+  // Top-card transform follows the gesture; behind cards are offset + scaled.
   const cardStyle = useAnimatedStyle(() => {
     if (!isTop) {
-      const scale = 1 - stackIndex * 0.04;
-      const offsetY = stackIndex * 10;
+      const scale = 1 - stackIndex * 0.05;
+      const offsetY = stackIndex * 14;
       return {
         transform: [{ translateY: offsetY }, { scale }],
         opacity: stackIndex < 3 ? 1 : 0,
@@ -101,58 +104,67 @@ export function EndorserCard({ card, isTop, stackIndex, onSwiped }: EndorserCard
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.card, cardStyle]}>
-        {isTop && (
+        {/* Behind cards render an empty shell — no content bleed */}
+        {isTop ? (
           <>
             <SwipeStamp translateX={translateX} kind="request" />
             <SwipeStamp translateX={translateX} kind="pass" />
-          </>
-        )}
 
-        <View style={styles.row}>
-          <Avatar displayName={card.name} size="lg" />
-          <View style={styles.headMeta}>
-            <Text style={styles.name}>{card.name}</Text>
-            <Text style={styles.role} numberOfLines={1}>
-              {card.jobTitle}
-            </Text>
-            <Text style={styles.company}>{card.companyName} · Bangalore</Text>
-          </View>
-          <View style={styles.trustChip}>
-            <Text style={styles.trustLabel}>TRUST</Text>
-            <Text style={styles.trustValue}>{card.trustScore.toFixed(1)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.verifiedRow}>
-          <View style={styles.verifiedDot} />
-          <Text style={styles.verifiedText}>
-            Verified employee at {card.companyName}
-          </Text>
-        </View>
-
-        <View style={styles.statGrid}>
-          <StatCell label="Response" value={card.responseTime} />
-          <StatCell label="Accepts" value={`${card.acceptanceRate}%`} />
-          <StatCell label="Hires" value={String(card.hires)} />
-        </View>
-
-        <View style={styles.skills}>
-          {card.skills.map((s) => (
-            <View key={s} style={styles.skill}>
-              <Text style={styles.skillText}>{s}</Text>
+            <View style={styles.row}>
+              <Avatar displayName={card.name} size="lg" />
+              <View style={styles.headMeta}>
+                <Text style={styles.name} numberOfLines={1}>{card.name}</Text>
+                <Text style={styles.role} numberOfLines={1}>{card.jobTitle}</Text>
+                <Text style={styles.company} numberOfLines={1}>
+                  {card.companyName} · Bangalore
+                </Text>
+              </View>
+              <View style={styles.trustChip}>
+                <Text style={styles.trustLabel}>TRUST</Text>
+                <Text style={styles.trustValue}>{card.trustScore.toFixed(1)}</Text>
+              </View>
             </View>
-          ))}
-        </View>
 
-        <View style={styles.matchRow}>
-          <Text style={styles.matchLabel}>MATCH</Text>
-          <View style={styles.matchBar}>
-            <View
-              style={[styles.matchFill, { width: `${card.matchPercent}%` }]}
-            />
+            <View style={styles.verifiedRow}>
+              <View style={styles.verifiedDot} />
+              <Text style={styles.verifiedText} numberOfLines={1}>
+                Verified employee at {card.companyName}
+              </Text>
+            </View>
+
+            <View style={styles.statGrid}>
+              <StatCell label="Response" value={card.responseTime} />
+              <StatCell label="Accepts" value={`${card.acceptanceRate}%`} />
+              <StatCell label="Hires" value={String(card.hires)} />
+            </View>
+
+            <View style={styles.skills}>
+              {card.skills.map((s) => (
+                <View key={s} style={styles.skill}>
+                  <Text style={styles.skillText}>{s}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={{ flex: 1 }} />
+
+            <View style={styles.matchRow}>
+              <Text style={styles.matchLabel}>MATCH</Text>
+              <View style={styles.matchBar}>
+                <View
+                  style={[styles.matchFill, { width: `${card.matchPercent}%` }]}
+                />
+              </View>
+              <Text style={styles.matchPercent}>{card.matchPercent}%</Text>
+            </View>
+          </>
+        ) : (
+          // Empty shell with a single anchored avatar for visual continuity
+          <View style={styles.row}>
+            <Avatar displayName={card.name} size="lg" />
+            <View style={styles.headMeta} />
           </View>
-          <Text style={styles.matchPercent}>{card.matchPercent}%</Text>
-        </View>
+        )}
       </Animated.View>
     </GestureDetector>
   );
@@ -173,10 +185,14 @@ const styles = StyleSheet.create({
     left: layout.screenPaddingH,
     right: layout.screenPaddingH,
     top: 0,
-    backgroundColor: colors.surfaceLevel1,
+    height: CARD_HEIGHT,
+    backgroundColor: '#16161f',
     borderRadius: layout.cardBorderRadiusLarge,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: layout.cardPadding,
     gap: spacing[4],
+    overflow: 'hidden',
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
   headMeta: { flex: 1, gap: spacing[0.5] },
@@ -209,7 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: colors.success,
   },
-  verifiedText: { ...typography.caption, color: colors.success },
+  verifiedText: { ...typography.caption, color: colors.success, flex: 1 },
   statGrid: { flexDirection: 'row', gap: spacing[3] },
   stat: {
     flex: 1,
