@@ -32,8 +32,8 @@ COMPANIES = [
 
 SEEKER_DATA = [
     {
-        'display_name': 'Arjun Mehta',
-        'email': 'arjun@gmail.com',
+        'display_name': 'Danush Arun',
+        'email': 'danush@gmail.com',
         'headline': 'Backend engineer, 4y at Flipkart, moving to fintech',
         'career_story': 'Built the order management microservice handling 2M orders/day at Flipkart. Looking for a fintech company where I can work on payments infrastructure. Left Flipkart because I want to own something end-to-end, not just maintain a cog.',
         'skills': ['Node.js', 'PostgreSQL', 'System Design', 'Kafka', 'Redis', 'Go'],
@@ -119,12 +119,67 @@ SEEKER_DATA = [
         'target_companies': ['Flipkart', 'Swiggy', 'Meesho', 'Groww'],
         'target_roles': ['Senior Data Engineer', 'Analytics Engineer'],
     },
+    {
+        'display_name': 'Rohan Bhat',
+        'email': 'rohan.bhat@gmail.com',
+        'headline': 'SRE at Uber India. Exploring platform engineering roles.',
+        'career_story': '4 years on-call at Uber. Shipped the multi-region failover playbook. Tired of reactive work. Want to move into platform engineering where I build for other engineers rather than firefight.',
+        'skills': ['Kubernetes', 'Terraform', 'Go', 'Prometheus', 'ArgoCD'],
+        'years_of_experience': 6,
+        'current_company': 'Uber India',
+        'target_companies': ['Razorpay', 'Atlassian India', 'Google Bangalore'],
+        'target_roles': ['Platform Engineer', 'Staff Engineer'],
+    },
+    {
+        'display_name': 'Aditi Sharma',
+        'email': 'aditi.sharma@gmail.com',
+        'headline': 'PM at Swiggy Instamart. Ready to own a 0 to 1 product.',
+        'career_story': '3 years at Swiggy, the last year running Instamart grocery category. Looking for a product role where I go end-to-end from strategy to launch. Bonus for consumer fintech.',
+        'skills': ['Product Strategy', 'SQL', 'A/B testing', 'Figma', 'Mixpanel'],
+        'years_of_experience': 4,
+        'current_company': 'Swiggy',
+        'target_companies': ['CRED', 'PhonePe', 'Zepto'],
+        'target_roles': ['Senior Product Manager', 'Product Lead'],
+    },
+    {
+        'display_name': 'Nikhil Rao',
+        'email': 'nikhil.rao@gmail.com',
+        'headline': 'ML engineer. Ranking systems at scale. Want bigger data.',
+        'career_story': '3 years at InMobi building ad ranking models. Moved 5% of the global ad revenue needle last year. Looking for scale problems at consumer companies where ML drives the core product.',
+        'skills': ['Python', 'PyTorch', 'Spark', 'SQL', 'MLOps'],
+        'years_of_experience': 4,
+        'current_company': 'InMobi',
+        'target_companies': ['Flipkart', 'Swiggy', 'Google Bangalore'],
+        'target_roles': ['ML Engineer', 'Applied Scientist'],
+    },
+    {
+        'display_name': 'Shreya Nair',
+        'email': 'shreya.nair@gmail.com',
+        'headline': 'Full-stack at Zerodha. Curious about non-broker fintech.',
+        'career_story': '3 years at Zerodha building Kite web. Deep exposure to trading systems. Want to see how fintech outside broking looks -- lending, cards, payments. Stack-agnostic but love TypeScript end to end.',
+        'skills': ['TypeScript', 'React', 'Node', 'PostgreSQL', 'WebSockets'],
+        'years_of_experience': 3,
+        'current_company': 'Zerodha',
+        'target_companies': ['Razorpay', 'Groww', 'CRED'],
+        'target_roles': ['Senior Full-stack Engineer', 'Product Engineer'],
+    },
+    {
+        'display_name': 'Meera Iyer',
+        'email': 'meera.iyer@gmail.com',
+        'headline': 'Payments engineer tired of legacy code. Want greenfield.',
+        'career_story': '3 years at PhonePe building merchant onboarding. I learned a lot but the codebase is 8 years old and change velocity is brutal. Looking for fintech teams where I can ship weekly.',
+        'skills': ['Go', 'Kafka', 'PostgreSQL', 'gRPC', 'Kubernetes'],
+        'years_of_experience': 4,
+        'current_company': 'PhonePe',
+        'target_companies': ['Razorpay', 'CRED', 'Groww'],
+        'target_roles': ['Senior Backend Engineer'],
+    },
 ]
 
 REFERRER_DATA = [
     {
-        'display_name': 'Ravi Kumar',
-        'email': 'ravi@razorpay.com',
+        'display_name': 'Nivrant Goswami',
+        'email': 'danush@razorpay.com',
         'company': 'Razorpay',
         'department': 'Engineering',
         'job_title': 'Staff Engineer',
@@ -205,6 +260,66 @@ REFERRER_DATA = [
         'kingmaker_score': 33,
         'total_referrals': 9,
         'successful_hires': 2,
+    },
+    {
+        'display_name': 'Priya Sharma',
+        'email': 'priya.sharma@flipkart.com',
+        'company': 'Flipkart',
+        'department': 'Engineering',
+        'job_title': 'Sr Engineering Manager',
+        'years_at_company': 5,
+        'can_refer_to': ['Backend', 'Platform', 'Frontend'],
+        'kingmaker_score': 72,
+        'total_referrals': 24,
+        'successful_hires': 8,
+    },
+    {
+        'display_name': 'Rajesh Iyer',
+        'email': 'rajesh@meesho.com',
+        'company': 'Meesho',
+        'department': 'Engineering',
+        'job_title': 'VP Engineering',
+        'years_at_company': 3,
+        'can_refer_to': ['Backend', 'Platform', 'Product', 'Data'],
+        'kingmaker_score': 28,
+        'total_referrals': 9,
+        'successful_hires': 2,
+    },
+    {
+        'display_name': 'Nandini Krishnan',
+        'email': 'nandini@groww.in',
+        'company': 'Groww',
+        'department': 'Data Science',
+        'job_title': 'Data Science Lead',
+        'years_at_company': 2,
+        'can_refer_to': ['ML', 'Data', 'Backend'],
+        'kingmaker_score': 22,
+        'total_referrals': 7,
+        'successful_hires': 1,
+    },
+    {
+        'display_name': 'Kavya Reddy',
+        'email': 'kavya@microsoft.com',
+        'company': 'Microsoft IDC',
+        'department': 'Azure',
+        'job_title': 'Principal Engineer',
+        'years_at_company': 4,
+        'can_refer_to': ['Backend', 'Infrastructure', 'SRE'],
+        'kingmaker_score': 19,
+        'total_referrals': 6,
+        'successful_hires': 1,
+    },
+    {
+        'display_name': 'Ishaan Thakur',
+        'email': 'ishaan@coinbase.com',
+        'company': 'Coinbase India',
+        'department': 'Engineering',
+        'job_title': 'Senior Developer',
+        'years_at_company': 1,
+        'can_refer_to': ['Backend', 'Crypto', 'Infrastructure'],
+        'kingmaker_score': 14,
+        'total_referrals': 4,
+        'successful_hires': 1,
     },
 ]
 
@@ -524,7 +639,7 @@ class Command(BaseCommand):
             f'  Conversations: {Conversation.objects.count()}\n'
             f'  Messages: {Message.objects.count()}\n'
             f'\nTest accounts (password: password123):\n'
-            f'  Seeker:   arjun@gmail.com\n'
-            f'  Referrer: ravi@razorpay.com\n'
+            f'  Seeker:   danush@gmail.com\n'
+            f'  Referrer: danush@razorpay.com\n'
             f'\nAdmin: python manage.py createsuperuser\n'
         ))

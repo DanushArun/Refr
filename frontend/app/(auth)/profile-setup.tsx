@@ -150,14 +150,14 @@ export default function ProfileSetupScreen() {
                 name="displayName"
                 value={seekerForm.displayName}
                 onChangeValue={handleSeekerChange}
-                placeholder="Arjun Mehta"
+                placeholder="Danush Arun"
               />
               <Input
                 label="Work email"
                 name="email"
                 value={seekerForm.email}
                 onChangeValue={handleSeekerChange}
-                placeholder="arjun@gmail.com"
+                placeholder="danush@gmail.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />

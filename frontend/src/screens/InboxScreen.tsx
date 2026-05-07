@@ -96,7 +96,7 @@ export function InboxScreen() {
         </View>
         {kingmakerScore !== null && (
           <View style={styles.scoreChip}>
-            <Text style={styles.scoreLabel}>Kingmaker</Text>
+            <Text style={styles.scoreLabel}>Endorsement</Text>
             <Text style={styles.scoreValue}>{kingmakerScore}</Text>
           </View>
         )}

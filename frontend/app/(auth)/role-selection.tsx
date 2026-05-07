@@ -29,9 +29,9 @@ const ROLES: Array<{
   },
   {
     id: 'referrer',
-    title: 'I can refer',
-    subtitle: 'Referrer',
-    description: 'Help talented engineers land at great companies. Build your Kingmaker reputation as someone who makes careers happen.',
+    title: 'I can endorse',
+    subtitle: 'Endorser',
+    description: 'Help talented engineers land at great companies. Build your Endorsement Score as someone who makes careers happen.',
   },
 ];
 
@@ -47,8 +47,8 @@ export default function RoleSelectionScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.wordmark}>REFR</Text>
-          <Text style={styles.question}>How do you want to use REFR?</Text>
+          <Text style={styles.wordmark}>ENDORSLY</Text>
+          <Text style={styles.question}>How do you want to use Endorsly?</Text>
           <Text style={styles.hint}>You can change this later in settings.</Text>
         </View>
 

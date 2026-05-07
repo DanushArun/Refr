@@ -1,5 +1,7 @@
-import { InboxScreen } from '../../src/screens/InboxScreen';
+import { EndorserDiscoverScreen } from '../../src/screens/EndorserDiscoverScreen';
 
-export default function InboxRoute() {
-  return <InboxScreen />;
+// Route filename stays `inbox` for Expo Router compat; the tab label is "Discover"
+// (set in `(referrer-tabs)/_layout.tsx`). Endorser flow is swipe-first per UX spec.
+export default function EndorserDiscoverRoute() {
+  return <EndorserDiscoverScreen />;
 }

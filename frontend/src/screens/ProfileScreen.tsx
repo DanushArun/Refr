@@ -135,7 +135,7 @@ export function ProfileScreen() {
                 {profile.referrerProfile.company.name}
               </Text>
               <Text style={styles.profileDetailSub}>
-                Kingmaker Score: {profile.referrerProfile.kingmaker_score}
+                Endorsement Score: {profile.referrerProfile.kingmaker_score}
               </Text>
               <View style={styles.statsRow}>
                 <StatPill
@@ -186,7 +186,7 @@ export function ProfileScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About REFR</Text>
+          <Text style={styles.sectionTitle}>About Endorsly</Text>
           <SettingsRow label="Version" value="0.1.0" />
           <SettingsRow label="Market" value="Bangalore tech" />
         </View>

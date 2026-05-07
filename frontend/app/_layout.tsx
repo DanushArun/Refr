@@ -7,11 +7,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SystemBars } from 'react-native-edge-to-edge';
 import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-  Outfit_700Bold,
-} from '@expo-google-fonts/outfit';
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import {
   InstrumentSerif_400Regular,
   InstrumentSerif_400Regular_Italic,
@@ -27,12 +27,15 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    'Outfit-Regular': Outfit_400Regular,
-    'Outfit-Medium': Outfit_500Medium,
-    'Outfit-SemiBold': Outfit_600SemiBold,
-    'Outfit-Bold': Outfit_700Bold,
+    // Body + UI — Inter, the modern fintech/SaaS standard (Vercel, Linear, Notion)
+    'Outfit-Regular': Inter_400Regular,
+    'Outfit-Medium': Inter_500Medium,
+    'Outfit-SemiBold': Inter_600SemiBold,
+    'Outfit-Bold': Inter_700Bold,
+    // Reserved for hero/editorial moments (splash, match modal, earnings hero label)
     'InstrumentSerif-Regular': InstrumentSerif_400Regular,
     'InstrumentSerif-Italic': InstrumentSerif_400Regular_Italic,
+    // Numbers + stats — JetBrains Mono (closest free cousin of Geist Mono)
     'JetBrainsMono-Regular': JetBrainsMono_400Regular,
     'JetBrainsMono-Medium': JetBrainsMono_500Medium,
   });
