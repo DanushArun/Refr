@@ -7,20 +7,33 @@
  */
 
 export const colors = {
-  // Base backgrounds - Neutral near-black
-  background: '#0A0A0B',
-  backgroundElevated: '#121214',
+  // Nautical palette — deep navy hull, cream sailcloth, sailor gold trim
+  background: '#0A1F44',
+  backgroundElevated: '#102A5C',
+  navy: '#0A1F44',
+  navyDeep: '#061638',
+  cream: '#F5F1E8',
+  cardSurface: '#F5F1E8',
+  cardSurfaceText: '#000000',
+  cardSurfaceTextMuted: 'rgba(0, 0, 0, 0.60)',
+  cardSurfaceTextSubtle: 'rgba(0, 0, 0, 0.38)',
+  cardSurfaceDivider: 'rgba(0, 0, 0, 0.10)',
+  // Sailor gold — the trim/insignia color
+  gold: '#D4A744',
+  goldBright: '#E8BD58',
+  goldDim: 'rgba(212, 167, 68, 0.30)',
+  goldGlow: 'rgba(212, 167, 68, 0.18)',
 
   // Glass surfaces — Translucent layers
   surface: 'rgba(255, 255, 255, 0.03)',
   surfaceHover: 'rgba(255, 255, 255, 0.06)',
   surfaceActive: 'rgba(255, 255, 255, 0.1)',
 
-  // ONE bold accent color for live data - Radioactive Cyan
-  accent: '#00FFCC',
-  accentLight: 'rgba(0, 255, 204, 0.15)',
-  accentDim: 'rgba(0, 255, 204, 0.3)',
-  accentPressedBg: 'rgba(0, 255, 204, 0.25)',
+  // Brand accent — sailor gold (was radioactive cyan)
+  accent: '#D4A744',
+  accentLight: 'rgba(212, 167, 68, 0.15)',
+  accentDim: 'rgba(212, 167, 68, 0.30)',
+  accentPressedBg: 'rgba(212, 167, 68, 0.25)',
 
   // Typography hierarchy
   text: '#FAFAF7', // Off-white
@@ -33,9 +46,9 @@ export const colors = {
   borderStrong: 'rgba(255, 255, 255, 0.15)',
   glassHighlight: 'rgba(255, 255, 255, 0.2)',
 
-  // Semantic states (muted unless they are the primary action)
-  success: '#00FFCC',
-  successLight: 'rgba(0, 255, 204, 0.15)',
+  // Semantic states — green keeps its universal meaning regardless of brand
+  success: '#22C55E',
+  successLight: 'rgba(34, 197, 94, 0.15)',
   warning: '#FFB800',
   warningLight: 'rgba(255, 184, 0, 0.15)',
   error: '#FF3366',
@@ -51,15 +64,20 @@ export const colors = {
   tagPurple: 'rgba(255, 255, 255, 0.06)',
   tagPurpleText: 'rgba(250, 250, 247, 0.8)',
 
-  // Pipeline colors
-  pipelineRequested: 'rgba(255, 255, 255, 0.4)',
-  pipelineAccepted: 'rgba(255, 255, 255, 0.6)',
-  pipelineSubmitted: 'rgba(255, 255, 255, 0.8)',
+  // Pipeline colors — semantically distinct hues
+  pipelineRequested: 'rgba(250, 250, 247, 0.35)',
+  pipelineAccepted: '#60a5fa',
+  pipelineSubmitted: '#a78bfa',
   pipelineInterviewing: '#00FFCC',
-  pipelineHired: '#00FFCC',
-  pipelineRejected: 'rgba(255, 255, 255, 0.2)',
-  pipelineWithdrawn: 'rgba(255, 255, 255, 0.1)',
-  pipelineExpired: 'rgba(255, 255, 255, 0.1)',
+  pipelineHired: '#22c55e',
+  pipelineRejected: '#f87171',
+  pipelineWithdrawn: 'rgba(250, 250, 247, 0.2)',
+  pipelineExpired: 'rgba(250, 250, 247, 0.2)',
+
+  // Ambient background orbs
+  ambientViolet: 'rgba(124, 58, 237, 0.20)',
+  ambientCyan: 'rgba(0, 255, 204, 0.13)',
+  ambientTeal: 'rgba(6, 182, 212, 0.07)',
 
   // Scores
   scoreLow: 'rgba(250, 250, 247, 0.3)',

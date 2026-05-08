@@ -31,7 +31,7 @@ interface FullProfile {
   role: string;
   avatarUrl?: string;
   headline?: string;
-  kingmakerScore?: number;
+  endorsementScore?: number;
   jobTitle?: string;
   companyName?: string;
   seekerProfile?: {
@@ -47,7 +47,7 @@ interface FullProfile {
     company: { id: number; name: string };
     department: string;
     job_title: string;
-    kingmaker_score: number;
+    endorsement_score: number;
     total_referrals: number;
     successful_hires: number;
     verification_status: string;
@@ -141,7 +141,7 @@ export function ProfileScreen() {
                 {profile.referrerProfile.company.name}
               </Text>
               <Text style={styles.profileDetailSub}>
-                Endorsement Score: {profile.referrerProfile.kingmaker_score}
+                Endorsement Score: {profile.referrerProfile.endorsement_score}
               </Text>
               <View style={styles.statsRow}>
                 <StatPill

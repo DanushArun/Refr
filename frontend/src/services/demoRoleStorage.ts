@@ -26,9 +26,15 @@ export async function loadDemoRole(): Promise<DemoRole | null> {
       return stored;
     }
   } catch {
-    /* noop — fall back to default */
+    /* noop — fall through to default below */
   }
-  return null;
+  // Demo / hardcoded-data mode: default to seeker so a fresh launch (or app
+  // reload during development) lands directly on Discover, skipping the
+  // Welcome → Onboarding → Role-Selection chain. Onboarding is still
+  // reachable explicitly via Profile → "Reset demo role".
+  _hasPickedRole = true;
+  DEMO.demoRole = 'seeker';
+  return 'seeker';
 }
 
 export async function saveDemoRole(role: DemoRole): Promise<void> {

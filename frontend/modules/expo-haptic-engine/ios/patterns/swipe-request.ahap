@@ -1,0 +1,12 @@
+{
+  "Version": 1.0,
+  "Metadata": { "Project": "Endorsly", "Description": "Swipe right — heartbeat" },
+  "Pattern": [
+    { "Event": { "Time": 0.00, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 1.0 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.7 }]}},
+    { "Event": { "Time": 0.09, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 0.5 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.5 }]}}
+  ]
+}

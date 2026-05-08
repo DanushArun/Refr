@@ -12,10 +12,10 @@ import {
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
+import { AmbientBackground } from '../components/common/AmbientBackground';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem } from '@refr/shared';
-import type { ReferralStatus } from '@refr/shared';
-import { PipelineStepper as SharedStepper, type PipelineStage } from '../components/activity/PipelineStepper';
+import { PipelineStepper, type PipelineStage } from '../components/activity/PipelineStepper';
 
 const STATUS_LABELS: Record<string, string> = {
   requested: 'Waiting',
@@ -60,43 +60,49 @@ export function PipelineScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
+      <View style={styles.container}>
+        <AmbientBackground />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Activity</Text>
-        <Text style={styles.subtitle}>{items.length} endorsement{items.length !== 1 ? 's' : ''} in flight</Text>
-      </View>
-
-      {items.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No activity yet</Text>
-          <Text style={styles.emptyBody}>
-            Swipe right on an Endorser in Discover to request your first endorsement.
+    <View style={styles.container}>
+      <AmbientBackground />
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Activity</Text>
+          <Text style={styles.subtitle}>
+            {items.length} endorsement{items.length !== 1 ? 's' : ''} in flight
           </Text>
         </View>
-      ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => item.referral.id}
-          contentContainerStyle={styles.list}
-          onRefresh={() => {
-            setRefreshing(true);
-            loadPipeline();
-          }}
-          refreshing={refreshing}
-          renderItem={({ item }) => (
-            <PipelineItem item={item} />
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-    </SafeAreaView>
+
+        {items.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>No activity yet</Text>
+            <Text style={styles.emptyBody}>
+              Swipe right on an Endorser in Discover to request your first endorsement.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.referral.id}
+            contentContainerStyle={styles.list}
+            onRefresh={() => {
+              setRefreshing(true);
+              loadPipeline();
+            }}
+            refreshing={refreshing}
+            renderItem={({ item }) => <PipelineItem item={item} />}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -109,7 +115,7 @@ function PipelineItem({ item }: { item: SeekerPipelineItem }) {
       <View style={styles.cardTop}>
         <View style={styles.companyRow}>
           <Text style={styles.companyName}>{item.companyName}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
+          <View style={[styles.statusBadge, { backgroundColor: statusColor + '1A' }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
           </View>
         </View>
@@ -119,49 +125,17 @@ function PipelineItem({ item }: { item: SeekerPipelineItem }) {
       <View style={styles.referrerRow}>
         <Text style={styles.referrerLabel}>Referrer</Text>
         <Text style={styles.referrerName}>{item.referrerName}</Text>
-        <Text style={styles.referrerTitle}>{item.referrerName} at {item.companyName}</Text>
       </View>
 
-      <SharedStepper stage={item.referral.status as PipelineStage} />
-    </View>
-  );
-}
-
-const PIPELINE_STEPS: Array<ReferralStatus> = [
-  'requested', 'accepted', 'submitted', 'interviewing', 'hired',
-];
-
-function PipelineStepper({ status }: { status: ReferralStatus }) {
-  const isTerminal = status === 'rejected' || status === 'withdrawn' || status === 'expired';
-  const currentIdx = PIPELINE_STEPS.indexOf(status);
-
-  return (
-    <View style={styles.stepper}>
-      {PIPELINE_STEPS.map((step, idx) => {
-        const done = currentIdx > idx;
-        const active = currentIdx === idx && !isTerminal;
-        const stepColor = done || active
-          ? STATUS_COLORS[step]
-          : colors.border;
-
-        return (
-          <React.Fragment key={step}>
-            <View style={[styles.stepDot, { backgroundColor: done || active ? stepColor : 'transparent', borderColor: stepColor }]}>
-              {done && <Text style={styles.stepCheck}>✓</Text>}
-            </View>
-            {idx < PIPELINE_STEPS.length - 1 && (
-              <View style={[styles.stepLine, { backgroundColor: done ? stepColor : colors.border }]} />
-            )}
-          </React.Fragment>
-        );
-      })}
+      <PipelineStepper stage={item.referral.status as PipelineStage} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[6],
@@ -170,7 +144,11 @@ const styles = StyleSheet.create({
   },
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.body, color: colors.textSecondary },
-  list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: spacing[20] },
+  list: {
+    padding: layout.screenPaddingH,
+    gap: spacing[4],
+    paddingBottom: spacing[20],
+  },
   empty: {
     flex: 1,
     alignItems: 'center',
@@ -179,15 +157,24 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   emptyTitle: { ...typography.h4, color: colors.textSecondary },
-  emptyBody: { ...typography.body, color: colors.textTertiary, textAlign: 'center', lineHeight: 24 },
+  emptyBody: {
+    ...typography.body,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: colors.surfaceLevel2,
     borderRadius: layout.cardBorderRadius,
     padding: layout.cardPadding,
     gap: spacing[4],
   },
   cardTop: { gap: spacing[1] },
-  companyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  companyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   companyName: { ...typography.h4, color: colors.text },
   statusBadge: {
     paddingHorizontal: spacing[3],
@@ -198,21 +185,9 @@ const styles = StyleSheet.create({
   role: { ...typography.body, color: colors.textSecondary },
   referrerRow: { gap: spacing[0.5] },
   referrerLabel: { ...typography.caption, color: colors.textTertiary },
-  referrerName: { ...typography.bodySmall, color: colors.text, fontFamily: 'Outfit-SemiBold' },
-  referrerTitle: { ...typography.caption, color: colors.textSecondary },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing[2],
+  referrerName: {
+    ...typography.bodySmall,
+    color: colors.text,
+    fontFamily: 'Outfit-SemiBold',
   },
-  stepDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepCheck: { fontSize: 10, color: colors.background, fontFamily: 'Outfit-Bold' },
-  stepLine: { flex: 1, height: 1.5 },
 });

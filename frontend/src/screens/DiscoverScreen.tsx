@@ -1,18 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Phrase } from '../utils/haptics';
 import { SwipeDeck } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
 import { EndorserProfileSheet } from '../components/discover/ProfileSheet';
+import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
+import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
   buildEndorserCards,
   type EndorserCard,
 } from '../components/discover/endorserCardData';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 
 const COMPANIES = ['All', 'Google', 'Flipkart', 'Razorpay', 'Swiggy'];
@@ -25,7 +25,8 @@ export function DiscoverScreen() {
   const [previewCard, setPreviewCard] = useState<EndorserCard | null>(null);
 
   const remainingSwipes = Math.max(0, cards.length - index);
-  const requestsLeft = 7;
+  // Token-based trigger so the celebration fires once per right-swipe
+  const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
 
   const commitSwipe = useCallback(
     (card: EndorserCard, direction: 'request' | 'pass') => {
@@ -42,7 +43,8 @@ export function DiscoverScreen() {
             `Hi ${card.name.split(' ')[0]}, saw your profile — would love an endorsement for ${card.companyName}.`,
           )
           .catch(() => {});
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        // Fire the full Skia celebration. Phrase.match() runs from inside it.
+        setCelebrationTrigger(Date.now());
       }
       setIndex((i) => i + 1);
     },
@@ -68,16 +70,11 @@ export function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Ambient background light to refract through the glass cards */}
-      <LinearGradient
-        colors={['rgba(0, 229, 255, 0.15)', 'rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)']}
-        start={{ x: 0.2, y: 0 }}
-        end={{ x: 1, y: 0.8 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <ConstellationBackdrop visible={remainingSwipes === 0} />
+
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
-          <Text style={styles.wordmark}>ENDORSLY</Text>
+          <Text style={styles.wordmark}>Endorsly</Text>
           <View style={styles.headerIcons}>
             <Pressable style={styles.iconBtn}>
               <Ionicons name="options-outline" size={22} color={colors.text} />
@@ -141,10 +138,6 @@ export function DiscoverScreen() {
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.requestsLeft}>{requestsLeft} requests left today</Text>
-        </View>
-
         <EndorserProfileSheet
           visible={previewCard !== null}
           card={previewCard}
@@ -153,6 +146,9 @@ export function DiscoverScreen() {
           onCommit={() => handlePreviewCommit('request')}
         />
       </SafeAreaView>
+
+      {/* Full-screen overlay celebration — fires on right-swipe commit */}
+      <MatchCelebration trigger={celebrationTrigger} />
     </View>
   );
 }
@@ -169,20 +165,20 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   wordmark: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 20,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 26,
     color: colors.text,
-    letterSpacing: 1,
+    letterSpacing: 0.3,
   },
   headerIcons: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 12,
   },
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -203,14 +199,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
   },
   filterChipActive: {
     backgroundColor: colors.accent,
     borderColor: colors.accent,
     shadowColor: colors.accent,
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
   },
   filterText: {
@@ -219,23 +215,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   filterTextActive: {
-    color: '#000000', // Deep contrast against the cyan background
+    color: '#000000',
     fontFamily: 'Outfit-Bold',
   },
   deckFrame: {
     flex: 1,
     marginTop: spacing[2],
+    // Reserve space below the deck so cards never bleed under the floating
+    // tab bar (tab bar is 70px tall + 26px from bottom = 96px clearance,
+    // plus a touch of breathing room).
+    paddingBottom: 116,
   },
   remainingBadge: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 110,
     alignSelf: 'center',
-    backgroundColor: 'rgba(10, 10, 11, 0.8)',
+    backgroundColor: 'rgba(10, 31, 68, 0.85)',
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(212, 167, 68, 0.25)',
   },
   remainingText: {
     fontFamily: 'Outfit-Medium',
@@ -243,14 +243,5 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
-  footer: {
-    paddingBottom: spacing[4],
-    alignItems: 'center',
-  },
-  requestsLeft: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
-    color: colors.textTertiary,
   },
 });

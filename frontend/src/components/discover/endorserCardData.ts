@@ -61,7 +61,7 @@ export function buildEndorserCard(
     companyId: referrer.company.id,
     companyName: referrer.company.name,
     location: referrer.location,
-    trustScore: Math.min(100, Math.max(0, Math.round(referrer.kingmakerScore))),
+    trustScore: Math.min(100, Math.max(0, Math.round(referrer.endorsementScore))),
     acceptanceRate: referrer.totalReferrals > 0
       ? Math.round((referrer.successfulHires / referrer.totalReferrals) * 100)
       : 0,

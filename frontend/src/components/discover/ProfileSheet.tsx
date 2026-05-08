@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
 import { TierBadge } from '../tier/TierBadge';
+import { AmbientBackground } from '../common/AmbientBackground';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing, layout } from '../../theme/spacing';
@@ -41,72 +42,75 @@ export function EndorserProfileSheet({
   if (!card) return null;
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent={false}>
-      <SafeAreaView style={styles.safe}>
-        <CloseButton onClose={onClose} />
+      <View style={styles.modalRoot}>
+        <AmbientBackground />
+        <SafeAreaView style={styles.safe}>
+          <CloseButton onClose={onClose} />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.heroRow}>
-            <Avatar displayName={card.name} size="xl" />
-            <View style={styles.heroMeta}>
-              <Text style={styles.name}>{card.name}</Text>
-              <Text style={styles.role}>{card.jobTitle}</Text>
-              <Text style={styles.company}>{card.companyName}</Text>
-              <View style={{ marginTop: spacing[2], flexDirection: 'row', gap: spacing[2], flexWrap: 'wrap' }}>
-                <TierBadge score={card.trustScore} size="md" />
-                <View style={styles.verifiedPill}>
-                  <View style={styles.verifiedDot} />
-                  <Text style={styles.verifiedText}>Verified employee</Text>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.heroRow}>
+              <Avatar displayName={card.name} size="xl" />
+              <View style={styles.heroMeta}>
+                <Text style={styles.name}>{card.name}</Text>
+                <Text style={styles.role}>{card.jobTitle}</Text>
+                <Text style={styles.company}>{card.companyName}</Text>
+                <View style={{ marginTop: spacing[2], flexDirection: 'row', gap: spacing[2], flexWrap: 'wrap' }}>
+                  <TierBadge score={card.trustScore} size="md" />
+                  <View style={styles.verifiedPill}>
+                    <View style={styles.verifiedDot} />
+                    <Text style={styles.verifiedText}>Verified employee</Text>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
 
-          <Section label="ENDORSEMENT RECORD">
-            <View style={styles.statRow}>
-              <StatTile label="Trust score" value={String(card.trustScore)} suffix="/100" />
-              <StatTile label="Accepts" value={`${card.acceptanceRate}%`} />
-              <StatTile label="Hires" value={String(card.hires)} />
-              <StatTile label="Response" value={card.responseTime} />
-            </View>
-          </Section>
-
-          <Section label="SKILLS THEY ENDORSE FOR">
-            <View style={styles.chipRow}>
-              {card.skills.map((s) => (
-                <View key={s} style={styles.chip}><Text style={styles.chipText}>{s}</Text></View>
-              ))}
-            </View>
-          </Section>
-
-          <Section label="ABOUT">
-            <Text style={styles.about}>
-              Works at <Text style={{ color: colors.accent, fontFamily: 'Outfit-SemiBold' }}>{card.companyName}</Text> as a {card.jobTitle}.
-              Typical response time is {card.responseTime}. Has endorsed {card.hires} successful hire{card.hires === 1 ? '' : 's'} to date.
-              Accepts {card.acceptanceRate}% of incoming requests — prioritises strong match-fit over volume.
-            </Text>
-          </Section>
-
-          <Section label="MATCH">
-            <View style={styles.matchRow}>
-              <Text style={styles.matchLabel}>Your match with {card.name.split(' ')[0]}</Text>
-              <View style={styles.matchBar}>
-                <View style={[styles.matchFill, { width: `${card.matchPercent}%` }]} />
+            <Section label="ENDORSEMENT RECORD">
+              <View style={styles.statRow}>
+                <StatTile label="Trust score" value={String(card.trustScore)} suffix="/100" />
+                <StatTile label="Accepts" value={`${card.acceptanceRate}%`} />
+                <StatTile label="Hires" value={String(card.hires)} />
+                <StatTile label="Response" value={card.responseTime} />
               </View>
-              <Text style={styles.matchPercent}>{card.matchPercent}%</Text>
-            </View>
-            <Text style={styles.matchExplain}>
-              Computed from your target companies, skill overlap, and experience fit.
-            </Text>
-          </Section>
-        </ScrollView>
+            </Section>
 
-        <ActionBar
-          passLabel="Pass"
-          commitLabel={`Request ${card.name.split(' ')[0]}`}
-          onPass={onPass}
-          onCommit={onCommit}
-        />
-      </SafeAreaView>
+            <Section label="SKILLS THEY ENDORSE FOR">
+              <View style={styles.chipRow}>
+                {card.skills.map((s) => (
+                  <View key={s} style={styles.chip}><Text style={styles.chipText}>{s}</Text></View>
+                ))}
+              </View>
+            </Section>
+
+            <Section label="ABOUT">
+              <Text style={styles.about}>
+                Works at <Text style={{ color: colors.accent, fontFamily: 'Outfit-SemiBold' }}>{card.companyName}</Text> as a {card.jobTitle}.
+                Typical response time is {card.responseTime}. Has endorsed {card.hires} successful hire{card.hires === 1 ? '' : 's'} to date.
+                Accepts {card.acceptanceRate}% of incoming requests — prioritises strong match-fit over volume.
+              </Text>
+            </Section>
+
+            <Section label="MATCH">
+              <View style={styles.matchRow}>
+                <Text style={styles.matchLabel}>Your match with {card.name.split(' ')[0]}</Text>
+                <View style={styles.matchBar}>
+                  <View style={[styles.matchFill, { width: `${card.matchPercent}%` }]} />
+                </View>
+                <Text style={styles.matchPercent}>{card.matchPercent}%</Text>
+              </View>
+              <Text style={styles.matchExplain}>
+                Computed from your target companies, skill overlap, and experience fit.
+              </Text>
+            </Section>
+          </ScrollView>
+
+          <ActionBar
+            passLabel="Pass"
+            commitLabel={`Request ${card.name.split(' ')[0]}`}
+            onPass={onPass}
+            onCommit={onCommit}
+          />
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -258,7 +262,7 @@ function ActionBar({
         onPress={onCommit}
         style={({ pressed }) => [styles.commitBtn, pressed && { opacity: 0.85 }]}
       >
-        <Ionicons name="heart" size={20} color="#ffffff" />
+        <Ionicons name="heart" size={20} color="#0a0a0b" />
         <Text style={styles.commitText}>{commitLabel}</Text>
       </Pressable>
     </View>
@@ -266,7 +270,8 @@ function ActionBar({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  modalRoot: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
   closeRow: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[3],
@@ -332,7 +337,7 @@ const styles = StyleSheet.create({
   statTile: {
     flex: 1,
     minWidth: '47%',
-    backgroundColor: colors.surfaceLevel1,
+    backgroundColor: colors.surfaceLevel2,
     borderRadius: 12,
     padding: spacing[3],
     gap: 2,
@@ -453,6 +458,6 @@ const styles = StyleSheet.create({
   commitText: {
     fontFamily: 'Outfit-SemiBold',
     fontSize: 15,
-    color: '#ffffff',
+    color: '#0a0a0b',
   },
 });

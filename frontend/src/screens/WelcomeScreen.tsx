@@ -9,9 +9,10 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
+import { Phrase } from '../utils/haptics';
 import { router } from 'expo-router';
 import { saveDemoRole } from '../services/demoRoleStorage';
+import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
@@ -79,17 +80,17 @@ export function WelcomeScreen() {
   }, [wordmarkOpacity, wordmarkTranslate, taglineOpacity, ctaOpacity, ctaTranslate]);
 
   const handleGetStarted = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    // Default: Seeker — the swipe deck is the most dopamine-rich first moment
-    await saveDemoRole('seeker');
-    router.replace('/(seeker-tabs)/discover');
+    Phrase.tap();
+    // Watch the galaxy form before choosing a side
+    router.push('/(auth)/onboarding');
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Subtle backdrop — accent glow, not a photo */}
+      <ConstellationBackdrop />
+      {/* Subtle vignette over the constellation so the wordmark stays legible */}
       <LinearGradient
-        colors={['rgba(124,58,237,0.18)', 'rgba(124,58,237,0.06)', 'transparent']}
+        colors={['rgba(10,10,11,0.6)', 'rgba(10,10,11,0.2)', 'rgba(10,10,11,0.65)']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={StyleSheet.absoluteFill}

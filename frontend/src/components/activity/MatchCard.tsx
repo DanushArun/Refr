@@ -1,14 +1,18 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
-import { Button } from '../common/Button';
+import { brandForName } from '../discover/companyBrand';
 import { PipelineStepper, type PipelineStage } from './PipelineStepper';
+import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
-import { spacing, layout } from '../../theme/spacing';
+import { layout } from '../../theme/spacing';
 
 /**
- * A single match in the endorser's Active list.
+ * A single match in the endorser/seeker active list, rendered as a cream
+ * credit-card with full nautical material treatment.
+ *
  * Encodes four pieces of data into one glanceable card:
  *   1. WHO  — avatar, name, role, "X at Company"
  *   2. WHERE — pipeline stage stepper (Matched → Submitted → Interviewing → Hired)
@@ -16,23 +20,27 @@ import { spacing, layout } from '../../theme/spacing';
  *   4. WHAT NEXT — single primary action derived from current stage
  */
 
+const BLACK = '#000000';
+const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
+const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
+const BLACK_35 = 'rgba(0, 0, 0, 0.35)';
+
 export interface MatchCardData {
   id: string;
-  counterpartName: string;         // seeker name (from endorser view) or endorser name (from seeker view)
+  counterpartName: string;
   counterpartAvatar?: string;
-  counterpartSubtitle: string;     // e.g. "Senior Backend · 4y · PhonePe"
-  targetRole: string;               // e.g. "Senior Backend Engineer"
-  companyName: string;              // the endorsing company
+  counterpartSubtitle: string;
+  targetRole: string;
+  companyName: string;
   stage: PipelineStage;
-  timeInStageLabel: string;         // e.g. "Matched 2h ago"
-  payoutPending?: number;           // ₹ amount pending if hired (endorser only)
+  timeInStageLabel: string;
+  payoutPending?: number;
 }
 
 type ActionKind = 'submit' | 'interviewing' | 'outcome' | 'view';
 
 interface Props {
   match: MatchCardData;
-  /** Viewer role changes which action is primary. */
   viewerRole: 'endorser' | 'seeker';
   onAction: (kind: ActionKind) => void;
   onChat: () => void;
@@ -43,11 +51,9 @@ function actionForStage(stage: PipelineStage, role: 'endorser' | 'seeker'):
   | { label: string; kind: ActionKind }
   | null {
   if (role === 'seeker') {
-    // Seekers track progress; their action is mostly "open chat" or view
     if (stage === 'hired') return { label: 'View offer', kind: 'view' };
     return null;
   }
-  // Endorser actions
   switch (stage) {
     case 'matched':
     case 'accepted':
@@ -74,126 +80,249 @@ export function MatchCard({ match, viewerRole, onAction, onChat, pending }: Prop
     () => actionForStage(match.stage, viewerRole),
     [match.stage, viewerRole],
   );
+  const brand = useMemo(() => brandForName(match.companyName), [match.companyName]);
+
+  const handleAction = () => {
+    if (!action || pending) return;
+    if (match.stage === 'hired') {
+      Phrase.hire();
+    } else {
+      Phrase.tap();
+    }
+    onAction(action.kind);
+  };
+
+  const handleChat = () => {
+    Phrase.tap();
+    onChat();
+  };
 
   return (
     <View style={styles.card}>
-      {/* Top row: avatar · meta · payout chip */}
-      <View style={styles.topRow}>
-        <Avatar displayName={match.counterpartName} uri={match.counterpartAvatar} size="md" />
-        <View style={styles.topMeta}>
-          <Text style={styles.name} numberOfLines={1}>{match.counterpartName}</Text>
-          <Text style={styles.subtitle} numberOfLines={1}>{match.counterpartSubtitle}</Text>
-          <Text style={styles.role} numberOfLines={1}>{match.targetRole} · {match.companyName}</Text>
+      <View style={styles.cardBody}>
+        {/* Top row: avatar · meta · payout */}
+        <View style={styles.topRow}>
+          <Avatar displayName={match.counterpartName} uri={match.counterpartAvatar} size="md" />
+          <View style={styles.topMeta}>
+            <Text style={styles.name} numberOfLines={1}>{match.counterpartName}</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>{match.counterpartSubtitle}</Text>
+            <View style={styles.targetLine}>
+              <View style={[styles.companyDot, { backgroundColor: brand.tint }]} />
+              <Text style={styles.role} numberOfLines={1}>
+                {match.targetRole} · {match.companyName}
+              </Text>
+            </View>
+          </View>
+          {match.payoutPending !== undefined && match.stage !== 'hired' && (
+            <View style={styles.payChip}>
+              <Text style={styles.payChipLabel}>PAYOUT</Text>
+              <Text style={styles.payChipValue}>{formatINR(match.payoutPending)}</Text>
+            </View>
+          )}
+          {match.stage === 'hired' && match.payoutPending !== undefined && (
+            <View style={[styles.payChip, styles.payChipPaid]}>
+              <Text style={[styles.payChipLabel, styles.payChipPaidLabel]}>PAID</Text>
+              <Text style={[styles.payChipValue, styles.payChipPaidValue]}>
+                {formatINR(match.payoutPending)}
+              </Text>
+            </View>
+          )}
         </View>
-        {match.payoutPending !== undefined && match.stage !== 'hired' && (
-          <View style={styles.payChip}>
-            <Text style={styles.payChipLabel}>PAYOUT</Text>
-            <Text style={styles.payChipValue}>{formatINR(match.payoutPending)}</Text>
-          </View>
-        )}
-        {match.stage === 'hired' && match.payoutPending !== undefined && (
-          <View style={[styles.payChip, styles.payChipPaid]}>
-            <Text style={[styles.payChipLabel, { color: colors.success }]}>PAID</Text>
-            <Text style={[styles.payChipValue, { color: colors.success }]}>{formatINR(match.payoutPending)}</Text>
-          </View>
-        )}
+
+        {/* Stage stepper — light variant for cream card */}
+        <View style={styles.stepperWrap}>
+          <PipelineStepper stage={match.stage} light />
+        </View>
+
+        {/* Time in stage */}
+        <Text style={styles.time}>{match.timeInStageLabel}</Text>
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          {action && (
+            <Pressable
+              onPress={handleAction}
+              disabled={pending}
+              style={[styles.primaryBtn, pending && { opacity: 0.5 }]}
+            >
+              <Text style={styles.primaryBtnText}>
+                {pending ? 'Updating…' : action.label}
+              </Text>
+            </Pressable>
+          )}
+          <Pressable
+            onPress={handleChat}
+            style={({ pressed }) => [styles.chatBtn, pressed && styles.chatBtnPressed]}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={16} color={BLACK} />
+            <Text style={styles.chatBtnText}>Chat</Text>
+          </Pressable>
+        </View>
       </View>
 
-      {/* Stage stepper */}
-      <View style={styles.stepperWrap}>
-        <PipelineStepper stage={match.stage} />
-      </View>
-
-      {/* Time in stage */}
-      <Text style={styles.time}>{match.timeInStageLabel}</Text>
-
-      {/* Actions */}
-      <View style={styles.actions}>
-        {action && (
-          <Button
-            label={pending ? 'Updating…' : action.label}
-            onPress={() => onAction(action.kind)}
-            variant="primary"
-            size="medium"
-            disabled={pending}
-            style={styles.primaryBtn}
-          />
-        )}
-        <Pressable
-          onPress={onChat}
-          style={({ pressed }) => [styles.chatBtn, pressed && styles.chatBtnPressed]}
-        >
-          <Text style={styles.chatBtnText}>Chat</Text>
-        </Pressable>
-      </View>
+      {/* Credit-card material overlays */}
+      <LinearGradient
+        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.04)']}
+        locations={[0, 0.55, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.materialSheen}
+        pointerEvents="none"
+      />
+      <View style={styles.bevelTop} pointerEvents="none" />
+      <View style={styles.bevelBottom} pointerEvents="none" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surfaceLevel1,
+    backgroundColor: colors.cardSurface,
     borderRadius: layout.cardBorderRadius,
-    padding: layout.cardPadding,
-    gap: spacing[4],
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    elevation: 10,
   },
-  topRow: { flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' },
-  topMeta: { flex: 1, gap: 2 },
+  cardBody: {
+    padding: 18,
+    gap: 14,
+  },
+
+  topRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  topMeta: { flex: 1, gap: 3 },
   name: {
     fontFamily: 'Outfit-Bold',
     fontSize: 16,
-    color: colors.text,
+    color: BLACK,
     letterSpacing: -0.2,
   },
-  subtitle: { ...typography.caption, color: colors.textSecondary },
-  role: {
-    ...typography.caption,
-    color: colors.accent,
-    fontFamily: 'Outfit-SemiBold',
+  subtitle: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 12,
+    color: BLACK_70,
+  },
+  targetLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 2,
   },
+  companyDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  role: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 12,
+    color: BLACK,
+    flex: 1,
+  },
+
   payChip: {
-    backgroundColor: colors.accentLight,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 10,
-    paddingHorizontal: spacing[2.5],
-    paddingVertical: spacing[1],
+    backgroundColor: 'rgba(212, 167, 68, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.5)',
     alignItems: 'center',
     gap: 1,
   },
-  payChipPaid: { backgroundColor: colors.successLight },
   payChipLabel: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 9,
-    color: colors.accent,
-    letterSpacing: 0.5,
+    fontFamily: 'Outfit-Bold',
+    fontSize: 8,
+    color: BLACK_55,
+    letterSpacing: 1.3,
   },
   payChipValue: {
     fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: colors.text,
+    fontSize: 13,
+    color: BLACK,
   },
-  stepperWrap: { paddingVertical: spacing[1] },
+  payChipPaid: {
+    backgroundColor: 'rgba(34, 197, 94, 0.18)',
+    borderColor: 'rgba(34, 197, 94, 0.55)',
+  },
+  payChipPaidLabel: { color: '#15803D' },
+  payChipPaidValue: { color: '#14532D' },
+
+  stepperWrap: { paddingVertical: 4 },
+
   time: {
-    ...typography.caption,
-    color: colors.textTertiary,
     fontFamily: 'JetBrainsMono-Regular',
+    fontSize: 11,
+    color: BLACK_55,
+    letterSpacing: 0.3,
   },
-  actions: { flexDirection: 'row', gap: spacing[3] },
-  primaryBtn: { flex: 2 },
-  chatBtn: {
-    flex: 1,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+
+  actions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  primaryBtn: {
+    flex: 2,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: colors.accent,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
-  chatBtnPressed: { opacity: 0.7 },
+  primaryBtnText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 14,
+    color: '#0A1F44',
+    letterSpacing: 0.2,
+  },
+  chatBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: BLACK_35,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  chatBtnPressed: { opacity: 0.6 },
   chatBtnText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 15,
-    color: colors.text,
+    fontSize: 14,
+    color: BLACK,
+  },
+
+  /* Material overlays */
+  materialSheen: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: layout.cardBorderRadius,
+  },
+  bevelTop: {
+    position: 'absolute',
+    top: 0,
+    left: 16,
+    right: 16,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  bevelBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 16,
+    right: 16,
+    height: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.18)',
   },
 });

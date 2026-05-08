@@ -38,7 +38,7 @@ function uid(prefix: string): string {
 import type { FeedCard } from '@refr/shared';
 
 export interface ReputationData {
-  kingmakerScore: number;
+  endorsementScore: number;
   totalReferrals: number;
   successfulHires: number;
   department: string;
@@ -49,7 +49,7 @@ export interface ReputationData {
 }
 
 export interface LeaderboardEntry {
-  kingmakerScore: number;
+  endorsementScore: number;
   totalReferrals: number;
   successfulHires: number;
   user: { id: string; displayName: string };
@@ -231,12 +231,12 @@ function applyDemoTransition(
   const isHired = newStatus === 'hired';
   if (isHired && !wasHired) {
     MOCK_REPUTATION.successfulHires += 1;
-    MOCK_REPUTATION.kingmakerScore += POINTS_PER_HIRE;
+    MOCK_REPUTATION.endorsementScore += POINTS_PER_HIRE;
   }
   if (!isHired && wasHired) {
     // Reversal (e.g. undo or manual fix) — decrement
     MOCK_REPUTATION.successfulHires = Math.max(0, MOCK_REPUTATION.successfulHires - 1);
-    MOCK_REPUTATION.kingmakerScore = Math.max(0, MOCK_REPUTATION.kingmakerScore - POINTS_PER_HIRE);
+    MOCK_REPUTATION.endorsementScore = Math.max(0, MOCK_REPUTATION.endorsementScore - POINTS_PER_HIRE);
   }
 
   return updated;
@@ -432,7 +432,7 @@ export const referralsApi = {
         MOCK_INBOX[pendingIdx] = { ...existing, referral: updated };
         // Reputation side-effect: mutual match also counts as a new endorsement
         MOCK_REPUTATION.totalReferrals += 1;
-        MOCK_REPUTATION.kingmakerScore += POINTS_PER_REFERRAL;
+        MOCK_REPUTATION.endorsementScore += POINTS_PER_REFERRAL;
         return Promise.resolve({ referral: updated, mutual: true });
       }
 
@@ -457,7 +457,7 @@ export const referralsApi = {
       });
       // Reputation side-effect: a new endorsement bumps totalReferrals + score
       MOCK_REPUTATION.totalReferrals += 1;
-      MOCK_REPUTATION.kingmakerScore += POINTS_PER_REFERRAL;
+      MOCK_REPUTATION.endorsementScore += POINTS_PER_REFERRAL;
       return Promise.resolve({ referral, mutual: false });
     }
     return request<{ data: Referral }>('/api/v1/referrals/', {

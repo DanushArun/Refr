@@ -33,7 +33,7 @@ export interface ReferrerProfile extends BaseUser {
   jobTitle: string;
   yearsAtCompany: number;
   canReferTo: string[];        // Departments/roles they can refer to
-  kingmakerScore: number;      // 0-100, earned through referral outcomes
+  endorsementScore: number;    // 0-100, earned through referral outcomes
   totalReferrals: number;
   successfulHires: number;
   verificationStatus: VerificationStatus;

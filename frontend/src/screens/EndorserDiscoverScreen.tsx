@@ -1,23 +1,29 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SwipeDeck, type SwipeDirection } from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import { SeekerProfileSheet } from '../components/discover/ProfileSheet';
+import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
+import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
   buildSeekerCards,
   type SeekerCard,
 } from '../components/discover/seekerCardData';
+import { Phrase } from '../utils/haptics';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 
 /**
- * Endorser Discover — swipe stack of Seeker career stories.
- * Swipe right = private "I'd endorse this person" (mutual match opens chat).
- * Swipe left = pass, removed from queue.
- * Designed for batch review during commute / coffee breaks (UX spec § 6).
+ * Endorser Discover — referrer's swipe stack of incoming candidates.
+ *
+ * Mirror of the seeker's DiscoverScreen: ConstellationBackdrop alive in the
+ * background, "Endorsly" serif wordmark, swipe deck of cream credit-cards,
+ * floating tab bar clearance.
+ *
+ * Right swipe = "I'd endorse this person" (mutual match opens chat).
+ * Left swipe  = pass.
  */
 export function EndorserDiscoverScreen() {
   const [queueKey, setQueueKey] = useState(0);
@@ -25,12 +31,17 @@ export function EndorserDiscoverScreen() {
   const [index, setIndex] = useState(0);
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [previewCard, setPreviewCard] = useState<SeekerCard | null>(null);
+  // Trigger token: bumping this fires the celebration once. Null = idle.
+  const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
 
   const remaining = Math.max(0, cards.length - index);
 
   const commitSwipe = useCallback(
     (card: SeekerCard, direction: SwipeDirection) => {
       if (direction === 'request') {
+        // Fire the celebration immediately on commit — the user's emotional
+        // payoff for choosing to endorse. Doesn't wait for the API.
+        setCelebrationTrigger(Date.now());
         referralsApi
           .recordEndorserSwipe({
             id: card.id,
@@ -48,7 +59,6 @@ export function EndorserDiscoverScreen() {
             );
           })
           .catch(() => {});
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       } else {
         setLastAction(null);
       }
@@ -64,6 +74,7 @@ export function EndorserDiscoverScreen() {
   }, []);
 
   const handleCardTap = useCallback((card: SeekerCard) => {
+    Phrase.tap();
     setPreviewCard(card);
   }, []);
 
@@ -76,113 +87,146 @@ export function EndorserDiscoverScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.wordmark}>ENDORSLY</Text>
-          <Text style={styles.subtitle}>
-            Swipe right to endorse · left to pass
-          </Text>
-        </View>
-        <View style={styles.counter}>
-          <Text style={styles.counterLabel}>LEFT</Text>
-          <Text style={styles.counterValue}>{remaining}</Text>
-        </View>
-      </View>
+    <View style={styles.container}>
+      <ConstellationBackdrop visible={remaining === 0} />
 
-      <View style={styles.deckFrame}>
-        <SwipeDeck<SeekerCard>
-          items={cards}
-          index={index}
-          keyOf={(c) => c.id}
-          onSwipe={commitSwipe}
-          onCardTap={handleCardTap}
-          onRefresh={handleRefresh}
-          emptyTitle="Inbox empty"
-          emptyBody="No more Seekers in your queue. New career stories appear daily."
-          renderCard={({ item, isTop, stackIndex, onSwiped, onTap }) => (
-            <SeekerCardView
-              card={item}
-              isTop={isTop}
-              stackIndex={stackIndex}
-              onSwiped={onSwiped}
-              onTap={onTap}
-            />
-          )}
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <Text style={styles.wordmark}>Endorsly</Text>
+          <View style={styles.headerIcons}>
+            <Pressable style={styles.iconBtn}>
+              <Ionicons name="options-outline" size={22} color={colors.text} />
+            </Pressable>
+            <Pressable style={styles.iconBtn}>
+              <Ionicons name="notifications-outline" size={22} color={colors.text} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.deckFrame}>
+          <SwipeDeck<SeekerCard>
+            items={cards}
+            index={index}
+            keyOf={(c) => c.id}
+            onSwipe={commitSwipe}
+            onCardTap={handleCardTap}
+            onRefresh={handleRefresh}
+            emptyTitle="Inbox empty"
+            emptyBody="No more candidates in your queue. New career stories appear daily."
+            renderCard={({ item, isTop, stackIndex, onSwiped, onTap }) => (
+              <SeekerCardView
+                card={item}
+                isTop={isTop}
+                stackIndex={stackIndex}
+                onSwiped={onSwiped}
+                onTap={onTap}
+              />
+            )}
+          />
+          <View style={styles.remainingBadge}>
+            <Text style={styles.remainingText}>{remaining} remaining swipes</Text>
+          </View>
+        </View>
+
+        {lastAction && (
+          <View style={styles.toastWrap} pointerEvents="none">
+            <View style={styles.toast}>
+              <Text style={styles.toastText} numberOfLines={2}>
+                {lastAction}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <SeekerProfileSheet
+          visible={previewCard !== null}
+          card={previewCard}
+          onClose={() => setPreviewCard(null)}
+          onPass={() => handlePreviewCommit('pass')}
+          onCommit={() => handlePreviewCommit('request')}
         />
-      </View>
+      </SafeAreaView>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerHint}>
-          {lastAction ?? 'Double opt-in: chat opens only if they swipe right too.'}
-        </Text>
-      </View>
-
-      <SeekerProfileSheet
-        visible={previewCard !== null}
-        card={previewCard}
-        onClose={() => setPreviewCard(null)}
-        onPass={() => handlePreviewCommit('pass')}
-        onCommit={() => handlePreviewCommit('request')}
-      />
-    </SafeAreaView>
+      {/* Full-screen overlay celebration — sits above the safe area + tab bar */}
+      <MatchCelebration trigger={celebrationTrigger} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
   header: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[4],
-    paddingBottom: spacing[3],
+    height: 60,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 8,
   },
   wordmark: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 22,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 26,
     color: colors.text,
-    letterSpacing: 3,
+    letterSpacing: 0.3,
   },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    marginTop: spacing[0.5],
+  headerIcons: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  counter: {
-    backgroundColor: colors.surfaceLevel1,
-    borderRadius: 12,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1.5],
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
-    gap: 2,
-  },
-  counterLabel: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    fontSize: 9,
-    letterSpacing: 0.5,
-  },
-  counterValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 18,
-    color: colors.text,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.20)',
   },
   deckFrame: {
     flex: 1,
-    paddingTop: spacing[4],
-    paddingBottom: spacing[6],
+    marginTop: spacing[2],
+    paddingBottom: 116,
   },
-  footer: {
-    paddingHorizontal: layout.screenPaddingH,
-    paddingBottom: spacing[6],
+  remainingBadge: {
+    position: 'absolute',
+    bottom: 110,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(10, 31, 68, 0.85)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.25)',
+  },
+  remainingText: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 11,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  toastWrap: {
+    position: 'absolute',
+    bottom: 158,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
-  footerHint: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    textAlign: 'center',
+  toast: {
+    backgroundColor: 'rgba(245, 241, 232, 0.94)',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.45)',
     maxWidth: 320,
+  },
+  toastText: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 13,
+    color: '#000000',
+    textAlign: 'center',
   },
 });

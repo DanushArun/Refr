@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: { ...typography.caption, color: colors.textSecondary },
-  list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: spacing[20] },
+  list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: 116 },
   summaryRow: {
     flexDirection: 'row',
     gap: spacing[3],
@@ -344,11 +344,13 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
-    backgroundColor: colors.surfaceLevel1,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
     padding: spacing[3],
     alignItems: 'center',
     gap: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.18)',
   },
   tileValue: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -357,9 +359,9 @@ const styles = StyleSheet.create({
   },
   tileLabel: {
     ...typography.caption,
-    color: colors.textTertiary,
+    color: colors.textSecondary,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
     fontSize: 10,
   },
   empty: {

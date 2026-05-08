@@ -3,7 +3,7 @@
  *
  * Primary personas:
  *   - Seeker  Danush Arun  (id '1')  -- ex-Amazon Pay, targeting fintech
- *   - Referrer Nivrant Goswami  (id '2')  -- Sr Backend @ Razorpay, Kingmaker 47
+ *   - Referrer Nivrant Goswami  (id '2')  -- Sr Backend @ Razorpay, Endorsement 47
  *
  * Everything in this file is mutable by design. The demo-mode helpers in
  * api.ts write to these arrays so that demos feel stateful across screens
@@ -46,31 +46,31 @@ const COMPANY = {
 } as const;
 
 // ── Referrers (12) ────────────────────────────────────────────────────
-// Primary demo referrer is Nivrant (id '2', rank 3, Kingmaker 47).
+// Primary demo referrer is Nivrant (id '2', rank 3, Endorsement 47).
 export interface DemoReferrer {
   id: string;
   name: string;
   jobTitle: string;
   company: { id: string; name: string };
   location: string;
-  kingmakerScore: number;
+  endorsementScore: number;
   totalReferrals: number;
   successfulHires: number;
 }
 
 export const DEMO_REFERRERS: DemoReferrer[] = [
-  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, location: 'Bangalore', kingmakerScore: 86, totalReferrals: 28, successfulHires: 9 },
-  { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, location: 'Hyderabad', kingmakerScore: 63, totalReferrals: 19, successfulHires: 6 },
-  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, location: 'Bangalore', kingmakerScore: 47, totalReferrals: 12, successfulHires: 3 },
-  { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, location: 'Pune', kingmakerScore: 41, totalReferrals: 15, successfulHires: 3 },
-  { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, location: 'Mumbai', kingmakerScore: 38, totalReferrals: 10, successfulHires: 3 },
-  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, location: 'Bangalore', kingmakerScore: 34, totalReferrals: 10, successfulHires: 2 },
-  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, location: 'Bangalore', kingmakerScore: 29, totalReferrals: 8, successfulHires: 2 },
-  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, location: 'Bangalore', kingmakerScore: 28, totalReferrals: 9, successfulHires: 2 },
-  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, location: 'Bangalore', kingmakerScore: 22, totalReferrals: 7, successfulHires: 1 },
-  { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, location: 'Hyderabad', kingmakerScore: 19, totalReferrals: 6, successfulHires: 1 },
-  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, location: 'Bangalore', kingmakerScore: 17, totalReferrals: 5, successfulHires: 1 },
-  { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, location: 'Remote', kingmakerScore: 14, totalReferrals: 4, successfulHires: 1 },
+  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, location: 'Bangalore', endorsementScore: 86, totalReferrals: 28, successfulHires: 9 },
+  { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, location: 'Hyderabad', endorsementScore: 63, totalReferrals: 19, successfulHires: 6 },
+  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, location: 'Bangalore', endorsementScore: 47, totalReferrals: 12, successfulHires: 3 },
+  { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, location: 'Pune', endorsementScore: 41, totalReferrals: 15, successfulHires: 3 },
+  { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, location: 'Mumbai', endorsementScore: 38, totalReferrals: 10, successfulHires: 3 },
+  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, location: 'Bangalore', endorsementScore: 34, totalReferrals: 10, successfulHires: 2 },
+  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, location: 'Bangalore', endorsementScore: 29, totalReferrals: 8, successfulHires: 2 },
+  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, location: 'Bangalore', endorsementScore: 28, totalReferrals: 9, successfulHires: 2 },
+  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, location: 'Bangalore', endorsementScore: 22, totalReferrals: 7, successfulHires: 1 },
+  { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, location: 'Hyderabad', endorsementScore: 19, totalReferrals: 6, successfulHires: 1 },
+  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, location: 'Bangalore', endorsementScore: 17, totalReferrals: 5, successfulHires: 1 },
+  { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, location: 'Remote', endorsementScore: 14, totalReferrals: 4, successfulHires: 1 },
 ];
 
 // Lookup helpers used by the feed (to attach authoring referrer to
@@ -1079,7 +1079,7 @@ export function appendChatMessage(referralId: string, message: ChatMessage) {
 // ── Reputation + Leaderboard ──────────────────────────────────────────
 function leaderboardFromReferrer(r: DemoReferrer): LeaderboardEntry {
   return {
-    kingmakerScore: r.kingmakerScore,
+    endorsementScore: r.endorsementScore,
     totalReferrals: r.totalReferrals,
     successfulHires: r.successfulHires,
     user: { id: r.id, displayName: r.name },
@@ -1088,11 +1088,11 @@ function leaderboardFromReferrer(r: DemoReferrer): LeaderboardEntry {
 }
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [...DEMO_REFERRERS]
-  .sort((a, b) => b.kingmakerScore - a.kingmakerScore)
+  .sort((a, b) => b.endorsementScore - a.endorsementScore)
   .map(leaderboardFromReferrer);
 
 export const MOCK_REPUTATION: ReputationData = {
-  kingmakerScore: nivrant.kingmakerScore,
+  endorsementScore: nivrant.endorsementScore,
   totalReferrals: nivrant.totalReferrals,
   successfulHires: nivrant.successfulHires,
   department: 'Engineering',
@@ -1127,12 +1127,12 @@ export const MOCK_REFERRER_PROFILE = {
   role: 'referrer' as const,
   jobTitle: nivrant.jobTitle,
   companyName: nivrant.company.name,
-  kingmakerScore: nivrant.kingmakerScore,
+  endorsementScore: nivrant.endorsementScore,
   referrerProfile: {
     company: { id: Number(nivrant.company.id.replace('c-', '')), name: nivrant.company.name },
     department: 'Engineering',
     job_title: nivrant.jobTitle,
-    kingmaker_score: nivrant.kingmakerScore,
+    endorsement_score: nivrant.endorsementScore,
     total_referrals: nivrant.totalReferrals,
     successful_hires: nivrant.successfulHires,
     verification_status: 'verified',
