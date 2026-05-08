@@ -6,6 +6,7 @@
     "scheme": "refr",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.refr.app",
@@ -26,9 +27,7 @@
       "expo-router"
     ],
     "owner": "danush07",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "exposdk:54.0.0",
     "updates": {
       "url": "https://u.expo.dev/bf756b53-1804-4c83-8690-f6c6df0452d9"
     }

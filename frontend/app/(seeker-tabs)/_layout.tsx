@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { colors } from '../../src/theme/colors';
 import { hapticSelection } from '../../src/utils/haptics';
 
@@ -9,18 +11,38 @@ export default function SeekerTabsLayout() {
       headerShown: false,
       tabBarActiveTintColor: colors.accent,
       tabBarInactiveTintColor: colors.textTertiary,
+      tabBarBackground: () => (
+        <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+      ),
       tabBarStyle: {
-        backgroundColor: colors.background,
-        borderTopWidth: 0,
+        position: 'absolute',
+        bottom: 24,
+        left: 24,
+        right: 24,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: 'rgba(10, 10, 11, 0.4)',
+        borderTopWidth: 1.5,
+        borderTopColor: colors.glassHighlight,
+        borderLeftWidth: 1,
+        borderLeftColor: colors.borderStrong,
+        borderRightWidth: 1,
+        borderRightColor: 'rgba(255,255,255,0.05)',
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
         elevation: 0,
-        height: 84,
-        paddingBottom: 28,
-        paddingTop: 8,
+        paddingBottom: 0,
+        overflow: 'hidden',
+      },
+      tabBarItemStyle: {
+        paddingVertical: 10,
       },
       tabBarLabelStyle: {
         fontFamily: 'Outfit-Medium',
-        fontSize: 11,
+        fontSize: 10,
         letterSpacing: 0.3,
+        marginTop: 4,
+        textTransform: 'uppercase',
       },
     }}>
       <Tabs.Screen

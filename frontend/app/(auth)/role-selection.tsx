@@ -5,33 +5,28 @@ import {
   StyleSheet,
   Pressable,
   SafeAreaView,
-  TouchableOpacity,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
-import { Button } from '../../src/components/common/Button';
 
 type Role = 'seeker' | 'referrer';
 
 const ROLES: Array<{
   id: Role;
   title: string;
-  subtitle: string;
   description: string;
 }> = [
   {
     id: 'seeker',
-    title: 'I am looking',
-    subtitle: 'Job Seeker',
-    description: 'Get referred to the best tech companies. Your story reaches employees at places you want to work.',
+    title: 'I want referrals',
+    description: 'Find verified employees who can refer you to your dream company',
   },
   {
     id: 'referrer',
-    title: 'I can endorse',
-    subtitle: 'Endorser',
-    description: 'Help talented engineers land at great companies. Build your Endorsement Score as someone who makes careers happen.',
+    title: 'I can refer people',
+    description: 'Earn up to 80K per successful hire by referring qualified candidates',
   },
 ];
 
@@ -47,9 +42,9 @@ export default function RoleSelectionScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.wordmark}>ENDORSLY</Text>
-          <Text style={styles.question}>How do you want to use Endorsly?</Text>
-          <Text style={styles.hint}>You can change this later in settings.</Text>
+          <Text style={styles.title}>
+            How do you want{'\n'}to use REFR?
+          </Text>
         </View>
 
         <View style={styles.cards}>
@@ -61,47 +56,23 @@ export default function RoleSelectionScreen() {
                 style={[styles.card, isSelected && styles.cardSelected]}
                 onPress={() => setSelected(role.id)}
               >
-                <View style={styles.cardHeader}>
-                  <Text style={[styles.cardTitle, isSelected && styles.cardTitleSelected]}>
-                    {role.title}
-                  </Text>
-                  <View style={[styles.badge, isSelected && styles.badgeSelected]}>
-                    <Text style={[styles.badgeText, isSelected && styles.badgeTextSelected]}>
-                      {role.subtitle}
-                    </Text>
-                  </View>
-                </View>
+                <View style={styles.iconPlaceholder} />
+                <Text style={styles.cardTitle}>{role.title}</Text>
                 <Text style={styles.cardDescription}>{role.description}</Text>
-
-                {isSelected && (
-                  <View style={styles.checkmark}>
-                    <Text style={styles.checkmarkText}>✓</Text>
-                  </View>
-                )}
               </Pressable>
             );
           })}
         </View>
 
-        <View style={styles.footer}>
-          <Button
-            label="Continue"
-            onPress={handleContinue}
-            variant="primary"
-            size="large"
-            fullWidth
-            disabled={!selected}
-          />
-          <View style={styles.signInRow}>
-            <Text style={styles.signInLabel}>Already have an account?</Text>
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/login')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.signInLink}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <View style={styles.flexSpacer} />
+
+        <Pressable
+          style={[styles.button, !selected && styles.buttonDisabled]}
+          onPress={handleContinue}
+          disabled={!selected}
+        >
+          <Text style={styles.buttonText}>Continue</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -114,113 +85,83 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: layout.screenPaddingH,
-    paddingVertical: layout.screenPaddingV,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    paddingBottom: 40,
+    alignItems: 'center',
   },
   header: {
-    gap: spacing[2],
-    marginBottom: spacing[10],
+    width: '100%',
+    marginBottom: 48,
+    alignItems: 'center',
   },
-  wordmark: {
-    ...typography.h3,
-    color: colors.accent,
-    letterSpacing: 4,
-    marginBottom: spacing[4],
-  },
-  question: {
-    ...typography.h2,
+  title: {
+    fontFamily: 'InstrumentSerif-Regular', // Clash Display
+    fontSize: 28,
+    lineHeight: 36,
     color: colors.text,
-  },
-  hint: {
-    ...typography.caption,
-    color: colors.textTertiary,
+    textAlign: 'center',
   },
   cards: {
-    flex: 1,
-    gap: spacing[4],
+    width: '100%',
+    gap: 20,
   },
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: layout.cardBorderRadius,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    padding: layout.cardPadding,
-    gap: spacing[3],
-    position: 'relative',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+    gap: 12,
+    alignItems: 'flex-start',
   },
   cardSelected: {
+    borderWidth: 2,
     borderColor: colors.accent,
-    backgroundColor: colors.accentLight,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 8,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  iconPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(124, 58, 237, 0.15)',
+    marginBottom: 4, // 12px gap minus standard 8px from gap if it wasn't flex
   },
   cardTitle: {
-    ...typography.h4,
-    color: colors.text,
-  },
-  cardTitleSelected: {
-    color: colors.text,
-  },
-  badge: {
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-    borderRadius: 100,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  badgeSelected: {
-    backgroundColor: colors.accentDim,
-    borderColor: colors.accent,
-  },
-  badgeText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  badgeTextSelected: {
+    fontFamily: 'Outfit-SemiBold', // Satoshi
+    fontSize: 20,
     color: colors.text,
   },
   cardDescription: {
-    ...typography.body,
-    color: colors.textSecondary,
+    ...typography.bodySmall,
+    fontSize: 14,
     lineHeight: 22,
+    color: '#a1a1ab',
   },
-  checkmark: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  flexSpacer: {
+    flex: 1,
+    minHeight: 20,
+  },
+  button: {
+    width: '100%',
+    height: 52,
     backgroundColor: colors.accent,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkmarkText: {
+  buttonDisabled: {
+    backgroundColor: colors.surfaceActive,
+    opacity: 0.7,
+  },
+  buttonText: {
+    fontFamily: 'Outfit-SemiBold', // Satoshi
+    fontSize: 16,
     color: colors.text,
-    fontSize: 13,
-    fontFamily: 'Outfit-Bold',
-  },
-  footer: {
-    paddingTop: spacing[6],
-    gap: spacing[4],
-  },
-  signInRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing[1],
-  },
-  signInLabel: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-  },
-  signInLink: {
-    ...typography.bodySmall,
-    color: colors.accent,
-    fontFamily: 'Outfit-SemiBold',
   },
 });

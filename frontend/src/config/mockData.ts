@@ -52,24 +52,25 @@ export interface DemoReferrer {
   name: string;
   jobTitle: string;
   company: { id: string; name: string };
+  location: string;
   kingmakerScore: number;
   totalReferrals: number;
   successfulHires: number;
 }
 
 export const DEMO_REFERRERS: DemoReferrer[] = [
-  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, kingmakerScore: 86, totalReferrals: 28, successfulHires: 9 },
-  { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, kingmakerScore: 63, totalReferrals: 19, successfulHires: 6 },
-  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, kingmakerScore: 47, totalReferrals: 12, successfulHires: 3 },
-  { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, kingmakerScore: 41, totalReferrals: 15, successfulHires: 3 },
-  { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, kingmakerScore: 38, totalReferrals: 10, successfulHires: 3 },
-  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, kingmakerScore: 34, totalReferrals: 10, successfulHires: 2 },
-  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, kingmakerScore: 29, totalReferrals: 8, successfulHires: 2 },
-  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, kingmakerScore: 28, totalReferrals: 9, successfulHires: 2 },
-  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, kingmakerScore: 22, totalReferrals: 7, successfulHires: 1 },
-  { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, kingmakerScore: 19, totalReferrals: 6, successfulHires: 1 },
-  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, kingmakerScore: 17, totalReferrals: 5, successfulHires: 1 },
-  { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, kingmakerScore: 14, totalReferrals: 4, successfulHires: 1 },
+  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, location: 'Bangalore', kingmakerScore: 86, totalReferrals: 28, successfulHires: 9 },
+  { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, location: 'Hyderabad', kingmakerScore: 63, totalReferrals: 19, successfulHires: 6 },
+  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, location: 'Bangalore', kingmakerScore: 47, totalReferrals: 12, successfulHires: 3 },
+  { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, location: 'Pune', kingmakerScore: 41, totalReferrals: 15, successfulHires: 3 },
+  { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, location: 'Mumbai', kingmakerScore: 38, totalReferrals: 10, successfulHires: 3 },
+  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, location: 'Bangalore', kingmakerScore: 34, totalReferrals: 10, successfulHires: 2 },
+  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, location: 'Bangalore', kingmakerScore: 29, totalReferrals: 8, successfulHires: 2 },
+  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, location: 'Bangalore', kingmakerScore: 28, totalReferrals: 9, successfulHires: 2 },
+  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, location: 'Bangalore', kingmakerScore: 22, totalReferrals: 7, successfulHires: 1 },
+  { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, location: 'Hyderabad', kingmakerScore: 19, totalReferrals: 6, successfulHires: 1 },
+  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, location: 'Bangalore', kingmakerScore: 17, totalReferrals: 5, successfulHires: 1 },
+  { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, location: 'Remote', kingmakerScore: 14, totalReferrals: 4, successfulHires: 1 },
 ];
 
 // Lookup helpers used by the feed (to attach authoring referrer to

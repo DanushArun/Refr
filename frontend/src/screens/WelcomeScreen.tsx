@@ -100,6 +100,9 @@ export function WelcomeScreen() {
         {/* Hero block — vertically centred in the upper 2/3 */}
         <View style={styles.hero}>
           <Animated.Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
             style={[
               styles.wordmark,
               {
@@ -165,14 +168,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing[4],
-    paddingTop: spacing[20],
   },
   wordmark: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 52,
+    fontSize: 44,
     color: colors.text,
-    letterSpacing: 8,
+    letterSpacing: 4,
     textAlign: 'center',
+    alignSelf: 'stretch',
   },
   tagline: {
     fontFamily: 'InstrumentSerif-Regular',
