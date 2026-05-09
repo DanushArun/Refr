@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { PressableScale } from '../components/common/PressableScale';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -105,12 +106,12 @@ export function EndorserDiscoverScreen() {
         <View style={styles.header}>
           <Text style={styles.wordmark}>Endorsly</Text>
           <View style={styles.headerIcons}>
-            <Pressable style={styles.iconBtn}>
+            <PressableScale style={styles.iconBtn}>
               <Ionicons name="options-outline" size={22} color={colors.text} />
-            </Pressable>
-            <Pressable style={styles.iconBtn}>
+            </PressableScale>
+            <PressableScale style={styles.iconBtn}>
               <Ionicons name="notifications-outline" size={22} color={colors.text} />
-            </Pressable>
+            </PressableScale>
           </View>
         </View>
 

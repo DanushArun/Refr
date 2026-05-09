@@ -96,7 +96,9 @@ export function MatchesScreen() {
   }
 
   const total = items.length;
-  const activeCount = tiers.active.length + tiers.fresh.length;
+  // Fresh is a subset of active now (every fresh match is also in active),
+  // so the live count is just `active.length` — no addition.
+  const activeCount = tiers.active.length;
 
   return (
     <View style={styles.container}>
@@ -163,16 +165,6 @@ export function MatchesScreen() {
                     );
                   })}
                 </View>
-              </View>
-            )}
-
-            {/* Tier 2 empty-but-fresh-only state — gives the carousel room
-                to breathe and tells the user what to do next. */}
-            {tiers.active.length === 0 && tiers.fresh.length > 0 && (
-              <View style={styles.activeEmpty}>
-                <Text style={styles.activeEmptyText}>
-                  Tap one of your new matches above to start the conversation.
-                </Text>
               </View>
             )}
 
@@ -249,16 +241,6 @@ const styles = StyleSheet.create({
   },
   activeStack: {
     gap: 8,
-  },
-  activeEmpty: {
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-  },
-  activeEmptyText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 18,
   },
 
   /* Universal empty state — only shown when the entire pipeline is empty. */

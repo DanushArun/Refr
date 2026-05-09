@@ -16,6 +16,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
+import { PersonName } from '../common/PersonName';
 import { MatchArc } from './MatchArc';
 import { brandForName } from './companyBrand';
 import { Phrase } from '../../utils/haptics';
@@ -314,15 +315,43 @@ export function SeekerCard({
 }
 
 function TopCardContent({ card }: { card: SeekerCardData }) {
-  // The brand zone shows the SEEKER'S top-target company — the destination
-  // they're trying to reach. Mirrors the seeker's swipe card which shows
-  // the company they're being referred for.
+  // The endorser already works at the company — they don't need an office
+  // photo, they need to see the SEEKER. So the hero zone is identity-led:
+  // a hero-sized avatar + the seeker's full name + their pitch one-liner.
+  // Below it, a slim band with the role they want and their years of
+  // experience. The cream zone splits horizontally between target companies
+  // (left) and the match arc (right), mirroring the seeker-side card's
+  // referrer/match split.
   const primaryTarget = card.targetCompanies[0] ?? 'Bangalore';
   const brand = brandForName(primaryTarget);
 
   return (
     <View style={{ flex: 1 }}>
-      {/* HERO: target company brand panel */}
+      {/* === HERO: seeker identity, navy backdrop with brand-tint accent === */}
+      <View style={styles.identityHero}>
+        <View style={[styles.identityHeroFill, { backgroundColor: brand.tint }]} />
+        <LinearGradient
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.28)']}
+          style={styles.identityHeroShade}
+          pointerEvents="none"
+        />
+        <View style={styles.identityHeroContent}>
+          <Avatar displayName={card.name} size="xl" verificationRing />
+          <PersonName
+            name={card.name}
+            textStyle={[styles.heroName, { color: brand.text }]}
+            containerStyle={styles.heroNameWrap}
+          />
+          <Text
+            style={[styles.heroHeadline, { color: brand.text }]}
+            numberOfLines={2}
+          >
+            {card.headline}
+          </Text>
+        </View>
+      </View>
+
+      {/* === BAND: target role + experience pill === */}
       <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
         <View style={styles.brandRow}>
           <View style={[styles.brandMark, { borderColor: brand.accent }]}>
@@ -332,57 +361,36 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
             {primaryTarget}
           </Text>
           <View style={styles.brandSpacer} />
-          <View style={[styles.openTag, { borderColor: brand.accent }]}>
-            <View style={[styles.openDot, { backgroundColor: brand.accent }]} />
-            <Text style={[styles.openText, { color: brand.accent }]}>OPEN</Text>
+          <View style={styles.expTag}>
+            <Text style={styles.expTagText}>
+              {card.yearsOfExperience}Y EXP
+            </Text>
           </View>
         </View>
 
         <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
           {card.targetRole}
         </Text>
-
-        {card.skills.length > 0 && (
-          <View style={styles.skillsRow}>
-            {card.skills.slice(0, 3).map((s) => (
-              <View key={s} style={styles.skillChip}>
-                <Text style={[styles.skillText, { color: brand.text }]}>{s}</Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
 
-      {/* CREAM ZONE — candidate + stats + match, full navy perimeter */}
+      {/* === CREAM ZONE — horizontal split: signal (left) | match (right) === */}
       <View style={styles.creamZone}>
-        <View style={styles.candidateSection}>
-          <Text style={styles.sectionLabel}>CANDIDATE</Text>
-          <View style={styles.candidateBlock}>
-            <Avatar displayName={card.name} size="lg" verificationRing />
-            <View style={styles.candidateMeta}>
-              <Text style={styles.candidateName} numberOfLines={1}>{card.name}</Text>
-              <Text style={styles.candidateSignal} numberOfLines={1}>
-                {card.currentSignal}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.candidateStats}>
-            <StatPill label="Exp" value={`${card.yearsOfExperience}y`} />
-            <StatPill label="Targets" value={`${card.targetCompanies.length}`} />
-            <StatPill label="Skills" value={`${card.fullSkills.length}`} />
+        <View style={styles.signalCol}>
+          <Text style={styles.sectionLabel}>SIGNAL</Text>
+          <Text style={styles.signalText} numberOfLines={1}>
+            {card.currentSignal}
+          </Text>
+          <View style={styles.signalStats}>
+            <StatPill label="EXP" value={`${card.yearsOfExperience}y`} />
+            <StatPill label="TARGETS" value={`${card.targetCompanies.length}`} />
+            <StatPill label="SKILLS" value={`${card.fullSkills.length}`} />
           </View>
         </View>
 
-        <View style={styles.divider} />
-
-        <View style={styles.matchSection}>
-          <View style={styles.matchHeader}>
-            <Text style={styles.sectionLabel}>THEIR PITCH</Text>
-            <Text style={styles.matchHint} numberOfLines={3}>
-              {card.headline}
-            </Text>
-          </View>
-          <MatchArc percent={card.matchPercent} size={84} animate light />
+        <View style={styles.matchCol}>
+          <Text style={styles.sectionLabel}>YOUR MATCH</Text>
+          <MatchArc percent={card.matchPercent} size={76} animate light />
+          <Text style={styles.matchHint} numberOfLines={1}>Skill overlap</Text>
         </View>
       </View>
     </View>
@@ -437,28 +445,97 @@ const styles = StyleSheet.create({
   },
   tapArea: { flex: 1 },
 
-  /* Brand hero — white perimeter only on the OUTER edges (top, left, right). */
-  brandZone: {
-    paddingTop: 22,
-    paddingHorizontal: 22,
-    paddingBottom: 20,
-    gap: 12,
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-    borderRightWidth: 3,
-    borderColor: '#F5F1E8',
+  /* Identity hero — large avatar + name + headline against a brand-tinted
+     backdrop. Takes ALL the leftover space after the band + cream zone size
+     to content. The seeker IS the desire-driver here. */
+  identityHero: {
+    flex: 1,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
+    overflow: 'hidden',
+    backgroundColor: '#0A1F44',
   },
-  /* Cream zone — navy perimeter only on the OUTER edges (bottom, left, right). */
-  creamZone: {
+  identityHeroFill: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  identityHeroShade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 80,
+  },
+  identityHeroContent: {
     flex: 1,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-    borderRightWidth: 3,
-    borderColor: '#0A1F44',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 20,
+    gap: 10,
+  },
+  heroNameWrap: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  heroName: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.3,
+    textAlign: 'center',
+  },
+  heroHeadline: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    opacity: 0.85,
+    paddingHorizontal: 12,
+  },
+
+  /* Slim band — target role + experience tag */
+  brandZone: {
+    paddingTop: 16,
+    paddingHorizontal: 22,
+    paddingBottom: 18,
+    gap: 10,
+  },
+  /* Cream zone — horizontal split: signal (left) | match (right) */
+  creamZone: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
+    gap: 14,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+  },
+  signalCol: {
+    flex: 1,
+    gap: 10,
+  },
+  signalText: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 13,
+    color: BLACK,
+  },
+  signalStats: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  matchCol: {
+    width: 110,
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 8,
+    paddingHorizontal: 6,
+    paddingBottom: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.35)',
+    backgroundColor: 'rgba(212, 167, 68, 0.06)',
   },
   brandRow: {
     flexDirection: 'row',
@@ -484,52 +561,31 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   brandSpacer: { flex: 1 },
-  openTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  /* EXP tag — replaces OPEN since the role is the seeker's wanted role,
+     and the most useful at-a-glance signal next to it is years of
+     experience. Brand-color independent so it reads consistently. */
+  expTag: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
+    backgroundColor: 'rgba(212, 167, 68, 0.18)',
     borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.55)',
   },
-  openDot: { width: 5, height: 5, borderRadius: 3 },
-  openText: {
+  expTagText: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 9,
-    letterSpacing: 1.5,
+    fontSize: 9.5,
+    letterSpacing: 1.4,
+    color: '#E8BD58',
   },
   role: {
     fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 28,
+    lineHeight: 32,
     letterSpacing: -0.4,
   },
-  skillsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  skillChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  skillText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
-  },
 
-  /* Candidate on cream */
-  candidateSection: {
-    paddingTop: 18,
-    paddingHorizontal: 22,
-    paddingBottom: 16,
-    gap: 12,
-  },
+  /* Section labels — used by REFERRED / SIGNAL / YOUR MATCH */
   sectionLabel: {
     fontFamily: 'Outfit-Bold',
     fontSize: 10,
@@ -537,31 +593,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  candidateBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  candidateMeta: { flex: 1, gap: 2 },
-  candidateName: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 22,
-    color: BLACK,
-    letterSpacing: -0.3,
-  },
-  candidateSignal: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    color: BLACK_70,
-  },
-  candidateStats: {
-    flexDirection: 'row',
-    gap: 6,
-  },
+
+  /* Compact stat pill (mirrors the seeker side EndorserCard pill) */
   statPill: {
     flex: 1,
     paddingVertical: 8,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     borderRadius: 10,
     backgroundColor: BLACK_05,
     alignItems: 'center',
@@ -580,29 +617,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  divider: {
-    height: 1,
-    backgroundColor: BLACK_08,
-    marginHorizontal: 22,
-  },
-
-  /* Match — compact horizontal, mirrors EndorserCard */
-  matchSection: {
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  matchHeader: {
-    flex: 1,
-    gap: 6,
-  },
+  /* "Skill overlap" caption under the match arc */
   matchHint: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 12,
+    fontFamily: 'Outfit-Medium',
+    fontSize: 11,
     color: BLACK_70,
-    lineHeight: 16,
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
 
   /* Stack preview — muted sailor gold plate, mirrors EndorserCard back-of-deck */
