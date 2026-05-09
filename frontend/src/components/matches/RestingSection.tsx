@@ -72,7 +72,7 @@ export function RestingSection({ items, onOpen }: Props) {
                 <RestingLedgerRow
                   data={{
                     id: item.referral.id,
-                    endorserName: item.referrerName,
+                    participantName: item.referrerName,
                     companyName: item.companyName,
                     role: item.referral.targetRole,
                     status: item.referral.status,

@@ -870,6 +870,39 @@ const baseReferrerReferral = {
   companyId: COMPANY.razorpay.id,
 } as const;
 
+/**
+ * Stable demo headshot per seeker.
+ *
+ * Why RandomUser instead of Pravatar: Pravatar's portrait pool skews
+ * middle-aged Western and reads as stock photography on a card designed
+ * for early-career tech folks. RandomUser's `api/portraits/{men|women}/N`
+ * dataset leans younger and more contemporary — the Endorsly target user
+ * is fresh-out-of-college through ~mid-30s, which is what we want
+ * represented in the demo.
+ *
+ * The URL is deterministic per seeker id (hash → folder + index), so each
+ * seeker keeps the same face across reloads without us having to thread
+ * an `avatarUrl` field through every DemoSeeker entry by hand.
+ *
+ * Honest caveat: RandomUser's static portraits aren't filtered by
+ * nationality, so some won't visually match the South-Asian names in
+ * DEMO_SEEKERS. Bundled licensed photography is the upgrade path; until
+ * then, this is closer to "young professional" than the prior approach.
+ */
+function demoHeadshotFor(seekerId: string): string {
+  // Tiny FNV-ish hash so the same seeker always lands on the same portrait.
+  let hash = 0;
+  for (let i = 0; i < seekerId.length; i++) {
+    hash = (hash * 31 + seekerId.charCodeAt(i)) | 0;
+  }
+  const abs = Math.abs(hash);
+  // RandomUser exposes 0-99 portraits per folder. Even hash → men, odd → women,
+  // so the demo set has gender variety without us tagging each seeker.
+  const folder = abs % 2 === 0 ? 'men' : 'women';
+  const idx = abs % 100;
+  return `https://randomuser.me/api/portraits/${folder}/${idx}.jpg`;
+}
+
 function inboxFromSeeker(seekerId: string, overrides: {
   id: string;
   targetRole: string;
@@ -899,6 +932,7 @@ function inboxFromSeeker(seekerId: string, overrides: {
       seekerNote: overrides.seekerNote ?? `Hi Nivrant, I am ${s.name.split(' ')[0]}. ${s.story.slice(0, 100)}...`,
     },
     seekerName: s.name,
+    seekerAvatar: demoHeadshotFor(s.id),
     seekerHeadline: seekerHeadline(s),
     matchScore: overrides.matchScore,
   };

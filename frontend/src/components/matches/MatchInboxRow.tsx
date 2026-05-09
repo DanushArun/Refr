@@ -39,7 +39,12 @@ import { StageRail } from './StageRail';
 
 export interface MatchInboxRowData {
   id: string;
-  endorserName: string;
+  /** The other party's name. From the seeker's POV this is the endorser
+   *  they matched with; from the endorser's POV it's the candidate seeker.
+   *  Generic naming so the row component works on both sides. */
+  participantName: string;
+  /** Optional avatar URL for the participant. */
+  participantAvatar?: string;
   companyName: string;
   role: string;
   status: ReferralStatus;
@@ -58,9 +63,14 @@ interface Props {
   timeLabel?: string;
 }
 
-export function MatchInboxRow({ data, onPress, timeLabel }: Props) {
+/**
+ * Memoized — within the Matches scroll, the parent re-renders whenever any
+ * tier item changes. Without memo, every row re-renders. Custom equality
+ * tracks only the fields that actually drive the row's appearance.
+ */
+function MatchInboxRowImpl({ data, onPress, timeLabel }: Props) {
   const meta = statusMeta(data.status, data.stageTimestamp);
-  const display = formatEndorserName(data.endorserName) || data.endorserName;
+  const display = formatEndorserName(data.participantName) || data.participantName;
   const hasPreview = !!data.lastMessagePreview;
   const subLine = hasPreview
     ? data.lastMessagePreview!
@@ -79,7 +89,12 @@ export function MatchInboxRow({ data, onPress, timeLabel }: Props) {
       {/* Vertical stage rail — visual progress, no text */}
       <StageRail status={data.status} />
 
-      <Avatar displayName={display} size="md" verificationRing />
+      <Avatar
+        displayName={display}
+        uri={data.participantAvatar}
+        size="md"
+        verificationRing
+      />
 
       <View style={styles.middle}>
         <Text style={styles.name} numberOfLines={1}>
@@ -107,6 +122,20 @@ export function MatchInboxRow({ data, onPress, timeLabel }: Props) {
     </PressableScale>
   );
 }
+
+export const MatchInboxRow = React.memo(MatchInboxRowImpl, (prev, next) =>
+  prev.data.id === next.data.id &&
+  prev.data.status === next.data.status &&
+  prev.data.participantName === next.data.participantName &&
+  prev.data.participantAvatar === next.data.participantAvatar &&
+  prev.data.companyName === next.data.companyName &&
+  prev.data.role === next.data.role &&
+  prev.data.stageTimestamp === next.data.stageTimestamp &&
+  prev.data.lastMessagePreview === next.data.lastMessagePreview &&
+  prev.data.unreadCount === next.data.unreadCount &&
+  prev.timeLabel === next.timeLabel &&
+  prev.onPress === next.onPress
+);
 
 const styles = StyleSheet.create({
   /* Pill is the row container — own surface, own rim, own shadow. The

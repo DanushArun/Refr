@@ -49,7 +49,7 @@ export function EarningsScreen() {
   const [reputation, setReputation] = useState<ReputationData | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [payoutsExpanded, setPayoutsExpanded] = useState(false);
+  const [payoutsExpanded, setPayoutsExpanded] = useState(true);
 
   const load = useCallback(() => {
     setLoading(true);

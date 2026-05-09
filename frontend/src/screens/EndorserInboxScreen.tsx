@@ -18,7 +18,6 @@ import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { latestStageTimestamp } from '../components/activity/referralCardShared';
 import { MatchInboxRow } from '../components/matches/MatchInboxRow';
-import { Skeleton } from '../components/common/Skeleton';
 import { NewMatchesCarousel } from '../components/matches/NewMatchesCarousel';
 import { RestingSection } from '../components/matches/RestingSection';
 import {
@@ -26,40 +25,140 @@ import {
   relativeLabel,
 } from '../components/matches/matchTiering';
 import { referralsApi } from '../services/api';
-import type { ReferralStatus, SeekerPipelineItem } from '@refr/shared';
+import type {
+  ReferralStatus,
+  ReferrerInboxItem,
+  SeekerPipelineItem,
+} from '@refr/shared';
 
 /**
- * Matches inbox — the seeker's social surface.
+ * Endorser Inbox — the referrer's chat surface.
  *
- * Three placements:
+ * Mirror of the seeker's MatchesScreen, but built around the referrer's
+ * incoming queue (`ReferrerInboxItem`) instead of the seeker's pipeline.
+ * Same three tiers, same chip language, same tiering rules:
  *
- *   1. Fresh    — recently-accepted endorsers (≤ 7 days). Horizontal
- *                 carousel up top; the "go say hi" prompt. Same matches are
- *                 *also* in Conversations below — the carousel is a
- *                 spotlight, not a hide-from-list.
- *   2. Active   — ongoing conversations. Compact pill rows with stage
- *                 rails; the daily-scan surface.
- *   3. Resting  — terminal or stale (30+ days) matches. Collapsed by
- *                 default. Never deleted; this is how we keep history
- *                 without crowding the live surface.
+ *   1. Fresh    — recently-accepted candidates the referrer hasn't messaged
+ *                 yet. The "go say hi" prompt.
+ *   2. Active   — ongoing chats with candidates being shepherded.
+ *   3. Resting  — terminal (hired/rejected/withdrawn/expired) or 30+ days
+ *                 idle. Collapsed by default. History preserved.
  *
- * Filter strip — bespoke to the inbox: stage filters (Matched / Submitted /
- * Interviewing). Discovery's filter is by company because Discovery's job
- * is "which company should I get endorsed at?". Matches' job is "where am
- * I with each person?" — stage is the right axis here.
+ * The referrer's "Active" tab tracks pipeline state + actions per candidate;
+ * THIS screen is the conversation-only view. Two surfaces, two jobs:
+ *
+ *   - Active: "what do I need to DO with this candidate, and what's the payout?"
+ *   - Inbox:  "who am I talking to, and who needs a reply?"
+ *
+ * Why we adapt to SeekerPipelineItem at the boundary: the matches
+ * components (carousel, row, tiering) are written against
+ * SeekerPipelineItem because that's where they were born. The endorser's
+ * data has the same shape semantically — referral object + the other
+ * party's name — so a small adapter keeps the components shared instead of
+ * duplicating them. If/when more endorser-specific fields are needed
+ * (incoming match score, candidate headline preview), generalize the
+ * components further; for now adaptation is the right cost.
  */
-export function MatchesScreen() {
-  const [items, setItems] = useState<SeekerPipelineItem[]>([]);
+
+const ACTIVE_FOR_INBOX: ReadonlySet<ReferralStatus> = new Set<ReferralStatus>([
+  'requested',
+  'accepted',
+  'submitted',
+  'interviewing',
+  'hired',
+  'rejected',
+  'withdrawn',
+  'expired',
+]);
+
+/**
+ * Tab-local stage-filter taxonomy. The endorser cares about a different
+ * stage subset than the seeker's Matches: the endorser may want to see
+ * who's specifically waiting at "Requested" (needs response) vs.
+ * "Submitted" (waiting on HR) etc. We expose all in-flight stages.
+ */
+type StageFilter = 'all' | 'requested' | 'submitted' | 'interviewing';
+
+const STAGE_FILTERS: { key: StageFilter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'requested', label: 'New' },
+  { key: 'submitted', label: 'Submitted' },
+  { key: 'interviewing', label: 'Interviewing' },
+];
+
+const STAGE_LABEL: Record<StageFilter, string> = {
+  all: 'All',
+  requested: 'New',
+  submitted: 'Submitted',
+  interviewing: 'Interviewing',
+};
+
+function bucketFor(status: ReferralStatus): Exclude<StageFilter, 'all'> | null {
+  switch (status) {
+    case 'requested':
+    case 'accepted':
+      return 'requested';
+    case 'submitted':
+      return 'submitted';
+    case 'interviewing':
+      return 'interviewing';
+    default:
+      return null; // hired / rejected / withdrawn / expired — terminal
+  }
+}
+
+function filterByStage(
+  items: ReferrerInboxItem[],
+  filter: StageFilter,
+): ReferrerInboxItem[] {
+  if (filter === 'all') return items;
+  return items.filter((it) => bucketFor(it.referral.status) === filter);
+}
+
+function buildStageCounts(
+  items: ReferrerInboxItem[],
+): Record<Exclude<StageFilter, 'all'>, number> {
+  const out = { requested: 0, submitted: 0, interviewing: 0 };
+  for (const it of items) {
+    const b = bucketFor(it.referral.status);
+    if (b) out[b] += 1;
+  }
+  return out;
+}
+
+/**
+ * Adapt a `ReferrerInboxItem` to the `SeekerPipelineItem` shape that the
+ * shared matches components consume. The other-party's name moves into
+ * `referrerName` (read it as "the participant's name" — the field is
+ * generic by usage even if the type field name is seeker-side).
+ *
+ * Company comes from the referrer's profile in real life; for the demo we
+ * use the first known referrer company so cards have something to render.
+ * Once the API exposes the referrer's profile alongside inbox items, this
+ * defaults to that.
+ */
+const REFERRER_COMPANY = 'Razorpay';
+
+function adapt(item: ReferrerInboxItem): SeekerPipelineItem {
+  return {
+    referral: item.referral,
+    referrerName: item.seekerName,
+    companyName: REFERRER_COMPANY,
+  };
+}
+
+export function EndorserInboxScreen() {
+  const [items, setItems] = useState<ReferrerInboxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stageFilter, setStageFilter] = useState<StageFilter>('all');
 
   const load = useCallback(async () => {
     try {
-      const data = await referralsApi.getPipeline();
-      setItems(data as SeekerPipelineItem[]);
+      const data = await referralsApi.getInbox();
+      setItems(data.filter((i) => ACTIVE_FOR_INBOX.has(i.referral.status)));
     } catch {
-      Alert.alert('Error', 'Failed to load matches');
+      Alert.alert('Error', 'Failed to load inbox');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -74,20 +173,22 @@ export function MatchesScreen() {
     load();
   }, [load]);
 
-  // Apply the stage filter BEFORE partitioning so each tier's count + the
-  // per-tier list reflect the user's chosen lens. Resting is always
-  // computed off the unfiltered items so the ledger keeps its full history
-  // count regardless of the active stage chip.
+  // Filter then adapt — partitioning consumes the seeker-pipeline shape.
+  // Resting is computed off the unfiltered set so the ledger keeps its full
+  // history count regardless of the active stage chip.
   const filteredItems = useMemo(
     () => filterByStage(items, stageFilter),
     [items, stageFilter],
   );
-  const liveTiers = useMemo(() => partitionMatches(filteredItems), [filteredItems]);
-  const restingAll = useMemo(() => partitionMatches(items).resting, [items]);
+  const liveTiers = useMemo(
+    () => partitionMatches(filteredItems.map(adapt)),
+    [filteredItems],
+  );
+  const restingAll = useMemo(
+    () => partitionMatches(items.map(adapt)).resting,
+    [items],
+  );
 
-  // Per-stage counts for the chip badges — calculated against the full
-  // (non-resting) live set so chip counts don't re-shuffle as the user
-  // toggles between filters.
   const stageCounts = useMemo(() => buildStageCounts(items), [items]);
 
   const onPickStage = useCallback((next: StageFilter) => {
@@ -97,62 +198,30 @@ export function MatchesScreen() {
   }, [stageFilter]);
 
   const openChat = useCallback((item: SeekerPipelineItem) => {
+    // We need the original ReferrerInboxItem to pull avatar + headline;
+    // resolve it by id. Falls back gracefully if the item isn't there
+    // (shouldn't happen in practice — both lists are derived from `items`).
+    const source = items.find((i) => i.referral.id === item.referral.id);
     router.push({
       pathname: '/chat',
       params: {
         referralId: item.referral.id,
         participantName: item.referrerName,
-        participantAvatar: '',
+        participantAvatar: source?.seekerAvatar ?? '',
+        participantSubtitle: source?.seekerHeadline,
         targetRole: item.referral.targetRole,
         companyName: item.companyName,
         stage: item.referral.status,
       },
     });
-  }, []);
-
-  /**
-   * Per-item bound press handlers, memoized by the items array. Without
-   * this, each `() => openChat(item)` arrow inside the map() would be a
-   * fresh function reference on every parent render — defeating the
-   * React.memo equality check on each row. We rebuild the map only when the
-   * items array itself changes.
-   */
-  const itemPressHandlers = useMemo(() => {
-    const map = new Map<string, () => void>();
-    for (const it of items) {
-      map.set(it.referral.id, () => openChat(it));
-    }
-    return map;
-  }, [items, openChat]);
+  }, [items]);
 
   if (loading) {
-    // Skeleton placeholder mirrors the 3-tier shape: title + caption,
-    // the fresh carousel as a row of avatar circles, then a stack of
-    // active-row pills. Layout doesn't jump when the API resolves.
     return (
       <View style={styles.container}>
-        <SafeAreaView style={styles.safe}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Matches</Text>
-            <Skeleton width={120} height={14} style={{ marginTop: 6 }} />
-          </View>
-          <View style={styles.scroll}>
-            <View style={styles.skelCarousel}>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <View key={i} style={styles.skelTile}>
-                  <Skeleton width={56} height={56} radius={28} />
-                  <Skeleton width={56} height={11} style={{ marginTop: 8 }} />
-                  <Skeleton width={40} height={9} style={{ marginTop: 4 }} />
-                </View>
-              ))}
-            </View>
-            <View style={styles.skelActiveStack}>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <MatchSkeletonRow key={i} />
-              ))}
-            </View>
-          </View>
-        </SafeAreaView>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
       </View>
     );
   }
@@ -165,10 +234,10 @@ export function MatchesScreen() {
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
-          <Text style={styles.title}>Matches</Text>
+          <Text style={styles.title}>Inbox</Text>
           <Text style={styles.subtitle}>
             {total === 0
-              ? 'No matches yet'
+              ? 'No conversations yet'
               : filtering
               ? `${activeCount} ${STAGE_LABEL[stageFilter].toLowerCase()}`
               : `${activeCount} live${
@@ -177,8 +246,6 @@ export function MatchesScreen() {
           </Text>
         </View>
 
-        {/* Stage filter strip — bespoke to the inbox. Hidden when there are
-            no matches at all (no information to filter). */}
         {total > 0 && (
           <View style={styles.filterContainer}>
             <ScrollView
@@ -188,7 +255,8 @@ export function MatchesScreen() {
             >
               {STAGE_FILTERS.map((opt) => {
                 const active = opt.key === stageFilter;
-                const count = opt.key === 'all' ? total : stageCounts[opt.key];
+                const count =
+                  opt.key === 'all' ? total : stageCounts[opt.key];
                 const empty = !active && count === 0 && opt.key !== 'all';
                 return (
                   <Pressable
@@ -248,9 +316,7 @@ export function MatchesScreen() {
               />
             }
           >
-            {/* Tier 1 — Fresh. Hidden when filtering by a stage other than
-                'all' (the carousel is the recency surface; if you've narrowed
-                to a stage, give the conversation list the spotlight). */}
+            {/* Tier 1 — Fresh (only when not filtering) */}
             {!filtering && (
               <NewMatchesCarousel items={liveTiers.fresh} onPick={openChat} />
             )}
@@ -262,7 +328,9 @@ export function MatchesScreen() {
                   <Text style={styles.sectionTitle}>
                     {filtering ? STAGE_LABEL[stageFilter] : 'Conversations'}
                   </Text>
-                  <Text style={styles.sectionCount}>{liveTiers.active.length}</Text>
+                  <Text style={styles.sectionCount}>
+                    {liveTiers.active.length}
+                  </Text>
                   <Text style={styles.sectionHint}>
                     {filtering ? 'matching' : 'live'}
                   </Text>
@@ -270,18 +338,22 @@ export function MatchesScreen() {
                 <View style={styles.activeStack}>
                   {liveTiers.active.map((item) => {
                     const ts = latestStageTimestamp(item.referral);
+                    const source = items.find(
+                      (i) => i.referral.id === item.referral.id,
+                    );
                     return (
                       <MatchInboxRow
                         key={item.referral.id}
                         data={{
                           id: item.referral.id,
                           participantName: item.referrerName,
+                          participantAvatar: source?.seekerAvatar,
                           companyName: item.companyName,
                           role: item.referral.targetRole,
                           status: item.referral.status,
                           stageTimestamp: ts,
                         }}
-                        onPress={itemPressHandlers.get(item.referral.id) ?? (() => openChat(item))}
+                        onPress={() => openChat(item)}
                         timeLabel={relativeLabel(ts)}
                       />
                     );
@@ -298,8 +370,7 @@ export function MatchesScreen() {
               )
             )}
 
-            {/* Tier 3 — Resting. Always shown (when present); the ledger is
-                history regardless of which live stage you're filtering. */}
+            {/* Tier 3 — Resting */}
             <RestingSection items={restingAll} onOpen={openChat} />
           </ScrollView>
         )}
@@ -308,82 +379,15 @@ export function MatchesScreen() {
   );
 }
 
-// ─────────── stage filters ───────────
-
-type StageFilter = 'all' | 'matched' | 'submitted' | 'interviewing';
-
-const STAGE_FILTERS: { key: StageFilter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'matched', label: 'Matched' },
-  { key: 'submitted', label: 'Submitted' },
-  { key: 'interviewing', label: 'Interviewing' },
-];
-
-const STAGE_LABEL: Record<StageFilter, string> = {
-  all: 'All',
-  matched: 'Matched',
-  submitted: 'Submitted',
-  interviewing: 'Interviewing',
-};
-
-/** Map a referral status to the filter bucket it belongs to. `requested`
- *  and `accepted` both fall under "matched" — same as the stage rail. */
-function bucketFor(status: ReferralStatus): Exclude<StageFilter, 'all'> | null {
-  switch (status) {
-    case 'requested':
-    case 'accepted':
-      return 'matched';
-    case 'submitted':
-      return 'submitted';
-    case 'interviewing':
-      return 'interviewing';
-    default:
-      return null; // hired / rejected / withdrawn / expired — terminal
-  }
-}
-
-function filterByStage(
-  items: SeekerPipelineItem[],
-  filter: StageFilter,
-): SeekerPipelineItem[] {
-  if (filter === 'all') return items;
-  return items.filter((it) => bucketFor(it.referral.status) === filter);
-}
-
-function buildStageCounts(
-  items: SeekerPipelineItem[],
-): Record<Exclude<StageFilter, 'all'>, number> {
-  const out = { matched: 0, submitted: 0, interviewing: 0 };
-  for (const it of items) {
-    const b = bucketFor(it.referral.status);
-    if (b) out[b] += 1;
-  }
-  return out;
-}
-
 function EmptyState() {
   return (
     <View style={styles.empty}>
-      <Ionicons name="compass-outline" size={32} color={colors.accent} />
-      <Text style={styles.emptyTitle}>No matches yet</Text>
+      <Ionicons name="mail-outline" size={32} color={colors.accent} />
+      <Text style={styles.emptyTitle}>No conversations yet</Text>
       <Text style={styles.emptyBody}>
-        Once a referrer accepts your request, they'll appear here and you can chat.
+        Accept a candidate in Discover and they'll appear here. New chats
+        light up with a gold rim.
       </Text>
-    </View>
-  );
-}
-
-/** Skeleton match row — same overall silhouette as MatchInboxRow. */
-function MatchSkeletonRow() {
-  return (
-    <View style={styles.skelRow}>
-      <Skeleton width={4} height={36} radius={2} />
-      <Skeleton width={44} height={44} radius={22} />
-      <View style={styles.skelRowMiddle}>
-        <Skeleton width={140} height={14} />
-        <Skeleton width={180} height={11} style={{ marginTop: 6 }} />
-      </View>
-      <Skeleton width={28} height={11} />
     </View>
   );
 }
@@ -401,9 +405,6 @@ const styles = StyleSheet.create({
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.caption, color: colors.textSecondary },
 
-  /* Filter strip — bespoke stage chips. Pulls from the same chip language
-     as Discovery (rounded pill, gold accent on active) so the two surfaces
-     feel like the same product, but filters by stage instead of company. */
   filterContainer: {
     height: 50,
     marginBottom: spacing[1],
@@ -432,8 +433,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
-  /* Empty bucket — chip stays interactive but reads as quiet so the user
-     knows there's nothing in that stage right now. */
   filterChipEmpty: {
     borderColor: 'rgba(255, 255, 255, 0.06)',
     backgroundColor: 'transparent',
@@ -476,39 +475,10 @@ const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[2],
-    // Tab bar = 70px tall + 26px bottom inset + breathing room
     paddingBottom: 116,
     gap: spacing[5],
   },
 
-  /* Skeleton — fresh-tier carousel placeholder */
-  skelCarousel: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingVertical: 8,
-  },
-  skelTile: {
-    alignItems: 'center',
-    width: 76,
-  },
-  skelActiveStack: {
-    gap: 8,
-    marginTop: spacing[3],
-  },
-  skelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-  },
-  skelRowMiddle: {
-    flex: 1,
-  },
-
-  /* Tier 2 — stack of independent pills with breathing room between. */
   activeWrap: { gap: 8 },
   sectionHeader: {
     flexDirection: 'row',
@@ -536,9 +506,6 @@ const styles = StyleSheet.create({
   },
   activeStack: { gap: 8 },
 
-  /* Inline empty state when the active filter narrows to nothing. Reads
-     like a quiet log line, not a marquee — just enough to tell the user
-     why their list is short. */
   filteredEmpty: {
     paddingHorizontal: 4,
     paddingVertical: 12,
@@ -550,7 +517,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  /* Universal empty state — only shown when the entire pipeline is empty. */
   empty: {
     flex: 1,
     alignItems: 'center',

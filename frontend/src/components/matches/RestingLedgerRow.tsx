@@ -30,7 +30,8 @@ import { formatEndorserName } from '../activity/referralCardShared';
 
 export interface RestingLedgerRowData {
   id: string;
-  endorserName: string;
+  /** The other party's name. Generic so the row works on both sides. */
+  participantName: string;
   companyName: string;
   role: string;
   status: ReferralStatus;
@@ -70,8 +71,12 @@ function outcomeFor(status: ReferralStatus): Outcome {
   }
 }
 
-export function RestingLedgerRow({ data, onPress, timeLabel }: Props) {
-  const display = formatEndorserName(data.endorserName) || data.endorserName;
+/**
+ * Memoized — same reasoning as MatchInboxRow. The Resting tier can hold
+ * dozens of rows; rendering them all on every tier change is wasteful.
+ */
+function RestingLedgerRowImpl({ data, onPress, timeLabel }: Props) {
+  const display = formatEndorserName(data.participantName) || data.participantName;
   const outcome = outcomeFor(data.status);
   const isHired = data.status === 'hired';
 
@@ -110,6 +115,16 @@ export function RestingLedgerRow({ data, onPress, timeLabel }: Props) {
     </PressableScale>
   );
 }
+
+export const RestingLedgerRow = React.memo(RestingLedgerRowImpl, (prev, next) =>
+  prev.data.id === next.data.id &&
+  prev.data.status === next.data.status &&
+  prev.data.participantName === next.data.participantName &&
+  prev.data.companyName === next.data.companyName &&
+  prev.data.role === next.data.role &&
+  prev.timeLabel === next.timeLabel &&
+  prev.onPress === next.onPress
+);
 
 const ROW_HEIGHT = 52;
 

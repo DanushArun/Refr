@@ -13,8 +13,7 @@ import { router } from 'expo-router';
 import type { ReferrerInboxItem, ReferralStatus } from '@refr/shared';
 import { referralsApi } from '../../src/services/api';
 import { Button } from '../../src/components/common/Button';
-import { MatchCard, type MatchCardData } from '../../src/components/activity/MatchCard';
-import type { PipelineStage } from '../../src/components/activity/PipelineStepper';
+import { EndorserVoyageCard } from '../../src/components/activity/EndorserVoyageCard';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
@@ -28,26 +27,6 @@ const ACTIVE_STATES: Set<ReferralStatus> = new Set([
   'interviewing',
   'hired',
 ]);
-
-function timeAgo(iso?: string | null): string {
-  if (!iso) return 'Just now';
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-const STAGE_LABELS: Partial<Record<ReferralStatus, string>> = {
-  accepted: 'Matched',
-  requested: 'Matched',
-  submitted: 'Submitted',
-  interviewing: 'Interviewing',
-  hired: 'Hired',
-};
 
 /** Sort order: closest-to-hired first, hired (done) at the bottom.
  *  Drives urgency — interviewing needs action soonest, hired is celebratory. */
@@ -266,24 +245,25 @@ export default function ActiveRoute() {
             </View>
           }
           renderItem={({ item }) => {
-            const status = item.referral.status as ReferralStatus;
-            const stageLabel = STAGE_LABELS[status] ?? status;
             const ts = latestTimestampForStage(item.referral);
-            const card: MatchCardData = {
-              id: item.referral.id,
-              counterpartName: item.seekerName,
-              counterpartAvatar: item.seekerAvatar,
-              counterpartSubtitle: item.seekerHeadline,
-              targetRole: item.referral.targetRole,
-              companyName: 'Razorpay',
-              stage: status as PipelineStage,
-              timeInStageLabel: `${stageLabel} · ${timeAgo(ts)}`,
-              payoutPending: PAYOUT_PER_HIRE,
-            };
             return (
-              <MatchCard
-                match={card}
-                viewerRole="endorser"
+              <EndorserVoyageCard
+                data={{
+                  id: item.referral.id,
+                  seekerName: item.seekerName,
+                  seekerAvatar: item.seekerAvatar,
+                  seekerHeadline: item.seekerHeadline,
+                  targetRole: item.referral.targetRole,
+                  // The referrer's own employer drives the office hero —
+                  // that's the destination they're shepherding to. We
+                  // hardcode 'Razorpay' here because the seeded demo
+                  // referrer is at Razorpay; this should pull from the
+                  // referrer's profile once the API surfaces it.
+                  companyName: 'Razorpay',
+                  status: item.referral.status,
+                  stageTimestamp: ts,
+                  payoutAmount: PAYOUT_PER_HIRE,
+                }}
                 pending={pendingId === item.referral.id}
                 onAction={(kind) => handleAction(item, kind)}
                 onChat={() => handleChat(item)}
