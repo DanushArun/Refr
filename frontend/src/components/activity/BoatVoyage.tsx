@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
-import { BlurMask, Canvas, Path, Skia } from '@shopify/react-native-skia';
+import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import Animated, {
   useAnimatedStyle,
   useDerivedValue,
@@ -36,8 +36,10 @@ const SHIP_H = 16;
 // ────────────────────────── palette ──────────────────────────
 const GOLD = '#D4A744';
 const GOLD_BRIGHT = '#FFE08A';
-const GOLD_CORE = '#FFF3C7';
-const GOLD_FUTURE = '#B7892A';
+// Future ocean — the SHADOW of the wave ahead. Lighter brass than the
+// prior #B7892A so the un-traversed leg reads clearly without competing
+// with the past wake.
+const GOLD_FUTURE = '#CCA049';
 const DIM_DOT = 'rgba(15, 17, 21, 0.10)';
 const NAVY = '#0A1F44';
 const BLACK = '#0F1115';
@@ -217,15 +219,14 @@ export function BoatVoyage({ current }: Props) {
             {/* dim background grid (sky / above water) */}
             <Path path={gridPath} color={DIM_DOT} />
 
-            {/* future ocean — dimmer body, no halo (cheap, no blur pass) */}
-            <Path path={litFuturePath} color={GOLD_FUTURE} opacity={0.55} />
+            {/* future ocean — the SHADOW of the wave ahead. Sharp brown
+                dots, no glow, low opacity so the un-traversed leg reads as
+                a faded silhouette of where the wave is going, not as a
+                second active wave. The gold body behind the ship is the
+                real progress wave; this is its echo. */}
+            <Path path={litFuturePath} color={GOLD_FUTURE} opacity={0.45} />
 
-            {/* past ocean — single blur pass for the glow */}
-            <Path path={litPastPath} color={GOLD} opacity={0.7}>
-              <BlurMask blur={5} style="solid" />
-            </Path>
-
-            {/* past ocean — bright body fill (sharp dots over the glow) */}
+            {/* past ocean — sharp bright gold dots, no glow anywhere. */}
             <Path path={litPastPath} color={GOLD_BRIGHT} />
           </Canvas>
         )}

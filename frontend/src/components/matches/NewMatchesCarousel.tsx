@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { PressableScale } from '../common/PressableScale';
 import type { SeekerPipelineItem } from '@refr/shared';
 import { Avatar } from '../common/Avatar';
 import { formatEndorserName } from '../activity/referralCardShared';
@@ -40,13 +41,10 @@ export function NewMatchesCarousel({ items, onPick }: Props) {
           const name = formatEndorserName(item.referrerName) || item.referrerName;
           const first = name.split(/\s+/)[0] ?? name;
           return (
-            <Pressable
+            <PressableScale
               key={item.referral.id}
               onPress={() => onPick(item)}
-              style={({ pressed }) => [
-                styles.tile,
-                pressed && styles.tilePressed,
-              ]}
+              style={styles.tile}
               hitSlop={6}
             >
               <Avatar displayName={name} size="lg" verificationRing />
@@ -56,7 +54,7 @@ export function NewMatchesCarousel({ items, onPick }: Props) {
               <Text style={styles.tileCompany} numberOfLines={1}>
                 {item.companyName}
               </Text>
-            </Pressable>
+            </PressableScale>
           );
         })}
       </ScrollView>
@@ -97,10 +95,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  tilePressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.96 }],
-  },
+  // tilePressed removed — PressableScale handles the pressed state.
   tileName: {
     fontFamily: 'Outfit-SemiBold',
     fontSize: 13,

@@ -16,6 +16,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
+import { PersonName } from '../common/PersonName';
 import { Phrase } from '../../utils/haptics';
 import { MatchArc } from './MatchArc';
 import { getCompanyBrand } from './companyBrand';
@@ -456,7 +457,7 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
             the company's color. */}
         <View style={[styles.officeFallback, { backgroundColor: brand.tint }]} />
         {officeImage && (
-          <Image source={{ uri: officeImage }} style={styles.officeImage} resizeMode="cover" />
+          <Image source={officeImage} style={styles.officeImage} resizeMode="cover" />
         )}
         {/* Faint bottom-edge gradient so the seam into the brand zone is soft,
             not a hard line — same trick as the Activity card. */}
@@ -495,7 +496,7 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
           <View style={styles.referrerCard}>
             <Avatar displayName={card.name} size="md" verificationRing />
             <View style={styles.referrerMeta}>
-              <Text style={styles.referrerName} numberOfLines={1}>{card.name}</Text>
+              <PersonName name={card.name} textStyle={styles.referrerName} />
               <View style={styles.verifiedRow}>
                 <Ionicons name="checkmark-circle" size={13} color="#3897F0" />
                 <Text style={styles.verifiedText}>Verified</Text>
@@ -716,15 +717,19 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
+  /* Avatar sits flush with the TOP of the name block (next to the first
+     name) instead of vertically centered across both name lines, which
+     read as the avatar dropping low. */
   referrerCard: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 14,
   },
-  referrerMeta: { flex: 1, gap: 2 },
+  referrerMeta: { flex: 1, gap: 4 },
   referrerName: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 22,
+    fontSize: 20,
+    lineHeight: 24,
     color: BLACK,
     letterSpacing: -0.3,
   },

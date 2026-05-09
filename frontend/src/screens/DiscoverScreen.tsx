@@ -1,5 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { PressableScale } from '../components/common/PressableScale';
+import { officeImageUrlFor } from '../components/activity/companyOffices';
+import { prefetchImages } from '../utils/prefetchImages';
 import { Ionicons } from '@expo/vector-icons';
 import { Phrase } from '../utils/haptics';
 import { SwipeDeck, type SwipeDeckHandle } from '../components/discover/SwipeDeck';
@@ -20,6 +23,14 @@ const COMPANIES = ['All', 'Google', 'Flipkart', 'Razorpay', 'Swiggy'];
 export function DiscoverScreen() {
   const [queueKey, setQueueKey] = useState(0);
   const cards = useMemo(() => buildEndorserCards('1'), [queueKey]);
+
+  // Warm the image cache for ALL upcoming office photos in this queue so the
+  // first paint of each card already has its hero image. Without this, every
+  // card flashes navy → image on its first reveal. Refetched only when the
+  // queue itself rotates (queueKey change).
+  useEffect(() => {
+    prefetchImages(cards.map((c) => officeImageUrlFor(c.companyName)));
+  }, [cards]);
   const [index, setIndex] = useState(0);
   const [activeFilter, setActiveFilter] = useState('All');
   // Tapped card animates from its deck position into a full-screen detail sheet
@@ -138,7 +149,7 @@ export function DiscoverScreen() {
             contentContainerStyle={styles.filterScroll}
           >
             {COMPANIES.map((company) => (
-              <Pressable
+              <PressableScale
                 key={company}
                 onPress={() => handleFilterPress(company)}
                 style={[
@@ -154,7 +165,7 @@ export function DiscoverScreen() {
                 >
                   {company}
                 </Text>
-              </Pressable>
+              </PressableScale>
             ))}
           </ScrollView>
         </View>

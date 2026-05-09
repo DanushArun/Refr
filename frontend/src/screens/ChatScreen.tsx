@@ -20,6 +20,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Avatar } from '../components/common/Avatar';
+import { PressableScale } from '../components/common/PressableScale';
 import { PipelineStepper, type PipelineStage } from '../components/activity/PipelineStepper';
 import { chatApi, referralsApi, type ChatMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
@@ -82,6 +83,14 @@ export function ChatScreen() {
 
   const listRef = useRef<FlatList<GroupedMessage>>(null);
   const simulatedReplyFired = useRef(false);
+
+  // Stable callbacks so the FlatList doesn't get fresh function refs on each
+  // parent render — preserves windowed mount/unmount tracking.
+  const chatKeyExtractor = useCallback((g: GroupedMessage) => g.id, []);
+  const handleBubbleLongPress = useCallback((msgId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setReactionPickerId(msgId);
+  }, []);
 
   /* ─── Load conversation ─── */
   useEffect(() => {
@@ -322,7 +331,7 @@ export function ChatScreen() {
         <FlatList
           ref={listRef}
           data={grouped}
-          keyExtractor={(g) => g.id}
+          keyExtractor={chatKeyExtractor}
           contentContainerStyle={styles.messageList}
           showsVerticalScrollIndicator={false}
           onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
@@ -332,13 +341,17 @@ export function ChatScreen() {
               viewerId={user?.id ?? ''}
               deliveryStates={deliveryStates}
               reactions={reactions}
-              onLongPress={(msgId) => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                setReactionPickerId(msgId);
-              }}
+              onLongPress={handleBubbleLongPress}
             />
           )}
           ListFooterComponent={typing ? <TypingBubble /> : null}
+          // Off-screen messages stay mounted by default; on long threads this
+          // is wasteful. Windowed mounting keeps only the visible plus a
+          // small buffer.
+          removeClippedSubviews={true}
+          initialNumToRender={12}
+          maxToRenderPerBatch={8}
+          windowSize={9}
         />
 
         {/* Quick reply chips (only visible when draft is empty) */}
@@ -346,13 +359,13 @@ export function ChatScreen() {
           <View style={styles.quickRow}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickScroll}>
               {quickReplies.map((q) => (
-                <Pressable
+                <PressableScale
                   key={q}
                   onPress={() => handleSend(q)}
-                  style={({ pressed }) => [styles.quickChip, pressed && { opacity: 0.7 }]}
+                  style={styles.quickChip}
                 >
                   <Text style={styles.quickChipText}>{q}</Text>
-                </Pressable>
+                </PressableScale>
               ))}
             </ScrollView>
           </View>
@@ -571,7 +584,10 @@ function formatGroupTime(iso: string): string {
 
 /* ─── subcomponents ─────────────────────────────────────────── */
 
-function MessageGroup({
+// Memoized — chat groups only re-render when the group itself, its delivery
+// state, or its reactions change. Without this, every keystroke or scroll
+// re-renders all visible bubbles, which is laggy on long threads.
+const MessageGroup = React.memo(function MessageGroup({
   group,
   viewerId,
   deliveryStates,
@@ -647,7 +663,7 @@ function MessageGroup({
       </View>
     </View>
   );
-}
+});
 
 function DeliveryTicks({ state }: { state?: DeliveryState }) {
   if (!state) return null;

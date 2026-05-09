@@ -31,8 +31,15 @@ const TERMINAL: ReadonlySet<ReferralStatus> = new Set([
 
 /** Newly-accepted window — within this many hours of acceptance, the match
  *  belongs in the fresh carousel. After it, it graduates to active so the
- *  carousel doesn't accumulate stale items. */
-const FRESH_WINDOW_HOURS = 168; // 7 days
+ *  carousel doesn't accumulate stale items.
+ *
+ *  Tight window because today we have no chat metadata to check whether a
+ *  conversation has actually started — `acceptedAt` is the only signal.
+ *  6 hours roughly means "you were just matched and probably haven't
+ *  messaged yet"; anything older we assume the chat is live and move it
+ *  into Conversations. Once the API exposes `lastMessageAt` per match, this
+ *  heuristic becomes "no messages exchanged yet" and the window goes away. */
+const FRESH_WINDOW_HOURS = 6;
 
 /** Inactivity window — if a referral has had no stage advance in this many
  *  days, treat it as resting. */

@@ -3,7 +3,6 @@ import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../components/common/Avatar';
+import { PressableScale } from '../components/common/PressableScale';
 import { EndorserOrb } from '../components/constellation/EndorserOrb';
 import { Phrase } from '../utils/haptics';
 import { TierBadge } from '../components/tier/TierBadge';
@@ -158,13 +158,14 @@ export function EarningsScreen() {
 
         {/* 3 · PAYOUTS — collapsible dark glass list */}
         <View style={styles.section}>
-          <Pressable
+          <PressableScale
             onPress={() => {
               if (payouts.length === 0) return;
               Phrase.tick();
               setPayoutsExpanded((v) => !v);
             }}
             style={styles.sectionHead}
+            pressedScale={0.99}
             accessibilityRole="button"
             accessibilityLabel={
               payoutsExpanded ? 'Collapse recent payouts' : 'Expand recent payouts'
@@ -181,7 +182,7 @@ export function EarningsScreen() {
                 />
               ) : null}
             </View>
-          </Pressable>
+          </PressableScale>
           {payouts.length === 0 ? (
             <DarkCard>
               <Text style={styles.emptyText}>

@@ -2,12 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   Easing,
-  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { PressableScale } from '../components/common/PressableScale';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Phrase } from '../utils/haptics';
 import { router } from 'expo-router';
@@ -134,9 +134,10 @@ export function WelcomeScreen() {
             },
           ]}
         >
-          <Pressable
+          <PressableScale
             onPress={handleGetStarted}
-            style={({ pressed }) => [styles.ctaWrap, pressed && { opacity: 0.9 }]}
+            pressedScale={0.94}
+            style={styles.ctaWrap}
           >
             <LinearGradient
               colors={['#9333ea', '#7c3aed', '#6d28d9']}
@@ -146,7 +147,7 @@ export function WelcomeScreen() {
             >
               <Text style={styles.ctaText}>Get started</Text>
             </LinearGradient>
-          </Pressable>
+          </PressableScale>
 
           <Text style={styles.legal}>
             Preview build · Switch between Seeker and Endorser view anytime from Profile

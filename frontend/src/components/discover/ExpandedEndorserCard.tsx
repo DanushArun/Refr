@@ -4,18 +4,18 @@ import {
   Image,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
   Extrapolation,
   interpolate,
   runOnJS,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -23,6 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Avatar } from '../common/Avatar';
+import { PersonName } from '../common/PersonName';
 import { MatchArc } from './MatchArc';
 import { getCompanyBrand } from './companyBrand';
 import { officeImageFor } from '../activity/companyOffices';
@@ -79,6 +80,13 @@ export function ExpandedEndorserCard({
   // Pan-to-dismiss drag offset, separate from the open/close progress so
   // dragging during the open animation doesn't fight it.
   const dragY = useSharedValue(0);
+  // Live ScrollView offset so the Pan only treats touches as dismiss-drags
+  // when the user is already at the top (otherwise the inner scroll wins
+  // and the outer Pan is never given a chance to take over).
+  const scrollY = useSharedValue(0);
+  // Sticky flag: once the Pan started a dismiss drag while scrollY was 0,
+  // keep responding even if the user momentarily flicks the scroll.
+  const dismissActive = useSharedValue(false);
   const safe = useMemo(() => card, [card]);
 
   useEffect(() => {
@@ -118,29 +126,67 @@ export function ExpandedEndorserCard({
     onCommit();
   };
 
+  // Track scroll offset live (UI thread) so the Pan can decide whether the
+  // user is actually trying to dismiss vs. just scrolling content.
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+
   /**
-   * Swipe down anywhere on the expanded card to minimize back to the deck.
-   * Only activates after a clear 15px downward drag. Upward motion fails
-   * the gesture so the inner ScrollView can still scroll content. Released
-   * past 120px or with velocity > 800 → commits the close. Otherwise springs
-   * back to the expanded position.
+   * Swipe down to minimize back into the swipe deck. The trick to making
+   * this work alongside an inner ScrollView: run BOTH gestures simultaneously
+   * (`Gesture.Simultaneous` with the ScrollView's native gesture below), and
+   * only let the Pan write to `dragY` while the ScrollView is at the top.
+   * Once a downward drag has begun at the top, the Pan stays sticky via
+   * `dismissActive` so a transient scroll bounce doesn't cancel the close.
    */
   const dismissGesture = Gesture.Pan()
-    .activeOffsetY(15)
-    .failOffsetY([-15, 0])
+    // 4px activation — a barely-there pull engages the dismiss drag so a
+    // gentle swipe-down feels responsive instead of resistant.
+    .activeOffsetY(4)
+    .onBegin(() => {
+      dismissActive.value = scrollY.value <= 0;
+    })
     .onUpdate((e) => {
-      if (e.translationY > 0) {
+      if (e.translationY <= 0) {
+        // Upward drag — let the ScrollView handle it; cancel any in-progress
+        // dismiss drag.
+        if (dismissActive.value) {
+          dismissActive.value = false;
+          dragY.value = withSpring(0, { stiffness: 220, damping: 22 });
+        }
+        return;
+      }
+      // Downward drag. Only respond if we started at the top.
+      if (scrollY.value <= 0 && !dismissActive.value) {
+        dismissActive.value = true;
+      }
+      if (dismissActive.value) {
         dragY.value = e.translationY;
       }
     })
     .onEnd((e) => {
-      const shouldDismiss = e.translationY > 120 || e.velocityY > 800;
+      if (!dismissActive.value) return;
+      dismissActive.value = false;
+      // Gentle thresholds: a soft drag of ~50px or a flick at 350px/s
+      // dismisses. Way more forgiving than the previous 120/800.
+      const shouldDismiss = e.translationY > 50 || e.velocityY > 350;
       if (shouldDismiss) {
+        // Reset dragY so the morph-back animation plays cleanly — the surface
+        // tucks back to the swipe-deck card-rect without the user's drag
+        // offset baked in. Identical end-result to the X button.
+        dragY.value = withSpring(0, { stiffness: 220, damping: 22 });
         runOnJS(handleClose)();
       } else {
         dragY.value = withSpring(0, { stiffness: 220, damping: 22 });
       }
     });
+
+  // Run the ScrollView's native pan and our dismiss Pan at the same time so
+  // either can drive depending on intent.
+  const composedGesture = Gesture.Simultaneous(dismissGesture, Gesture.Native());
 
   const surfaceStyle = useAnimatedStyle(() => {
     const t = progress.value;
@@ -212,24 +258,26 @@ export function ExpandedEndorserCard({
         <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
       </Animated.View>
 
-      <GestureDetector gesture={dismissGesture}>
+      <GestureDetector gesture={composedGesture}>
       <Animated.View style={[styles.surface, surfaceStyle]}>
         {/* Pill grabber centered at top — affordance hint for swipe-down */}
         <View style={styles.grabberRow} pointerEvents="none">
           <View style={styles.grabber} />
         </View>
 
-        <ScrollView
+        <Animated.ScrollView
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
           bounces={false}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
         >
           {/* === HERO IMAGE — full-bleed office photo, the desire-driver === */}
           <View style={styles.heroImageZone}>
             <View style={[styles.heroImageFallback, { backgroundColor: brand.tint }]} />
             {officeImage && (
               <Image
-                source={{ uri: officeImage }}
+                source={officeImage}
                 style={styles.heroImage}
                 resizeMode="cover"
               />
@@ -244,68 +292,60 @@ export function ExpandedEndorserCard({
             <View style={styles.heroImageEdge} pointerEvents="none" />
           </View>
 
-          {/* Brand zone — same hero as the swipe card */}
+          {/* Brand band — slim, same as the redesigned swipe card */}
           <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
             <View style={styles.brandRow}>
               <View style={[styles.brandMark, { borderColor: brand.accent }]}>
                 <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
               </View>
-              <Text style={[styles.brandName, { color: brand.text }]}>{safe.companyName}</Text>
+              <Text
+                style={[styles.brandName, { color: brand.text }]}
+                numberOfLines={1}
+              >
+                {safe.companyName}
+              </Text>
               <View style={styles.brandSpacer} />
-              <View style={[styles.openTag, { borderColor: brand.accent }]}>
-                <View style={[styles.openDot, { backgroundColor: brand.accent }]} />
-                <Text style={[styles.openText, { color: brand.accent }]}>OPEN</Text>
+              <View style={styles.openTag}>
+                <View style={styles.openDot} />
+                <Text style={styles.openText}>OPEN</Text>
               </View>
             </View>
             <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
               {safe.jobTitle}
             </Text>
-            <View style={styles.skillsRow}>
-              {safe.skills.slice(0, 3).map((s) => (
-                <View key={s} style={styles.skillChip}>
-                  <Text style={[styles.skillText, { color: brand.text }]}>{s}</Text>
-                </View>
-              ))}
-            </View>
           </View>
 
           <View style={styles.creamZone}>
-            {/* Referrer hero — identical to swipe card */}
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>REFERRED BY</Text>
-              <View style={styles.referrerCard}>
-                <Avatar displayName={safe.name} size="xl" verificationRing />
-                <View style={styles.referrerMeta}>
-                  <Text style={styles.referrerName} numberOfLines={1}>{safe.name}</Text>
-                  <Text style={styles.referrerTitle} numberOfLines={1}>
-                    Verified at {safe.companyName}
-                  </Text>
+            {/* === Headline row: REFERRED BY (left) | YOUR MATCH (right) === */}
+            <View style={styles.headlineRow}>
+              <View style={styles.referrerCol}>
+                <Text style={styles.sectionLabel}>REFERRED BY</Text>
+                <View style={styles.referrerCard}>
+                  <Avatar displayName={safe.name} size="lg" verificationRing />
+                  <View style={styles.referrerMeta}>
+                    <PersonName name={safe.name} textStyle={styles.referrerName} />
+                    <View style={styles.verifiedRow}>
+                      <Ionicons name="checkmark-circle" size={14} color="#3897F0" />
+                      <Text style={styles.verifiedText}>Verified at {safe.companyName}</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.statRow}>
+                  <Stat label="TRUST" value={`★ ${safe.trustScore}`} />
+                  <Stat label="HIRES" value={`${safe.hires}`} />
+                  <Stat label="REPLY" value={safe.responseTime} />
                 </View>
               </View>
-              <View style={styles.statRow}>
-                <Stat label="Trust" value={`★ ${safe.trustScore}`} />
-                <Stat label="Hires" value={`${safe.hires}`} />
-                <Stat label="Reply" value={safe.responseTime} />
-              </View>
-            </View>
 
-            <View style={styles.divider} />
-
-            {/* Match — identical to swipe card */}
-            <View style={styles.matchSection}>
-              <View style={styles.matchHeader}>
+              <View style={styles.matchCol}>
                 <Text style={styles.sectionLabel}>YOUR MATCH</Text>
-                <Text style={styles.matchHint} numberOfLines={2}>
-                  Skill overlap, target fit, and {safe.companyName}'s acceptance rate
-                </Text>
+                <MatchArc percent={safe.matchPercent} size={92} animate light />
+                <Text style={styles.matchHint} numberOfLines={1}>Skill overlap</Text>
               </View>
-              <MatchArc percent={safe.matchPercent} size={92} animate light />
             </View>
 
-            {/* Extras — only visible once the surface has mostly expanded */}
-            <Animated.View style={extrasStyle}>
-              <View style={styles.divider} />
-
+            {/* === Extras — fade in once surface is mostly expanded === */}
+            <Animated.View style={[styles.extras, extrasStyle]}>
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>ABOUT</Text>
                 <Text style={styles.about}>
@@ -316,8 +356,6 @@ export function ExpandedEndorserCard({
                   — prioritises strong match-fit over volume.
                 </Text>
               </View>
-
-              <View style={styles.divider} />
 
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>SKILLS THEY ENDORSE FOR</Text>
@@ -330,8 +368,6 @@ export function ExpandedEndorserCard({
                 </View>
               </View>
 
-              <View style={styles.divider} />
-
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>WHY THIS MATCH</Text>
                 <Text style={styles.about}>
@@ -343,9 +379,9 @@ export function ExpandedEndorserCard({
             </Animated.View>
 
             {/* Bottom spacer so action bar doesn't cover content */}
-            <View style={{ height: 96 }} />
+            <View style={{ height: 110 }} />
           </View>
-        </ScrollView>
+        </Animated.ScrollView>
 
         {/* Close button — fades in mid-expansion */}
         <Animated.View style={[styles.closeWrap, closeStyle]} pointerEvents="box-none">
@@ -401,11 +437,12 @@ const styles = StyleSheet.create({
   },
 
   /* Hero image zone — full-bleed office photograph at the top of the
-     expanded sheet. Taller than the swipe-card's image (320px vs ~45% of
-     card height) so it reads as the magazine-cover hero on the detail view. */
+     expanded sheet. Aspect-ratio sized so the entire image renders cleanly
+     without zooming in further during the card → modal morph. Same visual
+     weight as the swipe-card image; the rest of the screen is for content. */
   heroImageZone: {
     width: '100%',
-    height: 320,
+    aspectRatio: 4 / 3,
     backgroundColor: '#0A1F44',
     overflow: 'hidden',
   },
@@ -449,14 +486,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(245, 241, 232, 0.55)',
   },
 
-  /* Brand zone — generous breathing room when expanded; status-bar safe top.
-     No perimeter border in the expanded view — borders are only on the
-     compact swipe card. */
+  /* Brand band — slim, sits directly under the hero image. No status-bar
+     padding here because the image (and the grabber) already occupy the
+     top safe area. */
   brandZone: {
-    paddingTop: 64,
-    paddingHorizontal: 28,
-    paddingBottom: 32,
-    gap: 18,
+    paddingTop: 18,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    gap: 10,
   },
   brandRow: {
     flexDirection: 'row',
@@ -464,136 +501,157 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   brandMark: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandMarkText: { fontFamily: 'InstrumentSerif-Regular', fontSize: 22 },
+  brandMarkText: { fontFamily: 'InstrumentSerif-Regular', fontSize: 18 },
   brandName: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
-    letterSpacing: 1.5,
+    fontSize: 13,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
+    flexShrink: 1,
   },
   brandSpacer: { flex: 1 },
+  /* OPEN = green pill, brand-color independent (same as the swipe card) */
   openTag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 999,
+    backgroundColor: 'rgba(34, 197, 94, 0.18)',
     borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.55)',
   },
-  openDot: { width: 6, height: 6, borderRadius: 3 },
-  openText: { fontFamily: 'Outfit-Bold', fontSize: 10, letterSpacing: 1.5 },
+  openDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
+  openText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: '#22C55E',
+  },
   role: {
     fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 44,
-    lineHeight: 48,
-    letterSpacing: -0.6,
-    marginTop: 6,
-  },
-  skillsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  skillChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)',
-    backgroundColor: 'rgba(255,255,255,0.10)',
-  },
-  skillText: { fontFamily: 'Outfit-Medium', fontSize: 13 },
-
-  /* Cream zone wrapper — no perimeter border when expanded */
-  creamZone: {
-    flex: 1,
+    fontSize: 32,
+    lineHeight: 36,
+    letterSpacing: -0.5,
   },
 
-  /* Section — generic for referrer / about / extras */
-  section: {
-    paddingHorizontal: 28,
-    paddingTop: 26,
-    paddingBottom: 22,
+  /* Cream zone wrapper */
+  creamZone: { flex: 1 },
+
+  /* Headline row — REFERRED BY (left flex:1) | YOUR MATCH (right fixed col) */
+  headlineRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 22,
+    paddingTop: 22,
+    paddingBottom: 18,
     gap: 16,
+  },
+  referrerCol: {
+    flex: 1,
+    gap: 14,
+  },
+  matchCol: {
+    width: 132,
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 10,
+    paddingHorizontal: 8,
+    paddingBottom: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.35)',
+    backgroundColor: 'rgba(212, 167, 68, 0.06)',
+  },
+
+  /* Generic section — used by ABOUT, SKILLS, WHY THIS MATCH */
+  section: {
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 18,
+    gap: 12,
   },
   sectionLabel: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 11,
+    fontSize: 10,
     color: BLACK_50,
-    letterSpacing: 2.4,
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
 
-  /* Referrer hero block */
+  /* Referrer block (inside referrerCol). Avatar aligns to the TOP of the
+     name block so it sits next to the first name, not centered between
+     the two name lines. */
   referrerCard: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 18,
+    alignItems: 'flex-start',
+    gap: 14,
   },
   referrerMeta: { flex: 1, gap: 4 },
   referrerName: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 28,
+    fontSize: 22,
+    lineHeight: 26,
     color: BLACK,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
-  referrerTitle: {
+  verifiedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  verifiedText: {
     fontFamily: 'Outfit-Medium',
-    fontSize: 15,
+    fontSize: 12,
     color: BLACK_70,
   },
 
   statRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 4,
+    gap: 8,
   },
   statTile: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 12,
     backgroundColor: BLACK_05,
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
   },
   statValue: {
     fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 17,
+    fontSize: 14,
     color: BLACK,
   },
   statLabel: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 10,
+    fontSize: 9,
     color: BLACK_50,
-    letterSpacing: 1.2,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
 
-  divider: {
-    height: 1,
-    backgroundColor: BLACK_08,
-    marginHorizontal: 28,
+  matchHint: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 11.5,
+    color: BLACK_70,
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
 
-  /* Match — more spacious horizontal layout */
-  matchSection: {
-    paddingHorizontal: 28,
-    paddingVertical: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-  },
-  matchHeader: { flex: 1, gap: 8 },
-  matchHint: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 14,
-    color: BLACK_70,
-    lineHeight: 20,
+  /* Extras wrapper — fades in when surface is mostly expanded */
+  extras: {
+    borderTopWidth: 1,
+    borderTopColor: BLACK_08,
   },
 
   /* Extras */
@@ -641,26 +699,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  /* Action bar — sits flush at the bottom */
+  /* Action bar — sits flush at the bottom, slim profile so it doesn't
+     dominate the sheet. */
   actionBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 18,
-    paddingTop: 14,
-    paddingBottom: 32,
+    paddingTop: 10,
+    paddingBottom: 26,
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     backgroundColor: colors.cardSurface,
     borderTopWidth: 1,
     borderTopColor: BLACK_08,
   },
   passBtn: {
     flex: 1,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1.4,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.2,
     borderColor: colors.error,
     backgroundColor: 'rgba(248, 113, 113, 0.08)',
     flexDirection: 'row',
@@ -670,26 +729,26 @@ const styles = StyleSheet.create({
   },
   passBtnText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 15,
+    fontSize: 14,
     color: colors.error,
   },
   commitBtn: {
     flex: 2,
-    height: 52,
-    borderRadius: 26,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.accent,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
     shadowColor: colors.accent,
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
   commitBtnText: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 15,
+    fontSize: 14,
     color: '#0A1F44',
     letterSpacing: 0.2,
   },

@@ -1,5 +1,7 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useFocusEffect } from 'expo-router';
+import { officeImageUrlFor } from '../components/activity/companyOffices';
+import { prefetchImages } from '../utils/prefetchImages';
 import {
   View,
   Text,
@@ -8,16 +10,17 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
-  Pressable,
   ScrollView,
 } from 'react-native';
+import { PressableScale } from '../components/common/PressableScale';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
 import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
-import { hapticSelection } from '../utils/haptics';
+import { Skeleton } from '../components/common/Skeleton';
+import { Phrase, hapticSelection } from '../utils/haptics';
 
 type FilterKey = 'all' | 'matched' | 'submitted' | 'interview' | 'hired' | 'closed';
 
@@ -110,7 +113,7 @@ const DEMO_PIPELINE: SeekerPipelineItem[] = [
       submittedAt: new Date(Date.now() - 25 * 86_400_000).toISOString(),
       outcomeAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
     },
-    referrerName: 'Anika Sharma',
+    referrerName: 'Anita Desai',
     companyName: 'Swiggy',
   },
 ];
@@ -163,6 +166,24 @@ export function PipelineScreen() {
     return merged.filter((it) => allowed.has(it.referral.status));
   }, [items, filter]);
 
+  // Warm the office-image cache for the full visible list so cards don't
+  // flash navy before resolving on first scroll.
+  useEffect(() => {
+    prefetchImages(visibleItems.map((it) => officeImageUrlFor(it.companyName)));
+  }, [visibleItems]);
+
+  // Stable refs so FlatList doesn't re-evaluate them on every parent render
+  // — avoids resetting the windowed mount/unmount tracking that
+  // removeClippedSubviews relies on.
+  const renderItem = useCallback(
+    ({ item }: { item: SeekerPipelineItem }) => <PipelineItem item={item} />,
+    [],
+  );
+  const keyExtractor = useCallback(
+    (item: SeekerPipelineItem) => item.referral.id,
+    [],
+  );
+
   const handleFilterChange = useCallback((next: FilterKey) => {
     if (next === filter) return;
     hapticSelection();
@@ -170,11 +191,21 @@ export function PipelineScreen() {
   }, [filter]);
 
   if (loading) {
+    // Skeleton placeholder cards — same overall rhythm as the real list so
+    // the layout doesn't jump when the API resolves.
     return (
       <View style={styles.container}>
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.accent} />
-        </View>
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Activity</Text>
+            <Skeleton width={140} height={14} style={{ marginTop: 6 }} />
+          </View>
+          <View style={styles.list}>
+            <PipelineSkeletonCard />
+            <PipelineSkeletonCard />
+            <PipelineSkeletonCard />
+          </View>
+        </SafeAreaView>
       </View>
     );
   }
@@ -207,14 +238,15 @@ export function PipelineScreen() {
         ) : (
           <FlatList
             data={visibleItems}
-            keyExtractor={(item) => item.referral.id}
+            keyExtractor={keyExtractor}
             contentContainerStyle={styles.list}
             onRefresh={() => {
+              Phrase.pullRefresh();
               setRefreshing(true);
               loadPipeline();
             }}
             refreshing={refreshing}
-            renderItem={({ item }) => <PipelineItem item={item} />}
+            renderItem={renderItem}
             showsVerticalScrollIndicator={false}
             // Each card runs a useFrameCallback + per-frame Skia path rebuilds
             // for the BoatVoyage. Off-screen cards must be unmounted, not just
@@ -251,16 +283,15 @@ function FilterBar({
           const count = counts[f.key];
           const dim = !active && count === 0 && f.key !== 'all';
           return (
-            <Pressable
+            <PressableScale
               key={f.key}
               onPress={() => onChange(f.key)}
               hitSlop={6}
-              style={({ pressed }) => [
+              style={[
                 styles.chip,
                 active && styles.chipActive,
                 !active && styles.chipInactive,
                 dim && styles.chipDim,
-                pressed && !active && { opacity: 0.7 },
               ]}
             >
               <Text
@@ -289,7 +320,7 @@ function FilterBar({
                   </Text>
                 </View>
               )}
-            </Pressable>
+            </PressableScale>
           );
         })}
       </ScrollView>
@@ -297,17 +328,49 @@ function FilterBar({
   );
 }
 
-function PipelineItem({ item }: { item: SeekerPipelineItem }) {
+/**
+ * Memoized so each card only re-renders when its own data actually changes.
+ * Without this, scrolling the FlatList re-renders every visible card on each
+ * pass — and each card runs a per-frame BoatVoyage worklet, so dropping the
+ * spurious renders is a real perf win.
+ */
+const PipelineItem = React.memo(
+  function PipelineItem({ item }: { item: SeekerPipelineItem }) {
+    return (
+      <PaperVoyageCard
+        data={{
+          companyName: item.companyName,
+          role: item.referral.targetRole,
+          endorserName: item.referrerName,
+          status: item.referral.status,
+          stageTimestamp: latestStageTimestamp(item),
+        }}
+      />
+    );
+  },
+  (prev, next) =>
+    prev.item.referral.id === next.item.referral.id &&
+    prev.item.referral.status === next.item.referral.status &&
+    prev.item.companyName === next.item.companyName &&
+    prev.item.referrerName === next.item.referrerName,
+);
+
+/**
+ * Skeleton card mirroring the real PaperVoyageCard's silhouette — image hero
+ * up top, title + role bars, endorser line, and a wave/label strip — so the
+ * loading state matches the layout of the resolved content.
+ */
+function PipelineSkeletonCard() {
   return (
-    <PaperVoyageCard
-      data={{
-        companyName: item.companyName,
-        role: item.referral.targetRole,
-        endorserName: item.referrerName,
-        status: item.referral.status,
-        stageTimestamp: latestStageTimestamp(item),
-      }}
-    />
+    <View style={styles.skeletonCard}>
+      <Skeleton width="100%" height={112} radius={0} />
+      <View style={styles.skeletonBody}>
+        <Skeleton width={160} height={20} />
+        <Skeleton width={120} height={14} />
+        <Skeleton width={200} height={12} style={{ marginTop: 4 }} />
+        <Skeleton width="100%" height={28} style={{ marginTop: 14 }} />
+      </View>
+    </View>
   );
 }
 
@@ -327,6 +390,16 @@ const styles = StyleSheet.create({
     padding: layout.screenPaddingH,
     gap: spacing[4],
     paddingBottom: spacing[20],
+  },
+  skeletonCard: {
+    height: 280,
+    borderRadius: layout.cardBorderRadiusLarge,
+    overflow: 'hidden',
+    backgroundColor: colors.cardSurface,
+  },
+  skeletonBody: {
+    padding: 18,
+    gap: 8,
   },
   empty: {
     flex: 1,

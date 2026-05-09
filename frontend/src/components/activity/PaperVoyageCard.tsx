@@ -51,19 +51,18 @@ export function PaperVoyageCard({ data }: Props) {
   const endorserDisplay = data.endorserName
     ? formatEndorserName(data.endorserName)
     : '';
-  // Office hero — pure photo, no brand-color overlay. When a company doesn't
-  // have a curated photo we render a neutral navy plate so the layout stays
-  // consistent (no per-company color coding). Company name lives back in the
-  // body header in InstrumentSerif Italic on cream.
-  const officeUri = officeImageFor(data.companyName);
-  const hasOffice = officeUri != null;
+  // Office hero — accepts either a bundled local require() or a stock URL
+  // via officeImageFor. When a company has no mapped photo we render a
+  // neutral navy plate so the layout stays consistent.
+  const officeSource = officeImageFor(data.companyName);
+  const hasOffice = officeSource != null;
 
   return (
     <View style={[styles.card, isHired && styles.cardHired]}>
       <View style={styles.brandWrap}>
         {hasOffice ? (
           <Image
-            source={{ uri: officeUri ?? '' }}
+            source={officeSource}
             style={StyleSheet.absoluteFillObject}
             resizeMode="cover"
           />

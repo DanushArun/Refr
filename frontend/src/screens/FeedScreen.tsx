@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useFeed } from '../hooks/useFeed';
 import { FeedList } from '../components/feed/FeedList';
+import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
@@ -83,7 +84,10 @@ export function FeedScreen() {
         hasMore={hasMore}
         onReferPress={handleReferPress}
         onFetchMore={fetchMore}
-        onRefresh={refresh}
+        onRefresh={() => {
+          Phrase.pullRefresh();
+          refresh();
+        }}
       />
 
       {/* Referral initiation modal — bottom sheet style */}

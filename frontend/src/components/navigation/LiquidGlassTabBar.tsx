@@ -5,12 +5,12 @@ import { GlassContainer, GlassView, isLiquidGlassAvailable } from 'expo-glass-ef
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from 'react-native';
+import { PressableScale } from '../common/PressableScale';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -209,7 +209,7 @@ export function LiquidGlassTabBar({
                     : TAB_ICONS[iconKey].inactive
                   : 'ellipse-outline';
                 return (
-                  <Pressable
+                  <PressableScale
                     key={route.key}
                     style={[styles.tab, { width: tabWidth }]}
                     onPress={() => onTabPress(index)}
@@ -231,7 +231,7 @@ export function LiquidGlassTabBar({
                     >
                       {label}
                     </Text>
-                  </Pressable>
+                  </PressableScale>
                 );
               })}
             </View>

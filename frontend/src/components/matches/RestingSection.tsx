@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { PressableScale } from '../common/PressableScale';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   Easing,
@@ -9,20 +10,20 @@ import Animated, {
 import type { SeekerPipelineItem } from '@refr/shared';
 import { hapticSelection } from '../../utils/haptics';
 import { latestStageTimestamp } from '../activity/referralCardShared';
-import { MatchInboxRow } from './MatchInboxRow';
+import { RestingLedgerRow } from './RestingLedgerRow';
 import { relativeLabel } from './matchTiering';
 
 /**
- * Tier 3 — "Resting" collapsible section.
+ * Resting tier — a *ledger*, not a "second inbox."
  *
- * Long-tail / archived matches: terminal outcomes (hired, rejected,
- * withdrawn, expired) and conversations that have gone 30+ days without
- * activity. We never delete user history, but it doesn't earn space on the
- * active surface — so it lives behind a single tap.
+ * Visually distinct from the active list: tighter rows (52 px ledger
+ * entries, no avatars), denser slab, dimmer rim. The whole section reads as
+ * historical record so it doesn't compete for attention with the live
+ * conversations above it.
  *
- * Default collapsed; expanding reveals dimmed rows so they read as
- * historical at a glance. Same row component as the active list, just with
- * `dimmed` set, so any future row improvement applies everywhere.
+ * Default collapsed; the count + chevron is the only chrome shown until the
+ * user opts in. Once expanded the rows reveal with a soft fade so the
+ * transition doesn't jolt the eye.
  */
 
 interface Props {
@@ -41,22 +42,21 @@ export function RestingSection({ items, onOpen }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <Pressable
+      <PressableScale
         onPress={toggle}
-        style={({ pressed }) => [
-          styles.headerRow,
-          pressed && styles.headerPressed,
-        ]}
+        pressedScale={0.99}
+        style={styles.headerRow}
       >
-        <Text style={styles.title}>Resting</Text>
+        <Text style={styles.title}>Ledger</Text>
         <Text style={styles.count}>{items.length}</Text>
+        <Text style={styles.hint}>resting</Text>
         <View style={styles.spacer} />
         <Ionicons
           name={expanded ? 'chevron-down' : 'chevron-forward'}
           size={16}
           color="rgba(250, 250, 247, 0.55)"
         />
-      </Pressable>
+      </PressableScale>
 
       {expanded && (
         <Animated.View
@@ -69,7 +69,7 @@ export function RestingSection({ items, onOpen }: Props) {
             return (
               <View key={item.referral.id}>
                 {i > 0 && <View style={styles.divider} />}
-                <MatchInboxRow
+                <RestingLedgerRow
                   data={{
                     id: item.referral.id,
                     endorserName: item.referrerName,
@@ -80,7 +80,6 @@ export function RestingSection({ items, onOpen }: Props) {
                   }}
                   onPress={() => onOpen(item)}
                   timeLabel={relativeLabel(ts)}
-                  dimmed
                 />
               </View>
             );
@@ -102,9 +101,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 8,
   },
-  headerPressed: {
-    opacity: 0.7,
-  },
+  // headerPressed removed — PressableScale handles the pressed state.
   title: {
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 18,
@@ -116,19 +113,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(250, 250, 247, 0.45)',
   },
+  /* Sub-label clarifies what "Ledger" means without taking a second line —
+     keeps the section header tight at one row. */
+  hint: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 11,
+    color: 'rgba(250, 250, 247, 0.32)',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
   spacer: { flex: 1 },
-  /* Same dark-glass treatment as the active list, slightly more muted so
-     the resting tier reads as historical at a glance. */
+  /* Slab is denser + slightly more muted than the active rows so the tier
+     reads as historical at a glance. Subtler rim, slightly inset on the
+     left to differentiate the silhouette from active-pill rows. */
   list: {
     backgroundColor: 'rgba(255, 255, 255, 0.025)',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(212, 167, 68, 0.10)',
   },
   divider: {
     height: 1,
-    marginLeft: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    marginLeft: 36, // align past the glyph slot
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
   },
 });

@@ -10,6 +10,7 @@ import {
   RefreshControl,
   DevSettings,
 } from 'react-native';
+import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
@@ -77,6 +78,7 @@ export function ProfileScreen() {
   }, [fetchProfile]);
 
   const handleRefresh = useCallback(() => {
+    Phrase.pullRefresh();
     setRefreshing(true);
     fetchProfile();
   }, [fetchProfile]);

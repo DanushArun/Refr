@@ -60,10 +60,20 @@ export default function RootLayout() {
           <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
             <AuroraShader speed={0.85} />
           </View>
-          <Stack screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: 'transparent' },
-          }} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: 'transparent' },
+              // Native-driven slide-from-right with the system's default 350ms
+              // spring on iOS / Material on Android. Enabling this animation
+              // explicitly (rather than the route group default which can be
+              // 'none' when nested under a global view) gives every push/pop
+              // a consistent, fluid transition.
+              animation: 'slide_from_right',
+              animationDuration: 280,
+              gestureEnabled: true,
+            }}
+          />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </ErrorBoundary>

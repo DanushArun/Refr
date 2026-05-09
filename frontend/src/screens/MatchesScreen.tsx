@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
+import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
@@ -63,6 +64,7 @@ export function MatchesScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const onRefresh = useCallback(() => {
+    Phrase.pullRefresh();
     setRefreshing(true);
     load();
   }, [load]);
@@ -129,32 +131,35 @@ export function MatchesScreen() {
             {/* Tier 1 — Fresh */}
             <NewMatchesCarousel items={tiers.fresh} onPick={openChat} />
 
-            {/* Tier 2 — Active conversations */}
+            {/* Tier 2 — Active conversations. Each row is its own pill
+                (not a unified slab) with 8px gap between them. The shape
+                difference between Tier 2 (pills with stage rails) and Tier
+                3 (compact ledger entries) is the design call: each tier is
+                a distinct artefact, not the same shape repeated. */}
             {tiers.active.length > 0 && (
               <View style={styles.activeWrap}>
                 <View style={styles.sectionHeader}>
                   <Text style={styles.sectionTitle}>Conversations</Text>
                   <Text style={styles.sectionCount}>{tiers.active.length}</Text>
+                  <Text style={styles.sectionHint}>live</Text>
                 </View>
-                <View style={styles.activeList}>
-                  {tiers.active.map((item, i) => {
+                <View style={styles.activeStack}>
+                  {tiers.active.map((item) => {
                     const ts = latestStageTimestamp(item.referral);
                     return (
-                      <View key={item.referral.id}>
-                        {i > 0 && <View style={styles.divider} />}
-                        <MatchInboxRow
-                          data={{
-                            id: item.referral.id,
-                            endorserName: item.referrerName,
-                            companyName: item.companyName,
-                            role: item.referral.targetRole,
-                            status: item.referral.status,
-                            stageTimestamp: ts,
-                          }}
-                          onPress={() => openChat(item)}
-                          timeLabel={relativeLabel(ts)}
-                        />
-                      </View>
+                      <MatchInboxRow
+                        key={item.referral.id}
+                        data={{
+                          id: item.referral.id,
+                          endorserName: item.referrerName,
+                          companyName: item.companyName,
+                          role: item.referral.targetRole,
+                          status: item.referral.status,
+                          stageTimestamp: ts,
+                        }}
+                        onPress={() => openChat(item)}
+                        timeLabel={relativeLabel(ts)}
+                      />
                     );
                   })}
                 </View>
@@ -212,10 +217,9 @@ const styles = StyleSheet.create({
     gap: spacing[5],
   },
 
-  /* Tier 2 — single dark-glass surface housing all active conversation
-     rows. One translucent slab with a hairline gold rim + hairline dividers
-     between rows. Reads as frosted glass on navy, not the cream slab from
-     Activity, so Matches has its own design language. */
+  /* Tier 2 — stack of independent pills with breathing room between. Each
+     pill owns its own surface + rim, so the eye reads them as discrete
+     conversations, not a homogenised inbox. */
   activeWrap: { gap: 8 },
   sectionHeader: {
     flexDirection: 'row',
@@ -234,19 +238,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textTertiary,
   },
-  activeList: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: layout.cardBorderRadiusLarge,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.18)',
-    overflow: 'hidden',
+  /* Sub-label echoes the resting "ledger / resting" pattern so both tier
+     headers share a typographic rhythm. */
+  sectionHint: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 11,
+    color: 'rgba(250, 250, 247, 0.32)',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
-  /* Hairline divider between rows — light enough to read as a beat, not
-     a wall. Inset past the avatar so the eye flows through names. */
-  divider: {
-    height: 1,
-    marginLeft: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  activeStack: {
+    gap: 8,
   },
   activeEmpty: {
     paddingHorizontal: 4,

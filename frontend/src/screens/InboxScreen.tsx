@@ -64,6 +64,13 @@ export function InboxScreen() {
 
   useEffect(() => { loadInbox(); }, [loadInbox]);
 
+  // Stable keyExtractor so FlatList doesn't reset windowed mounting on each
+  // parent render.
+  const inboxKeyExtractor = useCallback(
+    (item: ReferrerInboxItem) => item.referral.id,
+    [],
+  );
+
   const newRequestCount = items.filter((i) => i.referral.status === 'requested').length;
 
   const handleAccept = async (
@@ -162,9 +169,12 @@ export function InboxScreen() {
         ) : (
           <FlatList
             data={items}
-            keyExtractor={(item) => item.referral.id}
+            keyExtractor={inboxKeyExtractor}
             contentContainerStyle={styles.list}
-            onRefresh={loadInbox}
+            onRefresh={() => {
+              Phrase.pullRefresh();
+              loadInbox();
+            }}
             refreshing={loading}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
@@ -176,6 +186,10 @@ export function InboxScreen() {
                 onOpenChat={() => handleOpenChat(item.referral.id, item.seekerName, item.seekerAvatar)}
               />
             )}
+            removeClippedSubviews={true}
+            initialNumToRender={6}
+            maxToRenderPerBatch={6}
+            windowSize={9}
           />
         )}
       </SafeAreaView>
@@ -191,7 +205,16 @@ interface InboxCardProps {
   onOpenChat: () => void;
 }
 
-function InboxCard({ item, referrerCompany, onAccept, onDecline, onOpenChat }: InboxCardProps) {
+// Memoized — only re-renders when the inbox item itself or the referrer's
+// company name changes. Saves the body of work that happened on every parent
+// re-render even when the row's data was identical.
+const InboxCard = React.memo(function InboxCard({
+  item,
+  referrerCompany,
+  onAccept,
+  onDecline,
+  onOpenChat,
+}: InboxCardProps) {
   const isPending = item.referral.status === 'requested';
   const isAccepted =
     item.referral.status === 'accepted' ||
@@ -301,7 +324,7 @@ function InboxCard({ item, referrerCompany, onAccept, onDecline, onOpenChat }: I
       <View style={styles.bevelBottom} pointerEvents="none" />
     </View>
   );
-}
+});
 
 function EmptyState() {
   return (

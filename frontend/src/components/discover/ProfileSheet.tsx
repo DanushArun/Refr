@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
+import { PersonName } from '../common/PersonName';
 import { TierBadge } from '../tier/TierBadge';
 import { AmbientBackground } from '../common/AmbientBackground';
 import { colors } from '../../theme/colors';
@@ -51,7 +52,7 @@ export function EndorserProfileSheet({
             <View style={styles.heroRow}>
               <Avatar displayName={card.name} size="xl" />
               <View style={styles.heroMeta}>
-                <Text style={styles.name}>{card.name}</Text>
+                <PersonName name={card.name} textStyle={styles.name} />
                 <Text style={styles.role}>{card.jobTitle}</Text>
                 <Text style={styles.company}>{card.companyName}</Text>
                 <View style={{ marginTop: spacing[2], flexDirection: 'row', gap: spacing[2], flexWrap: 'wrap' }}>
@@ -288,16 +289,19 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[20],
     gap: spacing[6],
   },
+  /* Avatar aligns to TOP so it sits next to the first name when the name
+     wraps onto two lines via <PersonName>. */
   heroRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing[4],
     marginTop: spacing[4],
   },
-  heroMeta: { flex: 1, gap: 2 },
+  heroMeta: { flex: 1, gap: 4 },
   name: {
     fontFamily: 'Outfit-Bold',
     fontSize: 24,
+    lineHeight: 28,
     letterSpacing: -0.5,
     color: colors.text,
   },
