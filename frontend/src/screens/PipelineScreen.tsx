@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   View,
@@ -8,41 +8,51 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
+  Pressable,
+  ScrollView,
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { AmbientBackground } from '../components/common/AmbientBackground';
 import { referralsApi } from '../services/api';
-import type { SeekerPipelineItem } from '@refr/shared';
-import { PipelineStepper, type PipelineStage } from '../components/activity/PipelineStepper';
+import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
+import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
+import { hapticSelection } from '../utils/haptics';
 
-const STATUS_LABELS: Record<string, string> = {
-  requested: 'Waiting',
-  accepted: 'Accepted',
-  submitted: 'Submitted',
-  interviewing: 'Interviewing',
-  hired: 'Hired',
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-  expired: 'Expired',
+type FilterKey = 'all' | 'matched' | 'submitted' | 'interview' | 'hired' | 'closed';
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'matched', label: 'Matched' },
+  { key: 'submitted', label: 'Submitted' },
+  { key: 'interview', label: 'Interview' },
+  { key: 'hired', label: 'Hired' },
+  { key: 'closed', label: 'Closed' },
+];
+
+const STATUSES_FOR: Record<FilterKey, Set<ReferralStatus> | null> = {
+  all: null,
+  matched: new Set(['requested', 'accepted']),
+  submitted: new Set(['submitted']),
+  interview: new Set(['interviewing']),
+  hired: new Set(['hired']),
+  closed: new Set(['rejected', 'withdrawn', 'expired']),
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  requested: colors.pipelineRequested,
-  accepted: colors.pipelineAccepted,
-  submitted: colors.pipelineSubmitted,
-  interviewing: colors.pipelineInterviewing,
-  hired: colors.pipelineHired,
-  rejected: colors.pipelineRejected,
-  withdrawn: colors.pipelineWithdrawn,
-  expired: colors.pipelineExpired,
-};
+function latestStageTimestamp(item: SeekerPipelineItem): string | null | undefined {
+  const r = item.referral;
+  if (r.status === 'hired') return r.outcomeAt ?? r.submittedAt ?? r.acceptedAt ?? r.requestedAt;
+  if (r.status === 'interviewing') return r.submittedAt ?? r.acceptedAt ?? r.requestedAt;
+  if (r.status === 'submitted') return r.submittedAt ?? r.acceptedAt ?? r.requestedAt;
+  return r.acceptedAt ?? r.requestedAt;
+}
 
 export function PipelineScreen() {
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<FilterKey>('all');
 
   const loadPipeline = useCallback(async () => {
     try {
@@ -58,6 +68,38 @@ export function PipelineScreen() {
 
   useFocusEffect(useCallback(() => { loadPipeline(); }, [loadPipeline]));
 
+  const counts = useMemo<Record<FilterKey, number>>(() => {
+    const c: Record<FilterKey, number> = {
+      all: items.length,
+      matched: 0,
+      submitted: 0,
+      interview: 0,
+      hired: 0,
+      closed: 0,
+    };
+    for (const it of items) {
+      const s = it.referral.status;
+      if (STATUSES_FOR.matched!.has(s)) c.matched += 1;
+      else if (STATUSES_FOR.submitted!.has(s)) c.submitted += 1;
+      else if (STATUSES_FOR.interview!.has(s)) c.interview += 1;
+      else if (STATUSES_FOR.hired!.has(s)) c.hired += 1;
+      else if (STATUSES_FOR.closed!.has(s)) c.closed += 1;
+    }
+    return c;
+  }, [items]);
+
+  const visibleItems = useMemo(() => {
+    const allowed = STATUSES_FOR[filter];
+    if (!allowed) return items;
+    return items.filter((it) => allowed.has(it.referral.status));
+  }, [items, filter]);
+
+  const handleFilterChange = useCallback((next: FilterKey) => {
+    if (next === filter) return;
+    hapticSelection();
+    setFilter(next);
+  }, [filter]);
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -69,6 +111,8 @@ export function PipelineScreen() {
     );
   }
 
+  const inFlight = counts.matched + counts.submitted + counts.interview;
+
   return (
     <View style={styles.container}>
       <AmbientBackground />
@@ -76,9 +120,17 @@ export function PipelineScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Activity</Text>
           <Text style={styles.subtitle}>
-            {items.length} endorsement{items.length !== 1 ? 's' : ''} in flight
+            {inFlight} in flight · {counts.hired} berthed
           </Text>
         </View>
+
+        {items.length > 0 && (
+          <FilterBar
+            current={filter}
+            counts={counts}
+            onChange={handleFilterChange}
+          />
+        )}
 
         {items.length === 0 ? (
           <View style={styles.empty}>
@@ -87,9 +139,16 @@ export function PipelineScreen() {
               Swipe right on an Endorser in Discover to request your first endorsement.
             </Text>
           </View>
+        ) : visibleItems.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>Nothing in this lane</Text>
+            <Text style={styles.emptyBody}>
+              No endorsements match this filter yet.
+            </Text>
+          </View>
         ) : (
           <FlatList
-            data={items}
+            data={visibleItems}
             keyExtractor={(item) => item.referral.id}
             contentContainerStyle={styles.list}
             onRefresh={() => {
@@ -106,29 +165,84 @@ export function PipelineScreen() {
   );
 }
 
-function PipelineItem({ item }: { item: SeekerPipelineItem }) {
-  const statusColor = STATUS_COLORS[item.referral.status] ?? colors.textTertiary;
-  const statusLabel = STATUS_LABELS[item.referral.status] ?? item.referral.status;
-
+function FilterBar({
+  current,
+  counts,
+  onChange,
+}: {
+  current: FilterKey;
+  counts: Record<FilterKey, number>;
+  onChange: (next: FilterKey) => void;
+}) {
   return (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View style={styles.companyRow}>
-          <Text style={styles.companyName}>{item.companyName}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor + '1A' }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
-          </View>
-        </View>
-        <Text style={styles.role}>{item.referral.targetRole}</Text>
-      </View>
-
-      <View style={styles.referrerRow}>
-        <Text style={styles.referrerLabel}>Referrer</Text>
-        <Text style={styles.referrerName}>{item.referrerName}</Text>
-      </View>
-
-      <PipelineStepper stage={item.referral.status as PipelineStage} />
+    <View style={styles.filterBarWrap}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterBarContent}
+      >
+        {FILTERS.map((f) => {
+          const active = f.key === current;
+          const count = counts[f.key];
+          const dim = !active && count === 0 && f.key !== 'all';
+          return (
+            <Pressable
+              key={f.key}
+              onPress={() => onChange(f.key)}
+              hitSlop={6}
+              style={({ pressed }) => [
+                styles.chip,
+                active && styles.chipActive,
+                !active && styles.chipInactive,
+                dim && styles.chipDim,
+                pressed && !active && { opacity: 0.7 },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.chipLabel,
+                  active ? styles.chipLabelActive : styles.chipLabelInactive,
+                  dim && styles.chipLabelDim,
+                ]}
+              >
+                {f.label.toUpperCase()}
+              </Text>
+              {count > 0 && (
+                <View
+                  style={[
+                    styles.chipCount,
+                    active ? styles.chipCountActive : styles.chipCountInactive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chipCountText,
+                      active ? styles.chipCountTextActive : styles.chipCountTextInactive,
+                    ]}
+                  >
+                    {count}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </View>
+  );
+}
+
+function PipelineItem({ item }: { item: SeekerPipelineItem }) {
+  return (
+    <PaperVoyageCard
+      data={{
+        companyName: item.companyName,
+        role: item.referral.targetRole,
+        endorserName: item.referrerName,
+        status: item.referral.status,
+        stageTimestamp: latestStageTimestamp(item),
+      }}
+    />
   );
 }
 
@@ -139,7 +253,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[6],
-    paddingBottom: spacing[4],
+    paddingBottom: spacing[3],
     gap: spacing[1],
   },
   title: { ...typography.h2, color: colors.text },
@@ -163,31 +277,66 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
-  card: {
-    backgroundColor: colors.surfaceLevel2,
-    borderRadius: layout.cardBorderRadius,
-    padding: layout.cardPadding,
-    gap: spacing[4],
+
+  filterBarWrap: {
+    paddingBottom: spacing[3],
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(212, 167, 68, 0.18)',
+    marginBottom: spacing[3],
   },
-  cardTop: { gap: spacing[1] },
-  companyRow: {
+  filterBarContent: {
+    paddingHorizontal: layout.screenPaddingH,
+    gap: spacing[2],
+    alignItems: 'center',
+  },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8,
+    height: 32,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: 1,
   },
-  companyName: { ...typography.h4, color: colors.text },
-  statusBadge: {
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[0.5],
-    borderRadius: 100,
+  chipActive: {
+    backgroundColor: colors.gold,
+    borderColor: colors.gold,
   },
-  statusText: { ...typography.caption, fontFamily: 'Outfit-SemiBold' },
-  role: { ...typography.body, color: colors.textSecondary },
-  referrerRow: { gap: spacing[0.5] },
-  referrerLabel: { ...typography.caption, color: colors.textTertiary },
-  referrerName: {
-    ...typography.bodySmall,
-    color: colors.text,
-    fontFamily: 'Outfit-SemiBold',
+  chipInactive: {
+    backgroundColor: 'transparent',
+    borderColor: 'rgba(212, 167, 68, 0.45)',
   },
+  chipDim: {
+    borderColor: 'rgba(212, 167, 68, 0.18)',
+  },
+  chipLabel: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 10.5,
+    letterSpacing: 1.4,
+  },
+  chipLabelActive: { color: '#0A1F44' },
+  chipLabelInactive: { color: colors.gold },
+  chipLabelDim: { color: 'rgba(212, 167, 68, 0.45)' },
+
+  chipCount: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipCountActive: {
+    backgroundColor: 'rgba(10, 31, 68, 0.18)',
+  },
+  chipCountInactive: {
+    backgroundColor: 'rgba(212, 167, 68, 0.14)',
+  },
+  chipCountText: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 10,
+    letterSpacing: 0,
+  },
+  chipCountTextActive: { color: '#0A1F44' },
+  chipCountTextInactive: { color: colors.gold },
 });

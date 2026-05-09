@@ -299,28 +299,16 @@ const styles = StyleSheet.create({
     borderRadius: 32,
   },
 
-  /* Brand hero — white perimeter only on the OUTER edges (top, left, right
-     of the navy half). No border on the seam where it meets the cream zone. */
   brandZone: {
     paddingTop: 22,
     paddingHorizontal: 22,
     paddingBottom: 20,
     gap: 12,
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-    borderRightWidth: 3,
-    borderColor: '#F5F1E8',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
   },
-  /* Cream zone — navy perimeter only on the OUTER edges (bottom, left, right
-     of the cream half). No border on the seam where it meets the brand zone. */
   creamZone: {
     flex: 1,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-    borderRightWidth: 3,
-    borderColor: '#0A1F44',
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
   },
@@ -469,9 +457,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  /* Stack preview — anonymous navy plate, no identity content */
+  /* Stack preview — anonymous plate, no identity content. Must read clearly
+     against the navy page background, so use a lifted navy tier. */
   stackPlate: {
     flex: 1,
-    backgroundColor: '#0A1F44',
+    backgroundColor: '#23427A',
   },
 });
