@@ -25,14 +25,19 @@ const SEAL_SIZE = 152;
 interface StampProps {
   translateX: SharedValue<number>;
   kind: 'request' | 'pass';
+  /** Right-swipe seal text. "REQUEST" for seeker side, "ACCEPT" for endorser
+   *  side. Defaults to REQUEST. */
+  commitLabel?: string;
 }
 
 /**
  * Swipe reaction overlay.
  *
  *   `kind="request"` (right swipe) — a celebratory gold sailor's wax seal
- *   that scales up with drag. Reads ENDORSE in editorial serif. No red,
- *   no judgmental fanfare — just a beautiful, addictive moment of "yes".
+ *   that scales up with drag. Reads REQUEST in editorial serif. (On the
+ *   seeker side, swiping right SENDS a request — endorsement is what the
+ *   referrer does, not what the seeker does.) No red, no judgmental fanfare
+ *   — just a beautiful, addictive moment of "yes".
  *
  *   `kind="pass"` (left swipe) — a quiet cream wisp that fades in and
  *   drifts off-screen with the card. No stamp, no harshness, no shame.
@@ -41,12 +46,18 @@ interface StampProps {
  *
  * Both render absolutely above the card and are pointerEvents="none".
  */
-export function SwipeStamp({ translateX, kind }: StampProps) {
-  if (kind === 'request') return <RequestSeal translateX={translateX} />;
+export function SwipeStamp({ translateX, kind, commitLabel = 'REQUEST' }: StampProps) {
+  if (kind === 'request') return <RequestSeal translateX={translateX} label={commitLabel} />;
   return <PassWisp translateX={translateX} />;
 }
 
-function RequestSeal({ translateX }: { translateX: SharedValue<number> }) {
+function RequestSeal({
+  translateX,
+  label,
+}: {
+  translateX: SharedValue<number>;
+  label: string;
+}) {
   const animStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       translateX.value,
@@ -117,7 +128,7 @@ function RequestSeal({ translateX }: { translateX: SharedValue<number> }) {
       </Canvas>
       <View style={styles.sealLabel}>
         <Text style={styles.sealMark}>✦</Text>
-        <Text style={styles.sealText}>ENDORSE</Text>
+        <Text style={styles.sealText}>{label}</Text>
       </View>
     </Animated.View>
   );

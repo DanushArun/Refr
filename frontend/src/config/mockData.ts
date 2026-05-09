@@ -39,10 +39,10 @@ const COMPANY = {
   cred: { id: 'c-6', name: 'CRED' },
   meesho: { id: 'c-7', name: 'Meesho' },
   groww: { id: 'c-8', name: 'Groww' },
-  google: { id: 'c-9', name: 'Google India' },
-  microsoft: { id: 'c-10', name: 'Microsoft IDC' },
-  atlassian: { id: 'c-11', name: 'Atlassian India' },
-  coinbase: { id: 'c-12', name: 'Coinbase India' },
+  google: { id: 'c-9', name: 'Google' },
+  microsoft: { id: 'c-10', name: 'Microsoft' },
+  atlassian: { id: 'c-11', name: 'Atlassian' },
+  coinbase: { id: 'c-12', name: 'Coinbase' },
 } as const;
 
 // ── Referrers (12) ────────────────────────────────────────────────────

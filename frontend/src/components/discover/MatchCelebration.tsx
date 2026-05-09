@@ -14,6 +14,8 @@ import { Phrase } from '../../utils/haptics';
 interface MatchCelebrationProps {
   /** When this prop changes from null to a number, the celebration fires once. */
   trigger: number | null;
+  /** Seal label — "REQUESTED" for seeker side, "ACCEPTED" for endorser side. */
+  label?: string;
   onComplete?: () => void;
 }
 
@@ -25,10 +27,12 @@ const CREAM = '#F5F1E8';
 const TOTAL_MS = 1300;
 
 /**
- * Endorsement Seal — premium, branded, *fast* match celebration.
+ * Request Seal — premium, branded, *fast* request-sent celebration.
  *
- * Three elements, three Animated.Views, zero Skia. Plays in ~1.3s but the
- * payoff lands by 280ms.
+ * On the seeker's Discover view a right-swipe SENDS an endorsement request;
+ * the action is "Requested," not "Endorsed." (Endorsed is the terminal state
+ * that only fires when a hire actually converts.) Three elements, three
+ * Animated.Views, zero Skia. Plays in ~1.3s but the payoff lands by 280ms.
  *
  *   t=0…140ms    Flash bloom — gold radial pulse punches outward and dies
  *   t=60…320ms   Seal stamps in — navy/gold disc springs from scale 0 with a
@@ -41,7 +45,11 @@ const TOTAL_MS = 1300;
  * worklet loops over 100 particles, no BlurMask. Replaces the previous
  * 100-particle Skia burst that was causing JS-thread lag on swipe.
  */
-export function MatchCelebration({ trigger, onComplete }: MatchCelebrationProps) {
+export function MatchCelebration({
+  trigger,
+  label = 'REQUESTED',
+  onComplete,
+}: MatchCelebrationProps) {
   // Master timer 0..1 over TOTAL_MS — drives flash, ring, and exit fade.
   const t = useSharedValue(0);
   // Seal entrance — independent spring so the stamp feels punchy + elastic.
@@ -131,7 +139,7 @@ export function MatchCelebration({ trigger, onComplete }: MatchCelebrationProps)
   });
 
   // ─── Seal stamp ───
-  // Navy ring + gold disc + cream inner border + "ENDORSED" mark.
+  // Navy ring + gold disc + cream inner border + "REQUESTED" mark.
   // Springs in with elastic bounce, slight tilt that settles straight.
   const sealStyle = useAnimatedStyle(() => {
     const enter = sealEnter.value;
@@ -163,7 +171,7 @@ export function MatchCelebration({ trigger, onComplete }: MatchCelebrationProps)
         <View style={styles.sealOuter}>
           <View style={styles.sealInner}>
             <Text style={styles.sealMark}>★</Text>
-            <Text style={styles.sealLabel}>ENDORSED</Text>
+            <Text style={styles.sealLabel}>{label}</Text>
           </View>
         </View>
       </Animated.View>

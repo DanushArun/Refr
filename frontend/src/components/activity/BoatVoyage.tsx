@@ -14,7 +14,10 @@ const STAGE_COUNT = STAGE_LABELS.length;
 
 // ────────────────────────── matrix + wave config ──────────────────────────
 // Tuned for 60-120fps across 4-7 visible cards. Coarser grid, fewer paths.
-const MATRIX_PAD = 4;
+// MATRIX_PAD is 0 — the dot grid runs the full card width. Any sub-cell
+// remainder is split evenly left/right via `matrixOffsetX` below so the grid
+// reads as visually centered AND edge-to-edge.
+const MATRIX_PAD = 0;
 const BOAT_PAD = 36;
 const CELL = 8;              // dot grid cell size (bigger = fewer dots)
 const DOT_R = 0.95;          // dim background grid radius
@@ -55,11 +58,15 @@ export function BoatVoyage({ current }: Props) {
   };
 
   const { w, h } = size;
-  // Dot grid spans nearly edge-to-edge; boat lane is inset so labels fit.
+  // Dot grid spans the full card width. Boat lane is inset so labels fit.
   const matrixUsable = Math.max(0, w - MATRIX_PAD * 2);
   const boatUsable = Math.max(0, w - BOAT_PAD * 2);
   const cols = Math.floor(matrixUsable / CELL);
   const rows = Math.floor(h / CELL);
+  // Center the dot grid horizontally so the sub-cell remainder is split
+  // evenly on both sides — gives true edge-to-edge appearance instead of a
+  // visible gutter on the right when (w / CELL) isn't an integer.
+  const matrixOffsetX = MATRIX_PAD + (matrixUsable - cols * CELL) / 2;
   const baseY = h * BASELINE_FRAC;
   const wavelength = Math.max(50, w / WAVES_VISIBLE);
   // Lowest possible topY = baseY - WAVE_AMP. Below that y, dots are
@@ -94,13 +101,13 @@ export function BoatVoyage({ current }: Props) {
     if (cols === 0 || rows === 0) return p;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const x = MATRIX_PAD + c * CELL + CELL / 2;
+        const x = matrixOffsetX + c * CELL + CELL / 2;
         const y = r * CELL + CELL / 2;
         p.addCircle(x, y, DOT_R);
       }
     }
     return p;
-  }, [cols, rows]);
+  }, [cols, rows, matrixOffsetX]);
 
   // ─────────── lit-dot paths (filled ocean) ───────────
   // The wave is the top boundary of a SOLID FILLED ocean. Every dot from
@@ -113,7 +120,9 @@ export function BoatVoyage({ current }: Props) {
   //   • litFuturePath:  body of ocean, x > shipX (dimmer, ahead)
   //   • surfacePath:    topmost row of submerged dots — the bright crest
 
-  const matrixRight = w > 0 ? w - MATRIX_PAD : 0;
+  // Right edge of the dot field — used by the lit-extension calculation so
+  // the "fully hired" glow reaches the very last column.
+  const matrixRight = w > 0 ? matrixOffsetX + cols * CELL : 0;
 
   const litPastPath = useDerivedValue(() => {
     const p = Skia.Path.Make();
@@ -122,7 +131,7 @@ export function BoatVoyage({ current }: Props) {
     const litMaxX = shipX + (matrixRight - shipX) * litExtension.value;
     const k = (Math.PI * 2) / wavelength;
     for (let c = 0; c < cols; c++) {
-      const x = MATRIX_PAD + c * CELL + CELL / 2;
+      const x = matrixOffsetX + c * CELL + CELL / 2;
       if (x > litMaxX) continue;
       const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
       for (let r = startRow; r < rows; r++) {
@@ -131,7 +140,7 @@ export function BoatVoyage({ current }: Props) {
       }
     }
     return p;
-  }, [cols, rows, boatUsable, baseY, wavelength, startRow, matrixRight]);
+  }, [cols, rows, boatUsable, baseY, wavelength, startRow, matrixRight, matrixOffsetX]);
 
   const litFuturePath = useDerivedValue(() => {
     const p = Skia.Path.Make();
@@ -140,7 +149,7 @@ export function BoatVoyage({ current }: Props) {
     const litMaxX = shipX + (matrixRight - shipX) * litExtension.value;
     const k = (Math.PI * 2) / wavelength;
     for (let c = 0; c < cols; c++) {
-      const x = MATRIX_PAD + c * CELL + CELL / 2;
+      const x = matrixOffsetX + c * CELL + CELL / 2;
       if (x <= litMaxX) continue;
       const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
       for (let r = startRow; r < rows; r++) {
@@ -149,7 +158,7 @@ export function BoatVoyage({ current }: Props) {
       }
     }
     return p;
-  }, [cols, rows, boatUsable, baseY, wavelength, startRow, matrixRight]);
+  }, [cols, rows, boatUsable, baseY, wavelength, startRow, matrixRight, matrixOffsetX]);
 
   // ─────────── ship ───────────
   // Hull bottom locks to topY(shipX) — strictly on the surface, never above

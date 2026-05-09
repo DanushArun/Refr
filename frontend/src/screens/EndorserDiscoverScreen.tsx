@@ -181,8 +181,10 @@ export function EndorserDiscoverScreen() {
         onCommit={() => handleExpandedCommit('request')}
       />
 
-      {/* Full-screen overlay celebration — sits above the safe area + tab bar */}
-      <MatchCelebration trigger={celebrationTrigger} />
+      {/* Full-screen overlay celebration — sits above the safe area + tab bar.
+          Endorser-side swipe = accept, so the seal reads ACCEPTED (not the
+          seeker-side default of REQUESTED). */}
+      <MatchCelebration trigger={celebrationTrigger} label="ACCEPTED" />
     </View>
   );
 }

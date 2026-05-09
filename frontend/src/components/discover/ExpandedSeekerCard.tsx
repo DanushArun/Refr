@@ -303,7 +303,7 @@ export function ExpandedSeekerCard({
             style={styles.commitBtn}
           >
             <Ionicons name="checkmark" size={20} color="#0A1F44" />
-            <Text style={styles.commitBtnText}>Endorse {safe.name.split(' ')[0]}</Text>
+            <Text style={styles.commitBtnText}>Accept {safe.name.split(' ')[0]}</Text>
           </Pressable>
         </Animated.View>
       </Animated.View>

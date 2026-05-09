@@ -258,7 +258,7 @@ export function SeekerCard({
                 pointerEvents="none"
                 style={[styles.reactiveGlow, reactiveGlowStyle]}
               />
-              <SwipeStamp translateX={translateX} kind="request" />
+              <SwipeStamp translateX={translateX} kind="request" commitLabel="ACCEPT" />
               <SwipeStamp translateX={translateX} kind="pass" />
             </>
           )}
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
   },
 
-  /* Reactive gold/navy mood overlay — gold while pulling right (endorse),
+  /* Reactive gold/navy mood overlay — gold while pulling right (accept),
      cool navy while pulling left (pass). */
   reactiveGlow: {
     ...StyleSheet.absoluteFillObject,

@@ -192,7 +192,7 @@ export function SeekerProfileSheet({
 
         <ActionBar
           passLabel="Pass"
-          commitLabel={`Endorse ${card.name.split(' ')[0]}`}
+          commitLabel={`Accept ${card.name.split(' ')[0]}`}
           onPass={onPass}
           onCommit={onCommit}
         />

@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReferralStatus } from '@refr/shared';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/spacing';
-import { brandForName } from '../discover/companyBrand';
+import { officeImageFor } from './companyOffices';
 import { BoatVoyage } from './BoatVoyage';
 
 const BLACK = '#0F1115';
@@ -83,38 +83,25 @@ export function PaperVoyageCard({ data }: Props) {
   const endorserDisplay = data.endorserName
     ? formatEndorserName(data.endorserName)
     : '';
-  // Brand-driven hero — replaces the previous stock office photo, which
-  // recycled across companies and read as random/duplicate. Each company
-  // gets its own real brand color + monogram from the discover registry.
-  const brand = brandForName(data.companyName);
+  // Office hero — pure photo, no brand-color overlay. When a company doesn't
+  // have a curated photo we render a neutral navy plate so the layout stays
+  // consistent (no per-company color coding). Company name lives back in the
+  // body header in InstrumentSerif Italic on cream.
+  const officeUri = officeImageFor(data.companyName);
+  const hasOffice = officeUri != null;
 
   return (
     <View style={[styles.card, isHired && styles.cardHired]}>
       <View style={styles.brandWrap}>
-        <LinearGradient
-          colors={[brand.tint, brand.tintEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFillObject}
-        />
-        <View style={styles.brandRow}>
-          <View
-            style={[
-              styles.brandMonogram,
-              { borderColor: brand.accent },
-            ]}
-          >
-            <Text style={[styles.brandMonogramText, { color: brand.text }]}>
-              {brand.mark}
-            </Text>
-          </View>
-          <Text
-            style={[styles.brandName, { color: brand.text }]}
-            numberOfLines={1}
-          >
-            {data.companyName}
-          </Text>
-        </View>
+        {hasOffice ? (
+          <Image
+            source={{ uri: officeUri ?? '' }}
+            style={StyleSheet.absoluteFillObject}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={[StyleSheet.absoluteFillObject, styles.heroFallback]} />
+        )}
         {isHired && (
           <>
             <LinearGradient
@@ -135,20 +122,23 @@ export function PaperVoyageCard({ data }: Props) {
       <View style={styles.body}>
         <View style={styles.bodyTop}>
           <View style={styles.headerRow}>
-            {/* Company name is now in the brand hero — body leads with the
-                role so we don't repeat the company twice. */}
             <View style={styles.headerLeft}>
+              <Text style={styles.company} numberOfLines={1}>{data.companyName}</Text>
               <Text style={styles.role} numberOfLines={1}>{data.role}</Text>
             </View>
-            <StatusPill meta={meta} />
+            {/* Right column — status pill on top, endorser line below it,
+                both right-aligned. Frees the row beneath so the body reads
+                cleaner. */}
+            <View style={styles.headerRight}>
+              <StatusPill meta={meta} />
+              {!!endorserDisplay && (
+                <Text style={styles.endorserRight} numberOfLines={1}>
+                  <Text style={styles.endorserLabel}>by </Text>
+                  {endorserDisplay}
+                </Text>
+              )}
+            </View>
           </View>
-
-          {!!endorserDisplay && (
-            <Text style={styles.endorser} numberOfLines={1}>
-              <Text style={styles.endorserLabel}>Endorser: </Text>
-              {endorserDisplay}
-            </Text>
-          )}
         </View>
 
         <View style={styles.bodyBottom}>
@@ -218,33 +208,13 @@ const styles = StyleSheet.create({
     width: '100%',
     flex: IMAGE_FLEX,
     overflow: 'hidden',
-    justifyContent: 'center',
-    paddingHorizontal: 18,
+    backgroundColor: '#0A1F44',
   },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  brandMonogram: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  brandMonogramText: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 26,
-    lineHeight: 30,
-  },
-  brandName: {
-    flex: 1,
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 28,
-    letterSpacing: -0.2,
+  /* Neutral plate behind the photo slot when no office image is mapped.
+     A flat navy keeps the layout consistent across cards without per-company
+     color coding. */
+  heroFallback: {
+    backgroundColor: '#0A1F44',
   },
   imageHiredSheen: {
     ...StyleSheet.absoluteFillObject,
@@ -284,18 +254,31 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headerLeft: { flex: 1, gap: 2 },
-  role: {
-    fontFamily: 'InstrumentSerif-Italic',
-    fontSize: 22,
-    lineHeight: 26,
-    color: BLACK,
-    letterSpacing: -0.3,
+  /* Right column of the body header — status pill stacked over the endorser
+     line, both right-aligned and tight against the right edge so the left
+     column gets all the breathing room. */
+  headerRight: {
+    alignItems: 'flex-end',
+    gap: 4,
+    maxWidth: '52%',
   },
-  endorser: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
+  company: {
+    fontFamily: 'InstrumentSerif-Italic',
+    fontSize: 26,
+    lineHeight: 30,
     color: BLACK,
-    letterSpacing: 0,
+    letterSpacing: -0.4,
+  },
+  role: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 14,
+    color: BLACK_70,
+  },
+  endorserRight: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 12,
+    color: BLACK,
+    textAlign: 'right',
   },
   endorserLabel: {
     fontFamily: 'Outfit-Regular',

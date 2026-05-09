@@ -216,6 +216,13 @@ export function PipelineScreen() {
             refreshing={refreshing}
             renderItem={({ item }) => <PipelineItem item={item} />}
             showsVerticalScrollIndicator={false}
+            // Each card runs a useFrameCallback + per-frame Skia path rebuilds
+            // for the BoatVoyage. Off-screen cards must be unmounted, not just
+            // hidden — otherwise every animation runs continuously.
+            removeClippedSubviews={true}
+            initialNumToRender={3}
+            maxToRenderPerBatch={3}
+            windowSize={5}
           />
         )}
       </SafeAreaView>

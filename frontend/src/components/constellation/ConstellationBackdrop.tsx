@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import {
   BlurMask,
@@ -60,8 +60,37 @@ export function ConstellationBackdrop({
   const opacity = useSharedValue(visible ? 1 : 0);
   const { tiltX, tiltY } = useDeviceTilt();
 
+  // We KEEP THE CANVAS UNMOUNTED whenever the backdrop is invisible. Without
+  // this, the heavy Skia tree (5+ blurred circles + parallax) was painting
+  // every frame at opacity:0 during normal swiping, which is the bulk of the
+  // perf cost on Discover. We only mount during the visible window plus a
+  // short tail to let the fade-out complete cleanly.
+  const [shouldRender, setShouldRender] = useState(visible);
+  const fadeOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    if (!alive) {
+    if (visible) {
+      if (fadeOutTimerRef.current) {
+        clearTimeout(fadeOutTimerRef.current);
+        fadeOutTimerRef.current = null;
+      }
+      setShouldRender(true);
+    } else if (shouldRender) {
+      // Wait for the 600ms fade-out before unmounting the Canvas.
+      fadeOutTimerRef.current = setTimeout(() => {
+        setShouldRender(false);
+        fadeOutTimerRef.current = null;
+      }, 650);
+    }
+    return () => {
+      if (fadeOutTimerRef.current) clearTimeout(fadeOutTimerRef.current);
+    };
+  }, [visible, shouldRender]);
+
+  // Pulse animation only runs while the backdrop is rendered — saves UI-thread
+  // work during normal swiping when the Canvas is unmounted anyway.
+  useEffect(() => {
+    if (!alive || !shouldRender) {
       pulse.value = 1;
       return;
     }
@@ -72,7 +101,7 @@ export function ConstellationBackdrop({
       ),
       -1,
     );
-  }, [alive, pulse]);
+  }, [alive, pulse, shouldRender]);
 
   // Drive the wrapper opacity from the `visible` prop. Fade in is slower
   // (1200ms) so the empty state reveal feels deliberate; fade out is faster
@@ -101,6 +130,8 @@ export function ConstellationBackdrop({
     { translateX: tiltX.value * parallaxStrength * 1.2 },
     { translateY: tiltY.value * parallaxStrength * 1.2 },
   ]);
+
+  if (!shouldRender) return null;
 
   return (
     <View style={styles.overlay} pointerEvents="none">
