@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
-  Easing,
   FadeIn,
   FadeOut,
 } from 'react-native-reanimated';
@@ -144,6 +143,9 @@ export function EndorserDiscoverScreen() {
                 stackIndex={stackIndex}
                 headProgress={headProgress}
                 entryFrom={entryFrom}
+                swipesRemaining={cards.length - (index + stackIndex)}
+                canUndo={canUndo}
+                onUndo={() => deckRef.current?.undo()}
                 onSwiped={onSwiped}
                 onTap={onTap}
                 registerSwipe={registerSwipe}
@@ -151,30 +153,7 @@ export function EndorserDiscoverScreen() {
             )}
           />
 
-          {/* Undo affordance only — Pass / Endorse are gesture-only. */}
-          {remaining > 0 && canUndo && (
-            <Animated.View
-              style={styles.actionBar}
-              entering={FadeIn.duration(220).easing(Easing.out(Easing.cubic))}
-              exiting={FadeOut.duration(160)}
-            >
-              <Pressable
-                onPress={() => deckRef.current?.undo()}
-                style={({ pressed }) => [
-                  styles.actionBtn,
-                  styles.undoBtn,
-                  pressed && styles.actionBtnPressed,
-                ]}
-                hitSlop={8}
-              >
-                <Ionicons name="arrow-undo" size={20} color={colors.gold} />
-              </Pressable>
-            </Animated.View>
-          )}
-
-          <View style={styles.remainingBadge}>
-            <Text style={styles.remainingText}>{remaining} remaining swipes</Text>
-          </View>
+          {/* Undo lives on the top card itself — see clip-on cluster. */}
         </View>
 
         {lastAction && (
@@ -247,24 +226,6 @@ const styles = StyleSheet.create({
     marginTop: 58 + spacing[2],
     paddingBottom: 116,
   },
-  remainingBadge: {
-    position: 'absolute',
-    bottom: 158,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(10, 31, 68, 0.85)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.25)',
-  },
-  remainingText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 11,
-    color: colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
   toastWrap: {
     position: 'absolute',
     bottom: 200,
@@ -286,35 +247,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#000000',
     textAlign: 'center',
-  },
-  /* Undo affordance — visible only when there is a swipe to rewind. */
-  actionBar: {
-    position: 'absolute',
-    bottom: 110,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.30,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  actionBtnPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.94 }],
-  },
-  undoBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(10, 31, 68, 0.85)',
-    borderColor: colors.goldDim,
   },
 });

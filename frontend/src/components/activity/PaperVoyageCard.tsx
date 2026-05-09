@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReferralStatus } from '@refr/shared';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/spacing';
-import { officeImageFor } from './companyOffices';
+import { brandForName } from '../discover/companyBrand';
 import { BoatVoyage } from './BoatVoyage';
 
 const BLACK = '#0F1115';
@@ -70,8 +70,6 @@ export interface PaperVoyageCardData {
   status: ReferralStatus;
   /** Most recent stage timestamp — drives "X days" suffix on submitted etc. */
   stageTimestamp?: string | null;
-  /** Optional override; otherwise picks deterministically from a curated set. */
-  imageUri?: string | null;
 }
 
 interface Props {
@@ -79,21 +77,44 @@ interface Props {
 }
 
 export function PaperVoyageCard({ data }: Props) {
-  const image = useMemo(
-    () => data.imageUri ?? officeImageFor(data.companyName),
-    [data.imageUri, data.companyName],
-  );
   const meta = statusMeta(data.status, data.stageTimestamp);
   const current = stageIndex(data.status);
   const isHired = data.status === 'hired';
   const endorserDisplay = data.endorserName
     ? formatEndorserName(data.endorserName)
     : '';
+  // Brand-driven hero — replaces the previous stock office photo, which
+  // recycled across companies and read as random/duplicate. Each company
+  // gets its own real brand color + monogram from the discover registry.
+  const brand = brandForName(data.companyName);
 
   return (
     <View style={[styles.card, isHired && styles.cardHired]}>
-      <View style={styles.imageWrap}>
-        <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
+      <View style={styles.brandWrap}>
+        <LinearGradient
+          colors={[brand.tint, brand.tintEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.brandRow}>
+          <View
+            style={[
+              styles.brandMonogram,
+              { borderColor: brand.accent },
+            ]}
+          >
+            <Text style={[styles.brandMonogramText, { color: brand.text }]}>
+              {brand.mark}
+            </Text>
+          </View>
+          <Text
+            style={[styles.brandName, { color: brand.text }]}
+            numberOfLines={1}
+          >
+            {data.companyName}
+          </Text>
+        </View>
         {isHired && (
           <>
             <LinearGradient
@@ -114,8 +135,9 @@ export function PaperVoyageCard({ data }: Props) {
       <View style={styles.body}>
         <View style={styles.bodyTop}>
           <View style={styles.headerRow}>
+            {/* Company name is now in the brand hero — body leads with the
+                role so we don't repeat the company twice. */}
             <View style={styles.headerLeft}>
-              <Text style={styles.company} numberOfLines={1}>{data.companyName}</Text>
               <Text style={styles.role} numberOfLines={1}>{data.role}</Text>
             </View>
             <StatusPill meta={meta} />
@@ -192,15 +214,37 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 14,
   },
-  imageWrap: {
+  brandWrap: {
     width: '100%',
     flex: IMAGE_FLEX,
-    backgroundColor: colors.cardSurface,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
   },
-  image: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: colors.cardSurface,
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  brandMonogram: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  brandMonogramText: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 26,
+    lineHeight: 30,
+  },
+  brandName: {
+    flex: 1,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 28,
+    letterSpacing: -0.2,
   },
   imageHiredSheen: {
     ...StyleSheet.absoluteFillObject,
@@ -240,17 +284,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headerLeft: { flex: 1, gap: 2 },
-  company: {
-    fontFamily: 'InstrumentSerif-Italic',
-    fontSize: 26,
-    color: BLACK,
-    letterSpacing: -0.4,
-    lineHeight: 30,
-  },
   role: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 14,
-    color: BLACK_70,
+    fontFamily: 'InstrumentSerif-Italic',
+    fontSize: 22,
+    lineHeight: 26,
+    color: BLACK,
+    letterSpacing: -0.3,
   },
   endorser: {
     fontFamily: 'Outfit-Medium',

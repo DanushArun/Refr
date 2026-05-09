@@ -14,7 +14,6 @@ import {
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
-import { AmbientBackground } from '../components/common/AmbientBackground';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
 import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
@@ -173,7 +172,6 @@ export function PipelineScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <AmbientBackground />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.accent} />
         </View>
@@ -185,7 +183,6 @@ export function PipelineScreen() {
 
   return (
     <View style={styles.container}>
-      <AmbientBackground />
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.title}>Activity</Text>

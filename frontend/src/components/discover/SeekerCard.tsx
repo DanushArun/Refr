@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
 import { MatchArc } from './MatchArc';
 import { brandForName } from './companyBrand';
@@ -49,6 +50,11 @@ interface SeekerCardProps {
   stackIndex: number;
   headProgress: SharedValue<number>;
   entryFrom: EntryFrom;
+  /** Number to render on the card's clip-on tag — "{n} swipes left." */
+  swipesRemaining: number;
+  /** Top-card-only undo affordance, attached to the left of the pill. */
+  canUndo?: boolean;
+  onUndo?: () => void;
   onSwiped: (direction: SwipeDirection) => void;
   onTap?: () => void;
   registerSwipe?: (cmd: SwipeCommand) => void;
@@ -60,6 +66,9 @@ export function SeekerCard({
   stackIndex,
   headProgress,
   entryFrom,
+  swipesRemaining,
+  canUndo = false,
+  onUndo,
   onSwiped,
   onTap,
   registerSwipe,
@@ -270,6 +279,35 @@ export function SeekerCard({
             pointerEvents="none"
           />
         </View>
+
+        {/* Clip-on cluster — only on the top card so back-of-deck preview
+            cards stay clean. Undo circle attaches when there's history. */}
+        {isTop && (
+          <View
+            style={styles.clipMount}
+            pointerEvents={canUndo ? 'box-none' : 'none'}
+          >
+            <View style={styles.clipCluster}>
+              {canUndo && onUndo && (
+                <Pressable
+                  onPress={onUndo}
+                  hitSlop={8}
+                  style={({ pressed }) => [
+                    styles.undoCircle,
+                    pressed && styles.undoCirclePressed,
+                  ]}
+                >
+                  <Ionicons name="arrow-undo" size={14} color={colors.gold} />
+                </Pressable>
+              )}
+              <View style={styles.clipPill}>
+                <Text style={styles.clipText}>
+                  {swipesRemaining} {swipesRemaining === 1 ? 'SWIPE LEFT' : 'SWIPES LEFT'}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
       </Animated.View>
     </GestureDetector>
   );
@@ -585,5 +623,58 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 32,
     zIndex: 4,
+  },
+
+  /* Clip-on cluster — undo circle (optional) + counter pill anchored to the
+     card's bottom edge. */
+  clipMount: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: -14,
+    alignItems: 'center',
+  },
+  clipCluster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  undoCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(10, 31, 68, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.40)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  undoCirclePressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.94 }],
+  },
+  clipPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(10, 31, 68, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.40)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  clipText: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 10.5,
+    color: '#E8BD58',
+    letterSpacing: 1.2,
   },
 });

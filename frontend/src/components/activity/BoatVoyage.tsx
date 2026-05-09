@@ -13,17 +13,16 @@ const STAGE_LABELS = ['MATCHED', 'SUBMITTED', 'INTERVIEW', 'HIRED'] as const;
 const STAGE_COUNT = STAGE_LABELS.length;
 
 // ────────────────────────── matrix + wave config ──────────────────────────
+// Tuned for 60-120fps across 4-7 visible cards. Coarser grid, fewer paths.
 const MATRIX_PAD = 4;
 const BOAT_PAD = 36;
-const CELL = 6;
-const DOT_R = 0.85;          // dim background grid radius
-const DOT_R_FUTURE = 1.4;    // future-ocean fill dot radius
-const DOT_R_PAST = 2.0;      // past-ocean fill dot radius (the lit wake)
-const DOT_R_SURFACE = 2.4;   // bright surface row radius (wave crest highlight)
-const SURFACE_THICK = 3.5;   // distance below topY considered "surface highlight"
+const CELL = 8;              // dot grid cell size (bigger = fewer dots)
+const DOT_R = 0.95;          // dim background grid radius
+const DOT_R_FUTURE = 1.7;    // future-ocean fill dot radius
+const DOT_R_PAST = 2.2;      // past-ocean fill dot radius (the lit wake)
 const WAVE_AMP = 30;         // peak rise above baseline
-const BASELINE_FRAC = 0.5;   // baseline at half the track height (deep ocean below)
-const WAVES_VISIBLE = 3.0;   // wave cycles across the track
+const BASELINE_FRAC = 0.5;
+const WAVES_VISIBLE = 3.0;
 const WAVE_PERIOD_MS = 4200;
 const LABEL_SLOT_W = 84;
 
@@ -78,10 +77,16 @@ export function BoatVoyage({ current }: Props) {
   });
 
   const progress = useSharedValue(0);
+  // litExtension: 0 normally (lit zone ends at the ship), 1 when reaching the
+  // final stage (lit zone extends past the ship to the matrix edge so the
+  // ENTIRE ocean glows on HIRED).
+  const litExtension = useSharedValue(0);
   useEffect(() => {
     const t = current >= 0 && STAGE_COUNT > 1 ? current / (STAGE_COUNT - 1) : 0;
     progress.value = withSpring(t, { stiffness: 60, damping: 14, mass: 0.9 });
-  }, [current, progress]);
+    const ext = current === STAGE_COUNT - 1 ? 1 : 0;
+    litExtension.value = withSpring(ext, { stiffness: 60, damping: 14, mass: 0.9 });
+  }, [current, progress, litExtension]);
 
   // ─────────── static dim grid ───────────
   const gridPath = useMemo(() => {
@@ -108,14 +113,17 @@ export function BoatVoyage({ current }: Props) {
   //   • litFuturePath:  body of ocean, x > shipX (dimmer, ahead)
   //   • surfacePath:    topmost row of submerged dots — the bright crest
 
+  const matrixRight = w > 0 ? w - MATRIX_PAD : 0;
+
   const litPastPath = useDerivedValue(() => {
     const p = Skia.Path.Make();
     if (cols === 0 || rows === 0) return p;
     const shipX = BOAT_PAD + boatUsable * progress.value;
+    const litMaxX = shipX + (matrixRight - shipX) * litExtension.value;
     const k = (Math.PI * 2) / wavelength;
     for (let c = 0; c < cols; c++) {
       const x = MATRIX_PAD + c * CELL + CELL / 2;
-      if (x > shipX) continue;
+      if (x > litMaxX) continue;
       const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
       for (let r = startRow; r < rows; r++) {
         const y = r * CELL + CELL / 2;
@@ -123,16 +131,17 @@ export function BoatVoyage({ current }: Props) {
       }
     }
     return p;
-  }, [cols, rows, boatUsable, baseY, wavelength, startRow]);
+  }, [cols, rows, boatUsable, baseY, wavelength, startRow, matrixRight]);
 
   const litFuturePath = useDerivedValue(() => {
     const p = Skia.Path.Make();
     if (cols === 0 || rows === 0) return p;
     const shipX = BOAT_PAD + boatUsable * progress.value;
+    const litMaxX = shipX + (matrixRight - shipX) * litExtension.value;
     const k = (Math.PI * 2) / wavelength;
     for (let c = 0; c < cols; c++) {
       const x = MATRIX_PAD + c * CELL + CELL / 2;
-      if (x <= shipX) continue;
+      if (x <= litMaxX) continue;
       const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
       for (let r = startRow; r < rows; r++) {
         const y = r * CELL + CELL / 2;
@@ -140,26 +149,7 @@ export function BoatVoyage({ current }: Props) {
       }
     }
     return p;
-  }, [cols, rows, boatUsable, baseY, wavelength, startRow]);
-
-  // Surface highlight — the topmost ~SURFACE_THICK px of submerged dots,
-  // rendered extra-bright. This makes the wave crest pop against the body.
-  const surfacePath = useDerivedValue(() => {
-    const p = Skia.Path.Make();
-    if (cols === 0 || rows === 0) return p;
-    const k = (Math.PI * 2) / wavelength;
-    for (let c = 0; c < cols; c++) {
-      const x = MATRIX_PAD + c * CELL + CELL / 2;
-      const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
-      for (let r = startRow; r < rows; r++) {
-        const y = r * CELL + CELL / 2;
-        if (y >= topY && y - topY <= SURFACE_THICK) {
-          p.addCircle(x, y, DOT_R_SURFACE);
-        }
-      }
-    }
-    return p;
-  }, [cols, rows, baseY, wavelength, startRow]);
+  }, [cols, rows, boatUsable, baseY, wavelength, startRow, matrixRight]);
 
   // ─────────── ship ───────────
   // Hull bottom locks to topY(shipX) — strictly on the surface, never above
@@ -218,22 +208,16 @@ export function BoatVoyage({ current }: Props) {
             {/* dim background grid (sky / above water) */}
             <Path path={gridPath} color={DIM_DOT} />
 
-            {/* future ocean — dimmer body, no halo */}
+            {/* future ocean — dimmer body, no halo (cheap, no blur pass) */}
             <Path path={litFuturePath} color={GOLD_FUTURE} opacity={0.55} />
 
-            {/* past ocean — outer wide glow halo (the lit wake) */}
-            <Path path={litPastPath} color={GOLD} opacity={0.85}>
-              <BlurMask blur={9} style="solid" />
+            {/* past ocean — single blur pass for the glow */}
+            <Path path={litPastPath} color={GOLD} opacity={0.7}>
+              <BlurMask blur={5} style="solid" />
             </Path>
 
-            {/* past ocean — bright body fill */}
+            {/* past ocean — bright body fill (sharp dots over the glow) */}
             <Path path={litPastPath} color={GOLD_BRIGHT} />
-
-            {/* surface crest — extra glow on the topmost wave row */}
-            <Path path={surfacePath} color={GOLD_CORE} opacity={0.95}>
-              <BlurMask blur={3} style="solid" />
-            </Path>
-            <Path path={surfacePath} color={GOLD_CORE} />
           </Canvas>
         )}
 

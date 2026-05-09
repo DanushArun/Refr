@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
 import { Phrase } from '../../utils/haptics';
 import { MatchArc } from './MatchArc';
@@ -56,6 +57,17 @@ interface EndorserCardProps {
   stackIndex: number;
   headProgress: SharedValue<number>;
   entryFrom: EntryFrom;
+  /** Number to render on the card's clip-on tag — "{n} swipes left." Stable
+   *  per card identity (not per stack position) so the count belongs to the
+   *  card, not the slot. */
+  swipesRemaining: number;
+  /** When true and this is the top card, render the undo affordance as a
+   *  circular button attached to the left edge of the swipes-left pill. */
+  canUndo?: boolean;
+  onUndo?: () => void;
+  /** Fires the moment a swipe commits (start of fly-off). Lets the parent
+   *  fire reactions (celebration, etc.) in lock-step with the card's exit. */
+  onCommitStart?: (direction: SwipeDirection) => void;
   onSwiped: (direction: SwipeDirection) => void;
   onTap?: () => void;
   registerSwipe?: (cmd: SwipeCommand) => void;
@@ -67,6 +79,10 @@ export function EndorserCard({
   stackIndex,
   headProgress,
   entryFrom,
+  swipesRemaining,
+  canUndo = false,
+  onUndo,
+  onCommitStart,
   onSwiped,
   onTap,
   registerSwipe,
@@ -99,6 +115,10 @@ export function EndorserCard({
     (direction: SwipeDirection) => onSwipedRef.current(direction),
     [],
   );
+  // Same ref pattern for onCommitStart so the imperative path always sees the
+  // latest handler.
+  const onCommitStartRef = useRef(onCommitStart);
+  onCommitStartRef.current = onCommitStart;
 
   /**
    * Drives the off-screen fly animation, regardless of trigger (gesture vs.
@@ -111,6 +131,10 @@ export function EndorserCard({
       const target = direction === 'request' ? FLY_OFF_X : -FLY_OFF_X;
       if (direction === 'request') playRequest();
       else playPass();
+      // Fire the commit-start reaction NOW (in lock-step with haptic + card
+      // motion) — not at the end of the 220ms fly-off. Without this the
+      // celebration burst would land after the card has already left.
+      onCommitStartRef.current?.(direction);
       // Keep the user-visible vertical drift through the fly-off so the card
       // arcs out instead of sliding flat — small but tactile.
       const exitDriftY = translateY.value + 28;
@@ -271,27 +295,47 @@ export function EndorserCard({
    * user's vertical drift.
    */
   const topStyle = useAnimatedStyle(() => {
+    // Residual back-stack transform — when a card is promoted from a back
+    // slot, stackValue springs from its old index → 0. We read that and fade
+    // the stack offset/scale/rotate/opacity in lock-step so the card SLIDES
+    // smoothly into the top slot instead of snapping. Without this, the
+    // moment isTop flips true, the card jumps from Y≈6 → 0, scale 0.95 → 1,
+    // opacity 0.88 → 1.
+    const s = stackValue.value;
+    const residualY = s * 14;
+    const residualX = interpolate(s, [0, 1, 2], [0, -22, 22], Extrapolation.CLAMP);
+    const residualRotateDeg = interpolate(s, [0, 1, 2], [0, -4, 4], Extrapolation.CLAMP);
+    const residualScale = 1 - s * 0.05;
+    const residualOpacity = interpolate(s, [0, 1, 2], [1, 0.88, 0.62], Extrapolation.CLAMP);
+    // Carry the headProgress-driven "rise" so this frame is continuous with
+    // the previous backStyle frame. The rise springs to 0 alongside
+    // stackValue once topId changes.
+    const rise = Math.abs(headProgress.value) * (s > 0.05 ? 1 : 0);
+    const yWithRise = residualY - rise * BACK_RISE_TRANSLATE_Y;
+    const scaleWithRise = residualScale + rise * BACK_RISE_SCALE;
+
+    // Gesture transforms — only visible once the residual has settled.
     const rotate = interpolate(
       translateX.value,
       [-WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2],
       [-10, 0, 10],
       Extrapolation.CLAMP,
     );
-    // Slight grow when committed past threshold so the card "lifts off" the
-    // deck before flying — feels purposeful rather than slid.
-    const scale = interpolate(
+    const gestureScale = interpolate(
       Math.abs(translateX.value),
       [0, COMMIT_THRESHOLD, COMMIT_THRESHOLD * 1.3],
       [1, 1.015, 1.025],
       Extrapolation.CLAMP,
     );
+
     return {
       transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotate}deg` },
-        { scale },
+        { translateX: translateX.value + residualX },
+        { translateY: translateY.value + yWithRise },
+        { rotate: `${rotate + residualRotateDeg}deg` },
+        { scale: gestureScale * scaleWithRise },
       ],
+      opacity: residualOpacity,
     };
   });
 
@@ -359,6 +403,40 @@ export function EndorserCard({
             pointerEvents="none"
           />
         </View>
+
+        {/**
+          * Clip-on cluster — counter pill plus an optional undo circle button
+          * attached to its left. Rendered ONLY on the top card so back-of-deck
+          * preview cards stay clean (no pill peek-through). The cluster is a
+          * child of cardWrapper, so it inherits every transform applied to
+          * the top card.
+          */}
+        {isTop && (
+          <View
+            style={styles.clipMount}
+            pointerEvents={canUndo ? 'box-none' : 'none'}
+          >
+            <View style={styles.clipCluster}>
+              {canUndo && onUndo && (
+                <Pressable
+                  onPress={onUndo}
+                  hitSlop={8}
+                  style={({ pressed }) => [
+                    styles.undoCircle,
+                    pressed && styles.undoCirclePressed,
+                  ]}
+                >
+                  <Ionicons name="arrow-undo" size={14} color={colors.gold} />
+                </Pressable>
+              )}
+              <View style={styles.clipPill}>
+                <Text style={styles.clipText}>
+                  {swipesRemaining} {swipesRemaining === 1 ? 'SWIPE LEFT' : 'SWIPES LEFT'}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
       </Animated.View>
     </GestureDetector>
   );
@@ -660,5 +738,59 @@ const styles = StyleSheet.create({
   stackPlate: {
     flex: 1,
     backgroundColor: '#7A5F2E',
+  },
+
+  /* Clip-on cluster — undo circle (optional) + counter pill anchored to the
+     card's bottom edge so it travels with the card during gestures and
+     stack-promotions. */
+  clipMount: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: -14,
+    alignItems: 'center',
+  },
+  clipCluster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  undoCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(10, 31, 68, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.40)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  undoCirclePressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.94 }],
+  },
+  clipPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(10, 31, 68, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.40)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  clipText: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 10.5,
+    color: '#E8BD58',
+    letterSpacing: 1.2,
   },
 });

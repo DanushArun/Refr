@@ -1,11 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeOut,
-} from 'react-native-reanimated';
 import { Phrase } from '../utils/haptics';
 import { SwipeDeck, type SwipeDeckHandle } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
@@ -40,24 +35,37 @@ export function DiscoverScreen() {
   // tap-to-act buttons are gone (swipe is the only commit path).
   const deckRef = useRef<SwipeDeckHandle>(null);
 
-  const commitSwipe = useCallback(
+  /**
+   * Fires the moment a swipe commits (start of the 220ms fly-off) — kept tight
+   * to the gesture so the celebration burst overlaps with the card's exit
+   * instead of landing after it. Records the swipe API call here too; deck
+   * advance happens separately when the fly-off completes.
+   */
+  const handleSwipeCommitStart = useCallback(
     (card: EndorserCard, direction: 'request' | 'pass') => {
-      if (direction === 'request') {
-        referralsApi
-          .recordSeekerSwipe(
-            {
-              id: card.id,
-              name: card.name,
-              companyId: card.companyId,
-              companyName: card.companyName,
-              jobTitle: card.jobTitle,
-            },
-            `Hi ${card.name.split(' ')[0]}, saw your profile — would love an endorsement for ${card.companyName}.`,
-          )
-          .catch(() => {});
-        // Fire the full Skia celebration. Phrase.match() runs from inside it.
-        setCelebrationTrigger(Date.now());
-      }
+      if (direction !== 'request') return;
+      referralsApi
+        .recordSeekerSwipe(
+          {
+            id: card.id,
+            name: card.name,
+            companyId: card.companyId,
+            companyName: card.companyName,
+            jobTitle: card.jobTitle,
+          },
+          `Hi ${card.name.split(' ')[0]}, saw your profile — would love an endorsement for ${card.companyName}.`,
+        )
+        .catch(() => {});
+      // Fire the full Skia celebration. Phrase.match() runs from inside it.
+      setCelebrationTrigger(Date.now());
+    },
+    [],
+  );
+
+  const commitSwipe = useCallback(
+    (_card: EndorserCard, _direction: 'request' | 'pass') => {
+      // Deck-pointer advance only — the user-facing reaction (celebration +
+      // API call) already fired in handleSwipeCommitStart at gesture commit.
       setIndex((i) => i + 1);
     },
     [],
@@ -75,10 +83,15 @@ export function DiscoverScreen() {
 
   const handleExpandedCommit = useCallback(
     (direction: 'request' | 'pass') => {
-      if (expandedCard) commitSwipe(expandedCard, direction);
+      if (expandedCard) {
+        // Same two-phase shape as the gesture path: commit-start fires the
+        // celebration + API call, then commitSwipe advances the deck.
+        handleSwipeCommitStart(expandedCard, direction);
+        commitSwipe(expandedCard, direction);
+      }
       setExpandedCard(null);
     },
-    [expandedCard, commitSwipe],
+    [expandedCard, commitSwipe, handleSwipeCommitStart],
   );
 
   /**
@@ -152,6 +165,7 @@ export function DiscoverScreen() {
             items={cards}
             index={index}
             keyOf={(c) => c.id}
+            onSwipeCommitStart={handleSwipeCommitStart}
             onSwipe={commitSwipe}
             onCardTap={handleCardTap}
             onRefresh={handleRefresh}
@@ -165,6 +179,7 @@ export function DiscoverScreen() {
               stackIndex,
               headProgress,
               entryFrom,
+              onCommitStart,
               onSwiped,
               onTap,
               registerSwipe,
@@ -175,6 +190,13 @@ export function DiscoverScreen() {
                 stackIndex={stackIndex}
                 headProgress={headProgress}
                 entryFrom={entryFrom}
+                // Each card owns its own count: the swipes-remaining value
+                // for the moment when this card becomes top. Stable per card
+                // identity (cards.length minus its absolute queue position).
+                swipesRemaining={cards.length - (index + stackIndex)}
+                canUndo={canUndo}
+                onUndo={() => deckRef.current?.undo()}
+                onCommitStart={onCommitStart}
                 onSwiped={onSwiped}
                 onTap={onTap}
                 registerSwipe={registerSwipe}
@@ -182,34 +204,8 @@ export function DiscoverScreen() {
             )}
           />
 
-          {/**
-            * Undo affordance only — Pass and Endorse are gesture-only so the
-            * deck stays clean. Undo fades in when there is history to rewind
-            * and disappears otherwise.
-            */}
-          {remainingSwipes > 0 && canUndo && (
-            <Animated.View
-              style={styles.actionBar}
-              entering={FadeIn.duration(220).easing(Easing.out(Easing.cubic))}
-              exiting={FadeOut.duration(160)}
-            >
-              <Pressable
-                onPress={() => deckRef.current?.undo()}
-                style={({ pressed }) => [
-                  styles.actionBtn,
-                  styles.undoBtn,
-                  pressed && styles.actionBtnPressed,
-                ]}
-                hitSlop={8}
-              >
-                <Ionicons name="arrow-undo" size={20} color={colors.gold} />
-              </Pressable>
-            </Animated.View>
-          )}
-
-          <View style={styles.remainingBadge}>
-            <Text style={styles.remainingText}>{remainingSwipes} remaining swipes</Text>
-          </View>
+          {/* Undo lives on the top card itself — attached to the left of
+              the swipes-left pill — so the floating action bar is gone. */}
         </View>
 
       </SafeAreaView>
@@ -299,54 +295,5 @@ const styles = StyleSheet.create({
     // Reserve space below the deck for the action bar + remaining badge +
     // floating tab bar (84pt). Keeps cards from bleeding into the chrome.
     paddingBottom: 116,
-  },
-  remainingBadge: {
-    position: 'absolute',
-    bottom: 158,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(10, 31, 68, 0.85)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.25)',
-  },
-  remainingText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 11,
-    color: colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  /* Undo affordance — centered above the floating tab bar, visible only when
-     there is a swipe to rewind. */
-  actionBar: {
-    position: 'absolute',
-    bottom: 110,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.30,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  actionBtnPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.94 }],
-  },
-  undoBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(10, 31, 68, 0.85)',
-    borderColor: colors.goldDim,
   },
 });

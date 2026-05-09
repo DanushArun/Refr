@@ -45,6 +45,12 @@ export interface SwipeDeckRenderArgs<T> {
   /** When non-null, the top card should enter from this side and settle to
    *  center. Drives the post-undo restore animation. */
   entryFrom: EntryFrom;
+  /** Fires the moment the top card commits to a swipe (start of fly-off),
+   *  not when fly-off completes. Use for immediate reactions like
+   *  celebrations so visuals stay in lock-step with the gesture. */
+  onCommitStart?: (direction: SwipeDirection) => void;
+  /** Fires when the fly-off animation completes. Parent should advance the
+   *  deck pointer here. */
   onSwiped: (direction: SwipeDirection) => void;
   onTap?: () => void;
   /** Top card calls this in its mount effect to register its imperative swipe
@@ -68,7 +74,11 @@ interface SwipeDeckProps<T> {
   index: number;
   keyOf: (item: T) => string;
   renderCard: (args: SwipeDeckRenderArgs<T>) => ReactElement;
-  /** Called when a gesture commits. Parent should record the action and advance. */
+  /** Fires immediately when a swipe commits (start of fly-off). Use for
+   *  reactions that should overlap with the card's exit animation
+   *  (celebration, etc.). */
+  onSwipeCommitStart?: (item: T, direction: SwipeDirection) => void;
+  /** Called when fly-off completes. Parent should record the action and advance. */
   onSwipe: (item: T, direction: SwipeDirection) => void;
   /** Called when top card is tapped (not dragged). */
   onCardTap?: (item: T) => void;
@@ -90,6 +100,7 @@ function SwipeDeckInner<T>(
     index,
     keyOf,
     renderCard,
+    onSwipeCommitStart,
     onSwipe,
     onCardTap,
     onRefresh,
@@ -185,6 +196,14 @@ function SwipeDeckInner<T>(
     [items, index, handleSwipeCommit],
   );
 
+  const handleCommitStart = useCallback(
+    (direction: SwipeDirection) => {
+      const item = items[index];
+      if (item && onSwipeCommitStart) onSwipeCommitStart(item, direction);
+    },
+    [items, index, onSwipeCommitStart],
+  );
+
   const handleTap = useCallback(() => {
     const item = items[index];
     if (item && onCardTap) onCardTap(item);
@@ -255,6 +274,7 @@ function SwipeDeckInner<T>(
               stackIndex,
               headProgress,
               entryFrom: stackIndex === 0 ? entryFrom : null,
+              onCommitStart: stackIndex === 0 ? handleCommitStart : undefined,
               onSwiped: handleSwiped,
               onTap: stackIndex === 0 ? handleTap : undefined,
               registerSwipe: stackIndex === 0 ? registerSwipe : undefined,

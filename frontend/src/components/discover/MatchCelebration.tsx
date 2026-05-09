@@ -1,89 +1,59 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Dimensions, StyleSheet, View } from 'react-native';
-import {
-  BlurMask,
-  Canvas,
-  Circle,
-  Group,
-} from '@shopify/react-native-skia';
-import {
+import React, { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import Animated, {
   Easing,
   runOnJS,
-  useDerivedValue,
+  useAnimatedStyle,
   useSharedValue,
+  withDelay,
+  withSpring,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
 import { Phrase } from '../../utils/haptics';
-
-const { width: W, height: H } = Dimensions.get('window');
 
 interface MatchCelebrationProps {
   /** When this prop changes from null to a number, the celebration fires once. */
   trigger: number | null;
-  /** Origin point for the burst. Defaults to screen center. */
-  originX?: number;
-  originY?: number;
   onComplete?: () => void;
 }
 
-interface Particle {
-  angle: number;
-  speed: number;
-  size: number;
-  layer: 0 | 1 | 2;
-  driftX: number;
-  spin: number;
-  ttl: number; // 0..1, how long it lives within the 1.4s envelope
-}
+const NAVY = '#0A1F44';
+const GOLD = '#D4A744';
+const GOLD_BRIGHT = '#FFD56A';
+const CREAM = '#F5F1E8';
 
-const COLORS = [
-  '#FFD56A', // bright gold (peak)
-  '#E8BD58', // sailor gold
-  '#D4A744', // brand accent gold
-  '#F5F1E8', // cream
-  '#FFFFFF', // pure white spark
-];
+const TOTAL_MS = 1300;
 
 /**
- * Match celebration — a 100-particle Skia burst that fires on right-swipe
- * commit. The single biggest emotional payoff in the app.
+ * Endorsement Seal — premium, branded, *fast* match celebration.
  *
- * Three particle layers:
- *   Layer 0 (40 particles) — large sparks, slow, gold (the headline)
- *   Layer 1 (35 particles) — medium gold + cream confetti
- *   Layer 2 (25 particles) — fast pure-white pinpricks
+ * Three elements, three Animated.Views, zero Skia. Plays in ~1.3s but the
+ * payoff lands by 280ms.
  *
- * Each particle has a deterministic trajectory (angle + speed + drift +
- * gravity), so the burst is reproducible per render but feels organic.
+ *   t=0…140ms    Flash bloom — gold radial pulse punches outward and dies
+ *   t=60…320ms   Seal stamps in — navy/gold disc springs from scale 0 with a
+ *                slight rotation, like a notary press hitting paper
+ *   t=180…820ms  Wake ring — clean gold ring expands outward from the seal
+ *                and fades, no fill — the shockwave from the stamp landing
+ *   t=900…1300ms Fade — seal recedes
  *
- * Lifecycle ~1400ms total:
- *   t=0–80ms      crown blooms (fast outward, full opacity)
- *   t=80–600ms    particles arc, gravity engages
- *   t=600–1400ms  fade + decay
+ * Performance: 3 Animated.Views with native-driven transforms. No per-frame
+ * worklet loops over 100 particles, no BlurMask. Replaces the previous
+ * 100-particle Skia burst that was causing JS-thread lag on swipe.
  */
-export function MatchCelebration({
-  trigger,
-  originX = W / 2,
-  originY = H * 0.42,
-  onComplete,
-}: MatchCelebrationProps) {
+export function MatchCelebration({ trigger, onComplete }: MatchCelebrationProps) {
+  // Master timer 0..1 over TOTAL_MS — drives flash, ring, and exit fade.
   const t = useSharedValue(0);
+  // Seal entrance — independent spring so the stamp feels punchy + elastic.
+  const sealEnter = useSharedValue(0);
+  // 1 while the celebration is mounted; falls to 0 only at unmount.
   const visible = useSharedValue(0);
 
   const lastTrigger = useRef<number | null>(null);
-  // Keep the heavy Skia tree mounted only while the burst is animating.
-  // Stops the canvas from rendering anything (incl. zero-radius circles
-  // and 60px halos at 0 opacity) while idle — those were producing visual
-  // artifacts on some renderers.
   const [active, setActive] = useState(false);
-  // OS-level Reduce Motion preference. When true we skip the particle
-  // shower and play only the crown halo + haptic — preserves the emotional
-  // beat without the vestibular load.
   const [reduceMotion, setReduceMotion] = useState(false);
 
-  const particles = useMemo<Particle[]>(() => buildParticles(), []);
-
+  // OS-level Reduce Motion — respect it by playing a shorter, no-bounce variant.
   useEffect(() => {
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled()
@@ -107,15 +77,14 @@ export function MatchCelebration({
     if (trigger === null || trigger === lastTrigger.current) return;
     lastTrigger.current = trigger;
 
-    // The full musical match cadence runs in parallel
     Phrase.match();
 
     setActive(true);
     visible.value = 1;
     t.value = 0;
-    // Reduced-motion mode runs a shorter envelope (the crown bloom is the
-    // only visible piece; particles are skipped entirely below).
-    const duration = reduceMotion ? 700 : 1400;
+    sealEnter.value = 0;
+
+    const duration = reduceMotion ? 700 : TOTAL_MS;
     t.value = withTiming(
       1,
       { duration, easing: Easing.out(Easing.cubic) },
@@ -127,189 +96,153 @@ export function MatchCelebration({
         }
       },
     );
-  }, [trigger, onComplete, t, visible, reduceMotion]);
+
+    if (reduceMotion) {
+      sealEnter.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.cubic) });
+    } else {
+      sealEnter.value = withDelay(
+        60,
+        withSpring(1, {
+          damping: 9,
+          stiffness: 220,
+          mass: 0.7,
+          overshootClamping: false,
+        }),
+      );
+    }
+  }, [trigger, onComplete, reduceMotion, t, sealEnter, visible]);
+
+  // ─── Flash bloom ───
+  // A bright gold disc that punches outward in the first ~140ms, then dies.
+  const flashStyle = useAnimatedStyle(() => {
+    const local = Math.min(1, t.value / 0.11);
+    const scale = 0.4 + local * 5.6; // 0.4 → 6
+    const opacity = (1 - local) * visible.value;
+    return { opacity, transform: [{ scale }] };
+  });
+
+  // ─── Wake ring ───
+  // Hollow gold ring expanding outward — the shockwave from the seal landing.
+  const ringStyle = useAnimatedStyle(() => {
+    const local = Math.max(0, Math.min(1, (t.value - 0.13) / 0.5));
+    const scale = local * 7;
+    const opacity = (1 - local) * 0.9 * visible.value;
+    return { opacity, transform: [{ scale }] };
+  });
+
+  // ─── Seal stamp ───
+  // Navy ring + gold disc + cream inner border + "ENDORSED" mark.
+  // Springs in with elastic bounce, slight tilt that settles straight.
+  const sealStyle = useAnimatedStyle(() => {
+    const enter = sealEnter.value;
+    // Tilt -8° → 0° as it lands
+    const rotate = (1 - Math.min(1, enter)) * -8;
+    const enterOpacity = Math.min(1, enter * 2);
+    // Late fade-out so the seal recedes gracefully
+    const exitT = Math.max(0, (t.value - 0.72) / 0.28);
+    const exitOpacity = 1 - exitT;
+    const exitScale = 1 - exitT * 0.06;
+    return {
+      opacity: enterOpacity * exitOpacity * visible.value,
+      transform: [
+        { scale: enter * exitScale },
+        { rotate: `${rotate}deg` },
+      ],
+    };
+  });
 
   if (!active) return null;
 
   return (
     <View style={styles.overlay} pointerEvents="none">
-      <Canvas style={StyleSheet.absoluteFillObject}>
-        {/* Crown bloom — a single bright halo at origin that pulses out and dies */}
-        <CrownBloom t={t} ox={originX} oy={originY} visible={visible} />
+      <Animated.View style={[styles.flash, flashStyle]} />
 
-        {/* Three particle layers, ordered back-to-front */}
-        <Group>
-          {particles
-            .filter((p) => p.layer === 0)
-            .map((p, i) => (
-              <ParticleDot
-                key={`l0-${i}`}
-                particle={p}
-                t={t}
-                visible={visible}
-                originX={originX}
-                originY={originY}
-                blur={4}
-              />
-            ))}
-        </Group>
-        <Group>
-          {particles
-            .filter((p) => p.layer === 1)
-            .map((p, i) => (
-              <ParticleDot
-                key={`l1-${i}`}
-                particle={p}
-                t={t}
-                visible={visible}
-                originX={originX}
-                originY={originY}
-                blur={2}
-              />
-            ))}
-        </Group>
-        <Group>
-          {particles
-            .filter((p) => p.layer === 2)
-            .map((p, i) => (
-              <ParticleDot
-                key={`l2-${i}`}
-                particle={p}
-                t={t}
-                visible={visible}
-                originX={originX}
-                originY={originY}
-                blur={1}
-              />
-            ))}
-        </Group>
-      </Canvas>
+      <Animated.View style={[styles.ring, ringStyle]} />
+
+      <Animated.View style={[styles.sealWrap, sealStyle]}>
+        <View style={styles.sealOuter}>
+          <View style={styles.sealInner}>
+            <Text style={styles.sealMark}>★</Text>
+            <Text style={styles.sealLabel}>ENDORSED</Text>
+          </View>
+        </View>
+      </Animated.View>
     </View>
   );
 }
 
-interface DotProps {
-  particle: Particle;
-  t: SharedValue<number>;
-  visible: SharedValue<number>;
-  originX: number;
-  originY: number;
-  blur: number;
-}
-
-function ParticleDot({ particle, t, visible, originX, originY, blur }: DotProps) {
-  const color = COLORS[(particle.layer * 7 + Math.round(particle.angle * 7)) % COLORS.length];
-
-  const cx = useDerivedValue(() => {
-    const localT = Math.min(1, t.value / particle.ttl);
-    const drift = particle.driftX * localT;
-    return originX + Math.cos(particle.angle) * particle.speed * localT + drift;
-  });
-  const cy = useDerivedValue(() => {
-    const localT = Math.min(1, t.value / particle.ttl);
-    // Gravity term (px/sec²) integrates as t² — feels like real falling sparks
-    const gravity = 380 * localT * localT;
-    return originY + Math.sin(particle.angle) * particle.speed * localT + gravity;
-  });
-  const radius = useDerivedValue(() => {
-    const localT = Math.min(1, t.value / particle.ttl);
-    // Particles bloom in the first 12% of life, then shrink
-    const grow = Math.min(1, localT / 0.12);
-    const shrink = 1 - localT * 0.7;
-    return particle.size * grow * shrink * visible.value;
-  });
-  const opacity = useDerivedValue(() => {
-    const localT = Math.min(1, t.value / particle.ttl);
-    // Hold full opacity through 70%, then ease out
-    if (localT < 0.7) return visible.value;
-    const fade = 1 - (localT - 0.7) / 0.3;
-    return Math.max(0, fade) * visible.value;
-  });
-
-  return (
-    <Circle cx={cx} cy={cy} r={radius} color={color} opacity={opacity}>
-      <BlurMask blur={blur} style="solid" />
-    </Circle>
-  );
-}
-
-function CrownBloom({
-  t,
-  ox,
-  oy,
-  visible,
-}: {
-  t: SharedValue<number>;
-  ox: number;
-  oy: number;
-  visible: SharedValue<number>;
-}) {
-  // A wide, soft halo that snaps out in the first ~120ms and fades.
-  const r = useDerivedValue(() => {
-    const k = Math.min(1, t.value / 0.12);
-    return 60 + k * 180;
-  });
-  const opacity = useDerivedValue(() => {
-    if (t.value < 0.12) return 0.55 * visible.value;
-    const fade = 1 - (t.value - 0.12) / 0.45;
-    return Math.max(0, fade) * 0.55 * visible.value;
-  });
-
-  return (
-    <Circle cx={ox} cy={oy} r={r} color="rgba(232, 189, 88, 0.55)" opacity={opacity}>
-      <BlurMask blur={36} style="solid" />
-    </Circle>
-  );
-}
-
-function buildParticles(): Particle[] {
-  const out: Particle[] = [];
-
-  // Layer 0 — big slow gold sparks (40)
-  for (let i = 0; i < 40; i++) {
-    const angle = (i / 40) * Math.PI * 2 + (i * 0.131);
-    out.push({
-      angle,
-      speed: 90 + ((i * 19) % 50),  // 90..140
-      size: 4 + ((i * 5) % 3),       // 4..6
-      layer: 0,
-      driftX: ((i * 11) % 30) - 15,  // ±15
-      spin: 0,
-      ttl: 0.85 + ((i * 3) % 15) / 100,  // 0.85..1.0
-    });
-  }
-
-  // Layer 1 — medium gold + cream confetti (35)
-  for (let i = 0; i < 35; i++) {
-    const angle = (i / 35) * Math.PI * 2 + (i * 0.218) + Math.PI / 6;
-    out.push({
-      angle,
-      speed: 130 + ((i * 23) % 80),  // 130..210
-      size: 2.5 + ((i * 7) % 3) * 0.4,
-      layer: 1,
-      driftX: ((i * 17) % 40) - 20,
-      spin: 0,
-      ttl: 0.65 + ((i * 5) % 25) / 100,
-    });
-  }
-
-  // Layer 2 — fast white pinpricks (25)
-  for (let i = 0; i < 25; i++) {
-    const angle = (i / 25) * Math.PI * 2 + (i * 0.31);
-    out.push({
-      angle,
-      speed: 200 + ((i * 31) % 120),  // 200..320
-      size: 1.5 + ((i * 3) % 2) * 0.3,
-      layer: 2,
-      driftX: 0,
-      spin: 0,
-      ttl: 0.45 + ((i * 7) % 25) / 100,
-    });
-  }
-
-  return out;
-}
+const SEAL = 156;
+const SEAL_INNER = 132;
 
 const styles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flash: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: GOLD_BRIGHT,
+    // Soft halo on iOS (Android falls back to elevation glow)
+    shadowColor: GOLD_BRIGHT,
+    shadowOpacity: 0.9,
+    shadowRadius: 40,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 24,
+  },
+  ring: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2.5,
+    borderColor: GOLD_BRIGHT,
+    backgroundColor: 'transparent',
+  },
+  sealWrap: {
+    width: SEAL,
+    height: SEAL,
+    borderRadius: SEAL / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.45,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 22,
+  },
+  sealOuter: {
+    width: SEAL,
+    height: SEAL,
+    borderRadius: SEAL / 2,
+    backgroundColor: NAVY,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sealInner: {
+    width: SEAL_INNER,
+    height: SEAL_INNER,
+    borderRadius: SEAL_INNER / 2,
+    backgroundColor: GOLD,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: CREAM,
+    gap: 2,
+  },
+  sealMark: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 38,
+    lineHeight: 40,
+    color: NAVY,
+  },
+  sealLabel: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 11,
+    letterSpacing: 2.5,
+    color: NAVY,
+  },
 });
