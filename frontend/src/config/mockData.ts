@@ -59,17 +59,17 @@ export interface DemoReferrer {
 }
 
 export const DEMO_REFERRERS: DemoReferrer[] = [
-  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, location: 'Bangalore', endorsementScore: 86, totalReferrals: 28, successfulHires: 9 },
+  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, location: 'Bengaluru', endorsementScore: 86, totalReferrals: 28, successfulHires: 9 },
   { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, location: 'Hyderabad', endorsementScore: 63, totalReferrals: 19, successfulHires: 6 },
-  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, location: 'Bangalore', endorsementScore: 47, totalReferrals: 12, successfulHires: 3 },
+  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, location: 'Hyderabad', endorsementScore: 47, totalReferrals: 12, successfulHires: 3 },
   { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, location: 'Pune', endorsementScore: 41, totalReferrals: 15, successfulHires: 3 },
   { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, location: 'Mumbai', endorsementScore: 38, totalReferrals: 10, successfulHires: 3 },
-  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, location: 'Bangalore', endorsementScore: 34, totalReferrals: 10, successfulHires: 2 },
-  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, location: 'Bangalore', endorsementScore: 29, totalReferrals: 8, successfulHires: 2 },
-  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, location: 'Bangalore', endorsementScore: 28, totalReferrals: 9, successfulHires: 2 },
-  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, location: 'Bangalore', endorsementScore: 22, totalReferrals: 7, successfulHires: 1 },
+  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, location: 'Pune', endorsementScore: 34, totalReferrals: 10, successfulHires: 2 },
+  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, location: 'NCR', endorsementScore: 29, totalReferrals: 8, successfulHires: 2 },
+  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, location: 'Mumbai', endorsementScore: 28, totalReferrals: 9, successfulHires: 2 },
+  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, location: 'Chennai', endorsementScore: 22, totalReferrals: 7, successfulHires: 1 },
   { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, location: 'Hyderabad', endorsementScore: 19, totalReferrals: 6, successfulHires: 1 },
-  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, location: 'Bangalore', endorsementScore: 17, totalReferrals: 5, successfulHires: 1 },
+  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, location: 'Bengaluru', endorsementScore: 17, totalReferrals: 5, successfulHires: 1 },
   { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, location: 'Remote', endorsementScore: 14, totalReferrals: 4, successfulHires: 1 },
 ];
 

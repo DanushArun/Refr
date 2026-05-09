@@ -322,7 +322,7 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
   // experience. The cream zone splits horizontally between target companies
   // (left) and the match arc (right), mirroring the seeker-side card's
   // referrer/match split.
-  const primaryTarget = card.targetCompanies[0] ?? 'Bangalore';
+  const primaryTarget = card.targetCompanies[0] ?? 'India';
   const brand = brandForName(primaryTarget);
 
   return (

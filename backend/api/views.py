@@ -565,7 +565,7 @@ def chat_send_message(request, conversation_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def reputation_me(request):
-    """Authenticated referrer's own Kingmaker profile."""
+    """Authenticated endorser's own Endorsement Score profile."""
     user = request.user
     try:
         referrer = user.referrer_profile
@@ -591,7 +591,7 @@ def reputation_me(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def reputation_leaderboard(request):
-    """Global or company-scoped Kingmaker leaderboard."""
+    """Global or company-scoped Endorser leaderboard (ranked by Endorsement Score)."""
     company_id = request.query_params.get('companyId')
 
     queryset = ReferrerProfile.objects.select_related('user', 'company').order_by(

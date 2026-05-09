@@ -1,5 +1,5 @@
 """
-Seed the database with realistic Bangalore tech data for local testing.
+Seed the database with realistic Indian tech data for local testing (pan-India).
 
 Usage: python manage.py seed_data
 """
@@ -25,7 +25,7 @@ COMPANIES = [
     {'name': 'Meesho', 'domain': 'meesho.com', 'employee_count_range': '2000-5000'},
     {'name': 'Groww', 'domain': 'groww.in', 'employee_count_range': '1000-5000'},
     {'name': 'Coinbase India', 'domain': 'coinbase.com', 'employee_count_range': '500-1000'},
-    {'name': 'Google Bangalore', 'domain': 'google.com', 'employee_count_range': '10000+'},
+    {'name': 'Google India', 'domain': 'google.com', 'employee_count_range': '10000+'},
     {'name': 'Microsoft IDC', 'domain': 'microsoft.com', 'employee_count_range': '10000+'},
     {'name': 'Atlassian India', 'domain': 'atlassian.com', 'employee_count_range': '2000-5000'},
 ]
@@ -61,7 +61,7 @@ SEEKER_DATA = [
         'skills': ['Python', 'PyTorch', 'TensorFlow', 'Spark', 'SQL', 'MLOps', 'Kubernetes'],
         'years_of_experience': 3,
         'current_company': '',
-        'target_companies': ['Flipkart', 'Swiggy', 'Google Bangalore', 'Meesho'],
+        'target_companies': ['Flipkart', 'Swiggy', 'Google India', 'Meesho'],
         'target_roles': ['ML Engineer', 'Data Scientist', 'Applied Scientist'],
     },
     {
@@ -83,7 +83,7 @@ SEEKER_DATA = [
         'skills': ['Kubernetes', 'Terraform', 'AWS', 'Go', 'Prometheus', 'ArgoCD'],
         'years_of_experience': 5,
         'current_company': '',
-        'target_companies': ['Razorpay', 'Atlassian India', 'Google Bangalore', 'Microsoft IDC'],
+        'target_companies': ['Razorpay', 'Atlassian India', 'Google India', 'Microsoft IDC'],
         'target_roles': ['Platform Engineer', 'SRE', 'Staff Engineer'],
     },
     {
@@ -94,7 +94,7 @@ SEEKER_DATA = [
         'skills': ['C++', 'Python', 'React', 'System Design', 'Distributed Systems'],
         'years_of_experience': 0,
         'current_company': '',
-        'target_companies': ['Google Bangalore', 'Microsoft IDC', 'Atlassian India', 'Razorpay'],
+        'target_companies': ['Google India', 'Microsoft IDC', 'Atlassian India', 'Razorpay'],
         'target_roles': ['Software Engineer', 'Backend Engineer'],
     },
     {
@@ -127,7 +127,7 @@ SEEKER_DATA = [
         'skills': ['Kubernetes', 'Terraform', 'Go', 'Prometheus', 'ArgoCD'],
         'years_of_experience': 6,
         'current_company': 'Uber India',
-        'target_companies': ['Razorpay', 'Atlassian India', 'Google Bangalore'],
+        'target_companies': ['Razorpay', 'Atlassian India', 'Google India'],
         'target_roles': ['Platform Engineer', 'Staff Engineer'],
     },
     {
@@ -149,7 +149,7 @@ SEEKER_DATA = [
         'skills': ['Python', 'PyTorch', 'Spark', 'SQL', 'MLOps'],
         'years_of_experience': 4,
         'current_company': 'InMobi',
-        'target_companies': ['Flipkart', 'Swiggy', 'Google Bangalore'],
+        'target_companies': ['Flipkart', 'Swiggy', 'Google India'],
         'target_roles': ['ML Engineer', 'Applied Scientist'],
     },
     {
@@ -240,7 +240,7 @@ REFERRER_DATA = [
     {
         'display_name': 'Neha Gupta',
         'email': 'neha@google.com',
-        'company': 'Google Bangalore',
+        'company': 'Google India',
         'department': 'Search',
         'job_title': 'Senior Software Engineer',
         'years_at_company': 3,
@@ -339,7 +339,7 @@ COMPANY_INTEL = [
     {
         'company': 'CRED',
         'title': 'What CRED looks for in mobile engineers (insider perspective)',
-        'body': 'Design obsession is not a meme here. Your portfolio matters more than your DSA skills. They actually review your GitHub/Dribbble during the interview. The app team is small (under 30 people) so you will touch everything -- from animations to payment flows. Compensation is top of market for Bangalore.',
+        'body': 'Design obsession is not a meme here. Your portfolio matters more than your DSA skills. They actually review your GitHub/Dribbble during the interview. The app team is small (under 30 people) so you will touch everything -- from animations to payment flows. Compensation is top of market in Indian tech.',
         'tags': ['interview', 'mobile', 'compensation'],
     },
     {
@@ -350,24 +350,24 @@ COMPANY_INTEL = [
     },
     {
         'company': 'PhonePe',
-        'title': 'PhonePe platform team: the best-kept secret in Bangalore',
+        'title': 'PhonePe platform team: the best-kept secret in Indian fintech',
         'body': 'The platform team handles 12 billion+ transactions/year. The scale is genuinely insane. They use a mix of Java and Go, with Kafka handling 50K+ events/second. If you want distributed systems experience that rivals FAANG, this is it. Downside: the codebase is massive and onboarding takes 3-4 months.',
         'tags': ['scale', 'distributed-systems', 'platform'],
     },
     {
-        'company': 'Google Bangalore',
-        'title': 'Google Bangalore vs Google US: the real differences',
-        'body': 'The Bangalore office handles production-critical search infrastructure, not just support work. You get the same codebase access as Mountain View. The L4-L5 promotion bar is identical globally. Main difference: the work-life balance is actually better here -- fewer meetings, more deep work time. TC is lower than US but among the highest in India.',
+        'company': 'Google India',
+        'title': 'Google India vs Google US: the real differences',
+        'body': 'The India office handles production-critical search infrastructure, not just support work. You get the same codebase access as Mountain View. The L4-L5 promotion bar is identical globally. Main difference: the work-life balance is actually better here -- fewer meetings, more deep work time. TC is lower than US but among the highest in India.',
         'tags': ['comparison', 'compensation', 'work-life'],
     },
 ]
 
 EDITORIAL_CONTENT = [
     {
-        'title': 'The Bangalore hiring market in Q2 2026: what the data says',
+        'title': 'The Indian tech hiring market in Q2 2026: what the data says',
         'body': 'Backend and platform engineering roles are up 40% from last quarter. ML/AI hiring has cooled slightly after the initial hype. Fintech companies (Razorpay, PhonePe, Groww) are the most aggressive hirers. Average time-to-hire for senior engineers: 18 days. The referral hire rate remains 3x higher than job board applications.',
         'author': 'REFR Editorial',
-        'tags': ['market-trends', 'hiring', 'bangalore'],
+        'tags': ['market-trends', 'hiring', 'india'],
     },
     {
         'title': 'Why your referral matters more than your resume',
@@ -379,7 +379,7 @@ EDITORIAL_CONTENT = [
 
 
 class Command(BaseCommand):
-    help = 'Seed the database with realistic Bangalore tech data for local testing'
+    help = 'Seed the database with realistic Indian tech data for local testing (pan-India)'
 
     def handle(self, *args, **options):
         self.stdout.write('Seeding database...\n')

@@ -2,7 +2,7 @@ import { buildGalaxy, type GalaxyData, type GalaxyInput } from '../../lib/conste
 
 /**
  * Demo galaxy seed used by the Welcome/Onboarding screens before a user
- * has signed in. Realistic Bangalore tech persona — Danush as the user,
+ * has signed in. Realistic Indian tech persona — Danush as the user,
  * targeting top product companies, with a small set of trusted connections.
  *
  * Once authenticated, callers should pass the real user's profile to buildGalaxy().

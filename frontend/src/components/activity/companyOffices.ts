@@ -55,7 +55,7 @@ const LOCAL_OFFICES: Record<string, ImageSourcePropType> = {
  * swap that one specific entry — don't accept it.
  */
 const STOCK_OFFICE: Record<string, string> = {
-  // ── Bangalore-native fintech / commerce / quick-commerce ─────────────
+  // ── India-based fintech / commerce / quick-commerce ─────────────
   razorpay: U('photo-1556761175-5973dc0f32e7'),    // fintech open desks
   cred:     U('photo-1497366811353-6870744d04b2'), // minimal design floor
   phonepe:  U('photo-1497032628192-86f99bcd76bc'), // fintech corporate building
@@ -69,7 +69,7 @@ const STOCK_OFFICE: Record<string, string> = {
   ola:      U('photo-1497366754035-f200968a6e72'), // mobility loft office
   uber:     U('photo-1431540015161-0bf868a2d407'), // corporate workspace
 
-  // ── Big-tech / SaaS Bangalore offices ────────────────────────────────
+  // ── Big-tech / SaaS India offices ────────────────────────────────
   google:    U('photo-1497366216548-37526070297c'), // open campus floor
   microsoft: U('photo-1497215842964-222b430dc094'), // corporate workspace
   amazon:    U('photo-1531973576160-7125cd663d86'), // corporate hall

@@ -26,7 +26,7 @@ export interface CompanyBrand {
 }
 
 const REGISTRY: Record<string, CompanyBrand> = {
-  // ── Bangalore-native fintech / commerce / quick-commerce ─────────────
+  // ── India-based fintech / commerce / quick-commerce ─────────────
   razorpay: { mark: '◇', tint: '#0E2D6B', tintEnd: '#06133A', accent: '#3D7BFF', text: '#FFFFFF' },
   cred:     { mark: 'C', tint: '#0E0E10', tintEnd: '#000000', accent: '#D9C29B', text: '#F5F1E8' },
   phonepe:  { mark: 'P', tint: '#5F2EEA', tintEnd: '#3A0E97', accent: '#B69CFF', text: '#FFFFFF' },
@@ -46,7 +46,7 @@ const REGISTRY: Record<string, CompanyBrand> = {
   rapido:   { mark: 'R', tint: '#B59100', tintEnd: '#5C4A00', accent: '#FFE066', text: '#0A0A0A' },
   nykaa:    { mark: 'N', tint: '#A21A55', tintEnd: '#530B2A', accent: '#FFB7CE', text: '#FFFFFF' },
 
-  // ── SaaS-native Bangalore ─────────────────────────────────────────────
+  // ── SaaS-native (India) ─────────────────────────────────────────────
   freshworks: { mark: 'F', tint: '#0F2748', tintEnd: '#08152A', accent: '#FF8B0F', text: '#FFFFFF' },
   zoho:       { mark: 'Z', tint: '#A82018', tintEnd: '#570F0B', accent: '#FFB196', text: '#FFFFFF' },
   postman:    { mark: 'P', tint: '#5C1B0A', tintEnd: '#330D04', accent: '#FF6C37', text: '#FFFFFF' },
@@ -55,7 +55,7 @@ const REGISTRY: Record<string, CompanyBrand> = {
   byjus:      { mark: 'B', tint: '#3D0F66', tintEnd: '#1D0734', accent: '#A78BFA', text: '#FFFFFF' },
   vedantu:    { mark: 'V', tint: '#A0185C', tintEnd: '#530B2F', accent: '#FF8FBE', text: '#FFFFFF' },
 
-  // ── Big-tech Bangalore offices ────────────────────────────────────────
+  // ── Big-tech India offices ────────────────────────────────────────
   google:    { mark: 'G', tint: '#1A3D8F', tintEnd: '#0B1E47', accent: '#FBBC04', text: '#FFFFFF' },
   microsoft: { mark: 'M', tint: '#0F4D2A', tintEnd: '#062416', accent: '#7FBA00', text: '#FFFFFF' },
   amazon:    { mark: 'A', tint: '#0F1B2D', tintEnd: '#040912', accent: '#FF9900', text: '#FFFFFF' },

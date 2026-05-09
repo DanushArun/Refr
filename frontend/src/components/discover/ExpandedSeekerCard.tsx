@@ -186,7 +186,7 @@ export function ExpandedSeekerCard({
 
   if (!safe) return null;
 
-  const primaryTarget = safe.targetCompanies[0] ?? 'Bangalore';
+  const primaryTarget = safe.targetCompanies[0] ?? 'India';
   const brand = brandForName(primaryTarget);
 
   return (

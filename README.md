@@ -1,21 +1,29 @@
-# REFR
+# Endorsly (codebase: REFR)
 
-**Professional Intelligence Platform** -- a content-first feed where the natural
-social action is submitting job referrals. Employer-monetised.
+**Professional Intelligence Platform for India** -- a content-first feed where
+the natural social action is submitting job endorsements. Employer-monetised.
 
-REFR combines insider career content (company intelligence, career stories) with
-a referral workflow that connects job seekers to verified employees at top tech
-companies. Referrals aren't a task; they're the social action within a
+Endorsly combines insider career content (company intelligence, career stories)
+with an endorsement workflow that connects job seekers (Seekers) to verified
+employees (Endorsers) at Indian tech companies. The app is pan-India: a Seeker
+can be endorsed for any role anywhere in India, gated only by job-market
+availability. Endorsements aren't a task; they're the social action within a
 doom-scroll feed of insider knowledge.
 
-## Why REFR exists
+> **Naming note:** the public product is **Endorsly** and copy uses
+> *Endorsement / Endorser / Seeker / Endorsement Score*. The codebase is
+> historically named **REFR** and internal data-model identifiers
+> (`Referral`, `referrer`, `kingmaker_score`) reflect that. Do not use
+> "Kingmaker" in any user-facing surface — that term is retired.
+
+## Why Endorsly exists
 
 Referrals account for only 7% of applications but produce 30--50% of hires.
 They're 5x more likely to result in a hire, 55% faster to close, and save
 companies $3K--$7.5K per placement. Yet no platform in India combines trust
 verification, AI matching, swipe UX, gamification, and INR/UPI payments.
 
-REFR fills that gap.
+Endorsly fills that gap.
 
 ## Tech stack
 
@@ -184,7 +192,7 @@ All authenticated endpoints require `Authorization: Bearer <token>`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/v1/reputation/me/` | Referrer's Kingmaker profile |
+| GET | `/api/v1/reputation/me/` | Endorser's Endorsement Score profile |
 | GET | `/api/v1/reputation/leaderboard/?companyId=` | Global or company leaderboard |
 
 ## Data model
@@ -194,7 +202,7 @@ Core entities and their relationships:
 ```
 User (seeker | referrer)
   |-- SeekerProfile   (skills, target companies/roles, resume)
-  |-- ReferrerProfile  (company, department, kingmaker score, verification)
+  |-- ReferrerProfile  (company, department, endorsement score [column: kingmaker_score], verification)
 
 Company (name, domain, logo)
 
@@ -287,7 +295,7 @@ npm run typecheck
 
 | Phase | Timeline | Goal |
 |-------|----------|------|
-| 1 | Weeks 1--4 | Infra + auth + profiles + swipe + chat; one live referral |
+| 1 | Weeks 1--4 | Infra + auth + profiles + swipe + chat; one live endorsement |
 | 2 | Weeks 5--14 | Payments + verification + analytics + App Store; 10 hire-payout loops |
 | 3 | Months 4--9 | AI matching + trust score + gamification + scale |
 | 4 | Months 10--18 | Employer SaaS + ATS integration + API platform |
