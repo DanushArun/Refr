@@ -101,10 +101,17 @@ export function ExpandedEndorserCard({
   };
 
   const handlePass = () => {
+    // Match the deck's gesture haptic so the user gets identical physical
+    // feedback regardless of whether they passed via swipe or tap-in-modal.
+    Phrase.swipePass();
     onPass();
   };
 
   const handleCommit = () => {
+    // Heartbeat phrase — the "I want this" moment. The full match-cadence
+    // celebration fires later from the parent on commit; this is the press
+    // confirmation so the user feels their tap land.
+    Phrase.swipeRequest();
     onCommit();
   };
 

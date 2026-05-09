@@ -153,7 +153,10 @@ export function EarningsScreen() {
           </View>
         </View>
 
-        {/* 2 · PAYOUTS — collapsible dark glass list */}
+        {/* 2 · TIER — cream credit-card with material (Endorsement Score) */}
+        <TierCard score={reputation.endorsementScore} rank={rankPosition} />
+
+        {/* 3 · PAYOUTS — collapsible dark glass list */}
         <View style={styles.section}>
           <Pressable
             onPress={() => {
@@ -197,9 +200,6 @@ export function EarningsScreen() {
             </DarkCard>
           ) : null}
         </View>
-
-        {/* 3 · TIER — cream credit-card with material */}
-        <TierCard score={reputation.endorsementScore} rank={rankPosition} />
 
         {/* 4 · LEADERBOARD — cream credit-card list */}
         <View style={styles.section}>

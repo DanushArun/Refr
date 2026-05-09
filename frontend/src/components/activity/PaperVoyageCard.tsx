@@ -5,20 +5,12 @@ import type { ReferralStatus } from '@refr/shared';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/spacing';
 import { officeImageFor } from './companyOffices';
+import { BoatVoyage } from './BoatVoyage';
 
 const BLACK = '#0F1115';
 const BLACK_70 = 'rgba(15, 17, 21, 0.70)';
 const BLACK_55 = 'rgba(15, 17, 21, 0.55)';
-const BLACK_38 = 'rgba(15, 17, 21, 0.38)';
-const BLACK_18 = 'rgba(15, 17, 21, 0.18)';
 const GOLD = '#C8A24B';
-
-const STAGES: { key: 'matched' | 'submitted' | 'interviewing' | 'hired'; label: string }[] = [
-  { key: 'matched', label: 'MATCHED' },
-  { key: 'submitted', label: 'SUBMITTED' },
-  { key: 'interviewing', label: 'INTERVIEW' },
-  { key: 'hired', label: 'HIRED' },
-];
 
 function stageIndex(status: ReferralStatus): number {
   switch (status) {
@@ -120,23 +112,25 @@ export function PaperVoyageCard({ data }: Props) {
       </View>
 
       <View style={styles.body}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.company} numberOfLines={1}>{data.companyName}</Text>
-            <Text style={styles.role} numberOfLines={1}>{data.role}</Text>
+        <View style={styles.bodyTop}>
+          <View style={styles.headerRow}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.company} numberOfLines={1}>{data.companyName}</Text>
+              <Text style={styles.role} numberOfLines={1}>{data.role}</Text>
+            </View>
+            <StatusPill meta={meta} />
           </View>
-          <StatusPill meta={meta} />
+
+          {!!endorserDisplay && (
+            <Text style={styles.endorser} numberOfLines={1}>
+              <Text style={styles.endorserLabel}>Endorser: </Text>
+              {endorserDisplay}
+            </Text>
+          )}
         </View>
 
-        {!!endorserDisplay && (
-          <Text style={styles.endorser} numberOfLines={1}>
-            <Text style={styles.endorserLabel}>Endorser: </Text>
-            {endorserDisplay}
-          </Text>
-        )}
-
-        <View style={styles.stepperWrap}>
-          <Stepper current={current} />
+        <View style={styles.bodyBottom}>
+          <BoatVoyage current={current} />
         </View>
       </View>
     </View>
@@ -175,79 +169,9 @@ function StatusPill({ meta }: { meta: StatusMeta }) {
   );
 }
 
-function DottedLine() {
-  return (
-    <View style={styles.dottedRow}>
-      {Array.from({ length: 12 }).map((_, i) => (
-        <View key={i} style={styles.dottedPip} />
-      ))}
-    </View>
-  );
-}
-
-function Stepper({ current }: { current: number }) {
-  return (
-    <View>
-      <View style={styles.trackRow}>
-        {STAGES.map((s, i) => {
-          const done = current >= 0 && i < current;
-          const active = i === current;
-          const lit = done || active;
-          const isLast = i === STAGES.length - 1;
-          const segDone = current >= 0 && i < current;
-          return (
-            <React.Fragment key={s.key}>
-              <View style={styles.dotSlot}>
-                <View
-                  style={[
-                    styles.dot,
-                    lit ? styles.dotLit : styles.dotEmpty,
-                    active && styles.dotActive,
-                  ]}
-                />
-              </View>
-              {!isLast && (
-                <View style={styles.segment}>
-                  {segDone ? (
-                    <View style={styles.segmentLineDone} />
-                  ) : (
-                    <DottedLine />
-                  )}
-                </View>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </View>
-
-      <View style={styles.labelRow}>
-        {STAGES.map((s, i) => {
-          const done = current >= 0 && i < current;
-          const active = i === current;
-          const align: 'left' | 'right' | 'center' =
-            i === 0 ? 'left' : i === STAGES.length - 1 ? 'right' : 'center';
-          return (
-            <Text
-              key={s.key}
-              style={[
-                styles.stageLabel,
-                { textAlign: align },
-                active && styles.stageLabelActive,
-                !active && !done && styles.stageLabelPending,
-              ]}
-            >
-              {s.label}
-            </Text>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
 const CARD_HEIGHT = 280;
-const IMAGE_FLEX = 0.4;
-const BODY_FLEX = 0.6;
+const IMAGE_FLEX = 0.35;
+const BODY_FLEX = 0.65;
 
 const styles = StyleSheet.create({
   card: {
@@ -298,10 +222,15 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: BODY_FLEX,
+  },
+  bodyTop: {
     paddingHorizontal: 18,
-    paddingTop: 14,
-    paddingBottom: 16,
-    gap: 10,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  bodyBottom: {
+    flex: 1,
   },
 
   headerRow: {
@@ -372,79 +301,4 @@ const styles = StyleSheet.create({
   pillTextPlain: { color: BLACK_55 },
   pillTextBad: { color: '#B21E32' },
 
-  stepperWrap: { paddingTop: 6, gap: 8 },
-
-  trackRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  dotSlot: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 1.5,
-  },
-  dotLit: {
-    backgroundColor: GOLD,
-    borderColor: GOLD,
-  },
-  dotEmpty: {
-    backgroundColor: 'transparent',
-    borderColor: BLACK_38,
-  },
-  dotActive: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    shadowColor: GOLD,
-    shadowOpacity: 0.45,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 4,
-  },
-
-  segment: {
-    flex: 1,
-    height: 8,
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  segmentLineDone: { height: 1.5, borderRadius: 1, backgroundColor: GOLD },
-  dottedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dottedPip: {
-    width: 2,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: BLACK_38,
-  },
-
-  labelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 0,
-  },
-  stageLabel: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 9.5,
-    letterSpacing: 1.1,
-    color: BLACK_55,
-    flex: 1,
-    textAlign: 'center',
-  },
-  stageLabelActive: {
-    fontFamily: 'Outfit-Bold',
-    color: BLACK,
-  },
-  stageLabelPending: {
-    color: BLACK_38,
-  },
 });

@@ -281,11 +281,27 @@ export function ExpandedSeekerCard({
         </Animated.View>
 
         <Animated.View style={[styles.actionBar, extrasStyle]}>
-          <Pressable onPress={onPass} style={styles.passBtn}>
+          <Pressable
+            onPress={() => {
+              // Mirror the gesture haptic so tap-in-modal pass feels identical
+              // to swipe-pass — the "soft sigh" cadence is the dismissal beat.
+              Phrase.swipePass();
+              onPass();
+            }}
+            style={styles.passBtn}
+          >
             <Ionicons name="close" size={20} color={colors.error} />
             <Text style={styles.passBtnText}>Pass</Text>
           </Pressable>
-          <Pressable onPress={onCommit} style={styles.commitBtn}>
+          <Pressable
+            onPress={() => {
+              // Heartbeat phrase — confirms the press; the parent fires the
+              // full match cadence + Skia burst on commit.
+              Phrase.swipeRequest();
+              onCommit();
+            }}
+            style={styles.commitBtn}
+          >
             <Ionicons name="checkmark" size={20} color="#0A1F44" />
             <Text style={styles.commitBtnText}>Endorse {safe.name.split(' ')[0]}</Text>
           </Pressable>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Dimensions, StyleSheet, View } from 'react-native';
 import {
   BlurMask,
   Canvas,
@@ -77,8 +77,31 @@ export function MatchCelebration({
   // and 60px halos at 0 opacity) while idle — those were producing visual
   // artifacts on some renderers.
   const [active, setActive] = useState(false);
+  // OS-level Reduce Motion preference. When true we skip the particle
+  // shower and play only the crown halo + haptic — preserves the emotional
+  // beat without the vestibular load.
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   const particles = useMemo<Particle[]>(() => buildParticles(), []);
+
+  useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (mounted) setReduceMotion(enabled);
+      })
+      .catch(() => {});
+    const sub = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      (enabled) => {
+        if (mounted) setReduceMotion(enabled);
+      },
+    );
+    return () => {
+      mounted = false;
+      sub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (trigger === null || trigger === lastTrigger.current) return;
@@ -90,9 +113,12 @@ export function MatchCelebration({
     setActive(true);
     visible.value = 1;
     t.value = 0;
+    // Reduced-motion mode runs a shorter envelope (the crown bloom is the
+    // only visible piece; particles are skipped entirely below).
+    const duration = reduceMotion ? 700 : 1400;
     t.value = withTiming(
       1,
-      { duration: 1400, easing: Easing.out(Easing.cubic) },
+      { duration, easing: Easing.out(Easing.cubic) },
       (finished) => {
         if (finished) {
           visible.value = 0;
@@ -101,7 +127,7 @@ export function MatchCelebration({
         }
       },
     );
-  }, [trigger, onComplete, t, visible]);
+  }, [trigger, onComplete, t, visible, reduceMotion]);
 
   if (!active) return null;
 

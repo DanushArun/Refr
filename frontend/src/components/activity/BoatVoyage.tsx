@@ -1,0 +1,330 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { BlurMask, Canvas, Path, Skia } from '@shopify/react-native-skia';
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  useFrameCallback,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+
+const STAGE_LABELS = ['MATCHED', 'SUBMITTED', 'INTERVIEW', 'HIRED'] as const;
+const STAGE_COUNT = STAGE_LABELS.length;
+
+// ────────────────────────── matrix + wave config ──────────────────────────
+const MATRIX_PAD = 4;
+const BOAT_PAD = 36;
+const CELL = 6;
+const DOT_R = 0.85;          // dim background grid radius
+const DOT_R_FUTURE = 1.4;    // future-ocean fill dot radius
+const DOT_R_PAST = 2.0;      // past-ocean fill dot radius (the lit wake)
+const DOT_R_SURFACE = 2.4;   // bright surface row radius (wave crest highlight)
+const SURFACE_THICK = 3.5;   // distance below topY considered "surface highlight"
+const WAVE_AMP = 30;         // peak rise above baseline
+const BASELINE_FRAC = 0.5;   // baseline at half the track height (deep ocean below)
+const WAVES_VISIBLE = 3.0;   // wave cycles across the track
+const WAVE_PERIOD_MS = 4200;
+const LABEL_SLOT_W = 84;
+
+// ────────────────────────── ship config ──────────────────────────
+const SHIP_W = 26;
+const SHIP_H = 16;
+
+// ────────────────────────── palette ──────────────────────────
+const GOLD = '#D4A744';
+const GOLD_BRIGHT = '#FFE08A';
+const GOLD_CORE = '#FFF3C7';
+const GOLD_FUTURE = '#B7892A';
+const DIM_DOT = 'rgba(15, 17, 21, 0.10)';
+const NAVY = '#0A1F44';
+const BLACK = '#0F1115';
+const BLACK_38 = 'rgba(15, 17, 21, 0.38)';
+const BLACK_55 = 'rgba(15, 17, 21, 0.55)';
+
+interface Props {
+  /** Stage index 0..STAGE_COUNT-1, or -1 for off-track. */
+  current: number;
+}
+
+export function BoatVoyage({ current }: Props) {
+  const [size, setSize] = useState({ w: 0, h: 0 });
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    if (width !== size.w || height !== size.h) setSize({ w: width, h: height });
+  };
+
+  const { w, h } = size;
+  // Dot grid spans nearly edge-to-edge; boat lane is inset so labels fit.
+  const matrixUsable = Math.max(0, w - MATRIX_PAD * 2);
+  const boatUsable = Math.max(0, w - BOAT_PAD * 2);
+  const cols = Math.floor(matrixUsable / CELL);
+  const rows = Math.floor(h / CELL);
+  const baseY = h * BASELINE_FRAC;
+  const wavelength = Math.max(50, w / WAVES_VISIBLE);
+  // Lowest possible topY = baseY - WAVE_AMP. Below that y, dots are
+  // never submerged → safe to skip those rows in the per-frame loop.
+  const minTopY = baseY - WAVE_AMP;
+  const startRow = Math.max(0, Math.floor(minTopY / CELL));
+
+  // ─────────── animations ───────────
+  // Drive the wave phase via useFrameCallback so it ticks every animation
+  // frame regardless of withRepeat scheduling — this makes every card
+  // animate reliably (some cards were stuck on withRepeat-only).
+  const phase = useSharedValue(0);
+  useFrameCallback((info) => {
+    phase.value = ((info.timeSinceFirstFrame ?? 0) / WAVE_PERIOD_MS) * Math.PI * 2;
+  });
+
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    const t = current >= 0 && STAGE_COUNT > 1 ? current / (STAGE_COUNT - 1) : 0;
+    progress.value = withSpring(t, { stiffness: 60, damping: 14, mass: 0.9 });
+  }, [current, progress]);
+
+  // ─────────── static dim grid ───────────
+  const gridPath = useMemo(() => {
+    const p = Skia.Path.Make();
+    if (cols === 0 || rows === 0) return p;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = MATRIX_PAD + c * CELL + CELL / 2;
+        const y = r * CELL + CELL / 2;
+        p.addCircle(x, y, DOT_R);
+      }
+    }
+    return p;
+  }, [cols, rows]);
+
+  // ─────────── lit-dot paths (filled ocean) ───────────
+  // The wave is the top boundary of a SOLID FILLED ocean. Every dot from
+  // topY(x) downward is lit — like real water. The wave shape reads as the
+  // irregular top edge against the empty "sky" above.
+  //   topY(x) = baseY − WAVE_AMP · (0.5 + 0.5 · sin(kx − phase))
+  //
+  // Three paths:
+  //   • litPastPath:    body of ocean, x ≤ shipX (the lit wake)
+  //   • litFuturePath:  body of ocean, x > shipX (dimmer, ahead)
+  //   • surfacePath:    topmost row of submerged dots — the bright crest
+
+  const litPastPath = useDerivedValue(() => {
+    const p = Skia.Path.Make();
+    if (cols === 0 || rows === 0) return p;
+    const shipX = BOAT_PAD + boatUsable * progress.value;
+    const k = (Math.PI * 2) / wavelength;
+    for (let c = 0; c < cols; c++) {
+      const x = MATRIX_PAD + c * CELL + CELL / 2;
+      if (x > shipX) continue;
+      const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
+      for (let r = startRow; r < rows; r++) {
+        const y = r * CELL + CELL / 2;
+        if (y >= topY) p.addCircle(x, y, DOT_R_PAST);
+      }
+    }
+    return p;
+  }, [cols, rows, boatUsable, baseY, wavelength, startRow]);
+
+  const litFuturePath = useDerivedValue(() => {
+    const p = Skia.Path.Make();
+    if (cols === 0 || rows === 0) return p;
+    const shipX = BOAT_PAD + boatUsable * progress.value;
+    const k = (Math.PI * 2) / wavelength;
+    for (let c = 0; c < cols; c++) {
+      const x = MATRIX_PAD + c * CELL + CELL / 2;
+      if (x <= shipX) continue;
+      const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
+      for (let r = startRow; r < rows; r++) {
+        const y = r * CELL + CELL / 2;
+        if (y >= topY) p.addCircle(x, y, DOT_R_FUTURE);
+      }
+    }
+    return p;
+  }, [cols, rows, boatUsable, baseY, wavelength, startRow]);
+
+  // Surface highlight — the topmost ~SURFACE_THICK px of submerged dots,
+  // rendered extra-bright. This makes the wave crest pop against the body.
+  const surfacePath = useDerivedValue(() => {
+    const p = Skia.Path.Make();
+    if (cols === 0 || rows === 0) return p;
+    const k = (Math.PI * 2) / wavelength;
+    for (let c = 0; c < cols; c++) {
+      const x = MATRIX_PAD + c * CELL + CELL / 2;
+      const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
+      for (let r = startRow; r < rows; r++) {
+        const y = r * CELL + CELL / 2;
+        if (y >= topY && y - topY <= SURFACE_THICK) {
+          p.addCircle(x, y, DOT_R_SURFACE);
+        }
+      }
+    }
+    return p;
+  }, [cols, rows, baseY, wavelength, startRow]);
+
+  // ─────────── ship ───────────
+  // Hull bottom locks to topY(shipX) — strictly on the surface, never above
+  // or below. Tilt follows the slope of the surface at the ship's X.
+  const shipStyle = useAnimatedStyle(() => {
+    const x = BOAT_PAD + boatUsable * progress.value;
+    const k = (Math.PI * 2) / wavelength;
+    const topY = baseY - WAVE_AMP * (0.5 + 0.5 * Math.sin(k * x - phase.value));
+    const slope = -WAVE_AMP * 0.5 * k * Math.cos(k * x - phase.value);
+    const tiltDeg = (Math.atan(slope) * 180) / Math.PI;
+    return {
+      transform: [
+        { translateX: x - SHIP_W / 2 },
+        { translateY: topY - SHIP_H }, // hull bottom EXACTLY on the surface
+        { rotate: `${tiltDeg}deg` },
+      ],
+    };
+  });
+
+  const showShip = current >= 0 && w > 0;
+
+  return (
+    <View style={styles.container} onLayout={onLayout}>
+      <View style={styles.labelRow}>
+        {w > 0 &&
+          STAGE_LABELS.map((label, i) => {
+            const done = current >= 0 && i < current;
+            const active = i === current;
+            const stageX = BOAT_PAD + boatUsable * (i / (STAGE_COUNT - 1));
+            return (
+              <View
+                key={label}
+                style={[
+                  styles.labelSlot,
+                  { left: stageX - LABEL_SLOT_W / 2 },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.stageLabel,
+                    active && styles.stageLabelActive,
+                    !active && !done && styles.stageLabelPending,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {label}
+                </Text>
+              </View>
+            );
+          })}
+      </View>
+
+      <View style={styles.trackZone}>
+        {w > 0 && cols > 0 && (
+          <Canvas style={StyleSheet.absoluteFillObject}>
+            {/* dim background grid (sky / above water) */}
+            <Path path={gridPath} color={DIM_DOT} />
+
+            {/* future ocean — dimmer body, no halo */}
+            <Path path={litFuturePath} color={GOLD_FUTURE} opacity={0.55} />
+
+            {/* past ocean — outer wide glow halo (the lit wake) */}
+            <Path path={litPastPath} color={GOLD} opacity={0.85}>
+              <BlurMask blur={9} style="solid" />
+            </Path>
+
+            {/* past ocean — bright body fill */}
+            <Path path={litPastPath} color={GOLD_BRIGHT} />
+
+            {/* surface crest — extra glow on the topmost wave row */}
+            <Path path={surfacePath} color={GOLD_CORE} opacity={0.95}>
+              <BlurMask blur={3} style="solid" />
+            </Path>
+            <Path path={surfacePath} color={GOLD_CORE} />
+          </Canvas>
+        )}
+
+        {showShip && (
+          <Animated.View style={[styles.shipBox, shipStyle]} pointerEvents="none">
+            <Yacht />
+          </Animated.View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function Yacht() {
+  const hullCabin = useMemo(() => {
+    const p = Skia.Path.Make();
+    // Iconic yacht silhouette in 26 × 16, hull bottom at y=16.
+    p.moveTo(0, 11);
+    p.lineTo(26, 11);
+    p.lineTo(22, 16);
+    p.lineTo(3, 16);
+    p.close();
+    p.moveTo(3, 11);
+    p.lineTo(6, 7);
+    p.lineTo(18, 7);
+    p.lineTo(22, 11);
+    p.close();
+    p.moveTo(8, 7);
+    p.lineTo(9, 3);
+    p.lineTo(14, 3);
+    p.lineTo(15, 7);
+    p.close();
+    return p;
+  }, []);
+
+  const mast = useMemo(() => {
+    const p = Skia.Path.Make();
+    p.moveTo(11.5, 3);
+    p.lineTo(11.5, 0);
+    return p;
+  }, []);
+
+  return (
+    <Canvas style={styles.yachtCanvas}>
+      <Path path={hullCabin} color={NAVY} />
+      <Path path={mast} color={NAVY} style="stroke" strokeWidth={1} strokeCap="round" />
+    </Canvas>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  labelRow: {
+    height: 18,
+    position: 'relative',
+    marginBottom: 2,
+  },
+  labelSlot: {
+    position: 'absolute',
+    top: 0,
+    width: LABEL_SLOT_W,
+    alignItems: 'center',
+  },
+  stageLabel: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 9.5,
+    letterSpacing: 1.1,
+    color: BLACK_55,
+    textAlign: 'center',
+  },
+  stageLabelActive: {
+    fontFamily: 'Outfit-Bold',
+    color: BLACK,
+  },
+  stageLabelPending: {
+    color: BLACK_38,
+  },
+  trackZone: {
+    flex: 1,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  shipBox: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: SHIP_W,
+    height: SHIP_H,
+  },
+  yachtCanvas: {
+    width: SHIP_W,
+    height: SHIP_H,
+  },
+});

@@ -1,7 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SwipeDeck, type SwipeDirection } from '../components/discover/SwipeDeck';
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+} from 'react-native-reanimated';
+import { SwipeDeck, type SwipeDeckHandle, type SwipeDirection } from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import { ExpandedSeekerCard } from '../components/discover/ExpandedSeekerCard';
 import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
@@ -18,10 +23,6 @@ import { spacing, layout } from '../theme/spacing';
 /**
  * Endorser Discover — referrer's swipe stack of incoming candidates.
  *
- * Mirror of the seeker's DiscoverScreen: ConstellationBackdrop alive in the
- * background, "Endorsly" serif wordmark, swipe deck of cream credit-cards,
- * floating tab bar clearance.
- *
  * Right swipe = "I'd endorse this person" (mutual match opens chat).
  * Left swipe  = pass.
  */
@@ -33,8 +34,11 @@ export function EndorserDiscoverScreen() {
   const [expandedCard, setExpandedCard] = useState<SeekerCard | null>(null);
   // Trigger token: bumping this fires the celebration once. Null = idle.
   const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
 
   const remaining = Math.max(0, cards.length - index);
+
+  const deckRef = useRef<SwipeDeckHandle>(null);
 
   const commitSwipe = useCallback(
     (card: SeekerCard, direction: SwipeDirection) => {
@@ -68,6 +72,7 @@ export function EndorserDiscoverScreen() {
   );
 
   const handleRefresh = useCallback(() => {
+    Phrase.tap();
     setQueueKey((k) => k + 1);
     setIndex(0);
     setLastAction(null);
@@ -85,8 +90,16 @@ export function EndorserDiscoverScreen() {
     [expandedCard, commitSwipe],
   );
 
+  const handleUndo = useCallback(() => {
+    Phrase.tap();
+    setIndex((i) => Math.max(0, i - 1));
+    setLastAction(null);
+    setCelebrationTrigger(null);
+  }, []);
+
   return (
     <View style={styles.container}>
+      {/* Constellation reveals only when the candidate queue is exhausted. */}
       <ConstellationBackdrop visible={remaining === 0} />
 
       <SafeAreaView style={styles.safe}>
@@ -104,37 +117,79 @@ export function EndorserDiscoverScreen() {
 
         <View style={styles.deckFrame}>
           <SwipeDeck<SeekerCard>
+            ref={deckRef}
             items={cards}
             index={index}
             keyOf={(c) => c.id}
             onSwipe={commitSwipe}
             onCardTap={handleCardTap}
             onRefresh={handleRefresh}
+            onUndo={handleUndo}
+            onCanUndoChange={setCanUndo}
             emptyTitle="Inbox empty"
             emptyBody="No more candidates in your queue. New career stories appear daily."
-            renderCard={({ item, isTop, stackIndex, onSwiped, onTap }) => (
+            renderCard={({
+              item,
+              isTop,
+              stackIndex,
+              headProgress,
+              entryFrom,
+              onSwiped,
+              onTap,
+              registerSwipe,
+            }) => (
               <SeekerCardView
                 card={item}
                 isTop={isTop}
                 stackIndex={stackIndex}
+                headProgress={headProgress}
+                entryFrom={entryFrom}
                 onSwiped={onSwiped}
                 onTap={onTap}
+                registerSwipe={registerSwipe}
               />
             )}
           />
+
+          {/* Undo affordance only — Pass / Endorse are gesture-only. */}
+          {remaining > 0 && canUndo && (
+            <Animated.View
+              style={styles.actionBar}
+              entering={FadeIn.duration(220).easing(Easing.out(Easing.cubic))}
+              exiting={FadeOut.duration(160)}
+            >
+              <Pressable
+                onPress={() => deckRef.current?.undo()}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  styles.undoBtn,
+                  pressed && styles.actionBtnPressed,
+                ]}
+                hitSlop={8}
+              >
+                <Ionicons name="arrow-undo" size={20} color={colors.gold} />
+              </Pressable>
+            </Animated.View>
+          )}
+
           <View style={styles.remainingBadge}>
             <Text style={styles.remainingText}>{remaining} remaining swipes</Text>
           </View>
         </View>
 
         {lastAction && (
-          <View style={styles.toastWrap} pointerEvents="none">
+          <Animated.View
+            style={styles.toastWrap}
+            pointerEvents="none"
+            entering={FadeIn.duration(220)}
+            exiting={FadeOut.duration(160)}
+          >
             <View style={styles.toast}>
               <Text style={styles.toastText} numberOfLines={2}>
                 {lastAction}
               </Text>
             </View>
-          </View>
+          </Animated.View>
         )}
 
       </SafeAreaView>
@@ -194,7 +249,7 @@ const styles = StyleSheet.create({
   },
   remainingBadge: {
     position: 'absolute',
-    bottom: 110,
+    bottom: 158,
     alignSelf: 'center',
     backgroundColor: 'rgba(10, 31, 68, 0.85)',
     paddingHorizontal: 14,
@@ -212,7 +267,7 @@ const styles = StyleSheet.create({
   },
   toastWrap: {
     position: 'absolute',
-    bottom: 158,
+    bottom: 200,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -231,5 +286,35 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#000000',
     textAlign: 'center',
+  },
+  /* Undo affordance — visible only when there is a swipe to rewind. */
+  actionBar: {
+    position: 'absolute',
+    bottom: 110,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.30,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  actionBtnPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.94 }],
+  },
+  undoBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(10, 31, 68, 0.85)',
+    borderColor: colors.goldDim,
   },
 });

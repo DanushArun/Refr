@@ -48,6 +48,74 @@ function latestStageTimestamp(item: SeekerPipelineItem): string | null | undefin
   return r.acceptedAt ?? r.requestedAt;
 }
 
+// Demo cards — one per voyage stage so all 4 progress states are visible.
+const DEMO_PIPELINE: SeekerPipelineItem[] = [
+  {
+    referral: {
+      id: 'demo-matched',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'cred',
+      targetRole: 'Staff Engineer',
+      status: 'accepted',
+      matchScore: 88,
+      requestedAt: new Date(Date.now() - 4 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Aarav Verma',
+    companyName: 'CRED',
+  },
+  {
+    referral: {
+      id: 'demo-submitted',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'razorpay',
+      targetRole: 'Senior Backend Engineer',
+      status: 'submitted',
+      matchScore: 91,
+      requestedAt: new Date(Date.now() - 9 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 7 * 86_400_000).toISOString(),
+      submittedAt: new Date(Date.now() - 5 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Priya Iyer',
+    companyName: 'Razorpay',
+  },
+  {
+    referral: {
+      id: 'demo-interview',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'zepto',
+      targetRole: 'Product Designer',
+      status: 'interviewing',
+      matchScore: 84,
+      requestedAt: new Date(Date.now() - 14 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 12 * 86_400_000).toISOString(),
+      submittedAt: new Date(Date.now() - 10 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Rohan Mehta',
+    companyName: 'Zepto',
+  },
+  {
+    referral: {
+      id: 'demo-hired',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'swiggy',
+      targetRole: 'Engineering Manager',
+      status: 'hired',
+      matchScore: 96,
+      requestedAt: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 28 * 86_400_000).toISOString(),
+      submittedAt: new Date(Date.now() - 25 * 86_400_000).toISOString(),
+      outcomeAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Anika Sharma',
+    companyName: 'Swiggy',
+  },
+];
+
 export function PipelineScreen() {
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,15 +137,16 @@ export function PipelineScreen() {
   useFocusEffect(useCallback(() => { loadPipeline(); }, [loadPipeline]));
 
   const counts = useMemo<Record<FilterKey, number>>(() => {
+    const all = [...DEMO_PIPELINE, ...items];
     const c: Record<FilterKey, number> = {
-      all: items.length,
+      all: all.length,
       matched: 0,
       submitted: 0,
       interview: 0,
       hired: 0,
       closed: 0,
     };
-    for (const it of items) {
+    for (const it of all) {
       const s = it.referral.status;
       if (STATUSES_FOR.matched!.has(s)) c.matched += 1;
       else if (STATUSES_FOR.submitted!.has(s)) c.submitted += 1;
@@ -89,9 +158,10 @@ export function PipelineScreen() {
   }, [items]);
 
   const visibleItems = useMemo(() => {
+    const merged = [...DEMO_PIPELINE, ...items];
     const allowed = STATUSES_FOR[filter];
-    if (!allowed) return items;
-    return items.filter((it) => allowed.has(it.referral.status));
+    if (!allowed) return merged;
+    return merged.filter((it) => allowed.has(it.referral.status));
   }, [items, filter]);
 
   const handleFilterChange = useCallback((next: FilterKey) => {
@@ -124,22 +194,13 @@ export function PipelineScreen() {
           </Text>
         </View>
 
-        {items.length > 0 && (
-          <FilterBar
-            current={filter}
-            counts={counts}
-            onChange={handleFilterChange}
-          />
-        )}
+        <FilterBar
+          current={filter}
+          counts={counts}
+          onChange={handleFilterChange}
+        />
 
-        {items.length === 0 ? (
-          <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>No activity yet</Text>
-            <Text style={styles.emptyBody}>
-              Swipe right on an Endorser in Discover to request your first endorsement.
-            </Text>
-          </View>
-        ) : visibleItems.length === 0 ? (
+        {visibleItems.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>Nothing in this lane</Text>
             <Text style={styles.emptyBody}>
