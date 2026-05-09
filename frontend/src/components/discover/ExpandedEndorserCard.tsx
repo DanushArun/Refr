@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   Dimensions,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -20,9 +21,11 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Avatar } from '../common/Avatar';
 import { MatchArc } from './MatchArc';
 import { getCompanyBrand } from './companyBrand';
+import { officeImageFor } from '../activity/companyOffices';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
 import type { EndorserCard as EndorserCardData } from './endorserCardData';
@@ -191,6 +194,7 @@ export function ExpandedEndorserCard({
   if (!safe) return null;
 
   const brand = getCompanyBrand(safe.companyId);
+  const officeImage = officeImageFor(safe.companyName);
 
   return (
     <Modal
@@ -220,6 +224,26 @@ export function ExpandedEndorserCard({
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
+          {/* === HERO IMAGE — full-bleed office photo, the desire-driver === */}
+          <View style={styles.heroImageZone}>
+            <View style={[styles.heroImageFallback, { backgroundColor: brand.tint }]} />
+            {officeImage && (
+              <Image
+                source={{ uri: officeImage }}
+                style={styles.heroImage}
+                resizeMode="cover"
+              />
+            )}
+            {/* Bottom shade so the seam into the brand zone reads softly */}
+            <LinearGradient
+              colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.35)']}
+              style={styles.heroImageShade}
+              pointerEvents="none"
+            />
+            {/* Hairline at the very bottom — premium magazine-cover feel */}
+            <View style={styles.heroImageEdge} pointerEvents="none" />
+          </View>
+
           {/* Brand zone — same hero as the swipe card */}
           <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
             <View style={styles.brandRow}>
@@ -339,7 +363,7 @@ export function ExpandedEndorserCard({
           </Pressable>
           <Pressable onPress={handleCommit} style={styles.commitBtn}>
             <Ionicons name="checkmark" size={20} color="#0A1F44" />
-            <Text style={styles.commitBtnText}>Endorse {safe.name.split(' ')[0]}</Text>
+            <Text style={styles.commitBtnText}>Request {safe.name.split(' ')[0]}</Text>
           </Pressable>
         </Animated.View>
       </Animated.View>
@@ -374,6 +398,38 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: 0,
+  },
+
+  /* Hero image zone — full-bleed office photograph at the top of the
+     expanded sheet. Taller than the swipe-card's image (320px vs ~45% of
+     card height) so it reads as the magazine-cover hero on the detail view. */
+  heroImageZone: {
+    width: '100%',
+    height: 320,
+    backgroundColor: '#0A1F44',
+    overflow: 'hidden',
+  },
+  heroImageFallback: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroImageShade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 64,
+  },
+  heroImageEdge: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
 
   /* Pill grabber — swipe-down dismiss affordance, sits in the safe area

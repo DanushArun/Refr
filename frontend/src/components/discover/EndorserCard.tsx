@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -19,6 +19,7 @@ import { Avatar } from '../common/Avatar';
 import { Phrase } from '../../utils/haptics';
 import { MatchArc } from './MatchArc';
 import { getCompanyBrand } from './companyBrand';
+import { officeImageFor } from '../activity/companyOffices';
 import { colors } from '../../theme/colors';
 import { SwipeStamp } from './SwipeStamp';
 import type {
@@ -444,66 +445,74 @@ export function EndorserCard({
 
 function TopCardContent({ card }: { card: EndorserCardData }) {
   const brand = getCompanyBrand(card.companyId);
+  const officeImage = useMemo(() => officeImageFor(card.companyName), [card.companyName]);
 
   return (
     <View style={{ flex: 1 }}>
-      {/* === HERO: Company brand panel === */}
+      {/* === IMAGE ZONE — company office photograph === */}
+      <View style={styles.imageZone}>
+        {/* Brand-tinted base sits beneath the image so a slow load or net
+            failure never reveals an empty white frame — the user always sees
+            the company's color. */}
+        <View style={[styles.officeFallback, { backgroundColor: brand.tint }]} />
+        {officeImage && (
+          <Image source={{ uri: officeImage }} style={styles.officeImage} resizeMode="cover" />
+        )}
+        {/* Faint bottom-edge gradient so the seam into the brand zone is soft,
+            not a hard line — same trick as the Activity card. */}
+        <LinearGradient
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.18)']}
+          style={styles.imageBottomShade}
+          pointerEvents="none"
+        />
+      </View>
+
+      {/* === BRAND ZONE — navy band with company + role === */}
       <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
         <View style={styles.brandRow}>
           <View style={[styles.brandMark, { borderColor: brand.accent }]}>
             <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
           </View>
-          <Text style={[styles.brandName, { color: brand.text }]}>{card.companyName}</Text>
+          <Text style={[styles.brandName, { color: brand.text }]} numberOfLines={1}>
+            {card.companyName}
+          </Text>
           <View style={styles.brandSpacer} />
-          <View style={[styles.openTag, { borderColor: brand.accent }]}>
-            <View style={[styles.openDot, { backgroundColor: brand.accent }]} />
-            <Text style={[styles.openText, { color: brand.accent }]}>OPEN</Text>
+          <View style={styles.openTag}>
+            <View style={styles.openDot} />
+            <Text style={styles.openText}>OPEN</Text>
           </View>
         </View>
 
         <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
           {card.jobTitle}
         </Text>
-
-        <View style={styles.skillsRow}>
-          {card.skills.slice(0, 3).map((s) => (
-            <View key={s} style={styles.skillChip}>
-              <Text style={[styles.skillText, { color: brand.text }]}>{s}</Text>
-            </View>
-          ))}
-        </View>
       </View>
 
-      {/* === CREAM ZONE — referrer + match, full navy perimeter === */}
+      {/* === CREAM ZONE — horizontal split: REFERRED BY (left) | YOUR MATCH (right) === */}
       <View style={styles.creamZone}>
-        <View style={styles.referrerSection}>
+        <View style={styles.referrerCol}>
           <Text style={styles.sectionLabel}>REFERRED BY</Text>
           <View style={styles.referrerCard}>
-            <Avatar displayName={card.name} size="lg" verificationRing />
+            <Avatar displayName={card.name} size="md" verificationRing />
             <View style={styles.referrerMeta}>
               <Text style={styles.referrerName} numberOfLines={1}>{card.name}</Text>
-              <Text style={styles.referrerTitle} numberOfLines={1}>
-                Verified at {card.companyName}
-              </Text>
+              <View style={styles.verifiedRow}>
+                <Ionicons name="checkmark-circle" size={13} color="#3897F0" />
+                <Text style={styles.verifiedText}>Verified</Text>
+              </View>
             </View>
           </View>
           <View style={styles.referrerStats}>
-            <StatPill label="Trust" value={`★ ${card.trustScore}`} />
-            <StatPill label="Hires" value={`${card.hires}`} />
-            <StatPill label="Reply" value={card.responseTime} />
+            <StatPill label="TRUST" value={`★ ${card.trustScore}`} />
+            <StatPill label="HIRES" value={`${card.hires}`} />
+            <StatPill label="REPLY" value={card.responseTime} />
           </View>
         </View>
 
-        <View style={styles.divider} />
-
-        <View style={styles.matchSection}>
-          <View style={styles.matchHeader}>
-            <Text style={styles.sectionLabel}>YOUR MATCH</Text>
-            <Text style={styles.matchHint} numberOfLines={2}>
-              Skill overlap, target fit, and {card.companyName}'s acceptance rate
-            </Text>
-          </View>
-          <MatchArc percent={card.matchPercent} size={84} animate light />
+        <View style={styles.matchCol}>
+          <Text style={styles.sectionLabel}>YOUR MATCH</Text>
+          <MatchArc percent={card.matchPercent} size={76} animate light />
+          <Text style={styles.matchHint} numberOfLines={1}>Skill overlap</Text>
         </View>
       </View>
     </View>
@@ -574,18 +583,76 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
 
-  brandZone: {
-    paddingTop: 22,
-    paddingHorizontal: 22,
-    paddingBottom: 20,
-    gap: 12,
+  /* Image zone — company office photograph at top of card.
+     Takes ALL the leftover space after the brand band + cream zone size to
+     content. That's the desire-driving hero. */
+  imageZone: {
+    flex: 1,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
+    overflow: 'hidden',
+    backgroundColor: '#0A1F44',
+  },
+  officeImage: {
+    width: '100%',
+    height: '100%',
+  },
+  officeFallback: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  imageBottomShade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 24,
+  },
+
+  brandZone: {
+    paddingTop: 16,
+    paddingHorizontal: 22,
+    paddingBottom: 18,
+    gap: 10,
   },
   creamZone: {
-    flex: 1,
+    // No flex:1 — let the zone size to its content. Otherwise it stretches
+    // to fill the remaining card height and you get a huge empty white area
+    // below the stats. The imageZone (flex:1 above) now absorbs the slack.
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
+    gap: 14,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+  },
+  referrerCol: {
+    flex: 1,
+    gap: 12,
+  },
+  matchCol: {
+    width: 110,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 6,
+    paddingTop: 8,
+    paddingHorizontal: 6,
+    paddingBottom: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.35)',
+    backgroundColor: 'rgba(212, 167, 68, 0.06)',
+  },
+  verifiedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  verifiedText: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 12,
+    color: 'rgba(0, 0, 0, 0.55)',
   },
   brandRow: {
     flexDirection: 'row',
@@ -611,51 +678,36 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   brandSpacer: { flex: 1 },
+  /* OPEN = "actively hiring" — green pill regardless of company brand color
+     so the signal reads consistently across cards. */
   openTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
+    backgroundColor: 'rgba(34, 197, 94, 0.18)',
     borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.55)',
   },
-  openDot: { width: 5, height: 5, borderRadius: 3 },
+  openDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#22C55E',
+  },
   openText: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 9,
-    letterSpacing: 1.5,
+    fontSize: 9.5,
+    letterSpacing: 1.4,
+    color: '#22C55E',
   },
   role: {
     fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 28,
+    lineHeight: 32,
     letterSpacing: -0.4,
-  },
-  skillsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  skillChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  skillText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
-  },
-
-  /* Referred-by — primary credibility on white */
-  referrerSection: {
-    paddingTop: 18,
-    paddingHorizontal: 22,
-    paddingBottom: 16,
-    gap: 12,
   },
   sectionLabel: {
     fontFamily: 'Outfit-Bold',
@@ -707,29 +759,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  divider: {
-    height: 1,
-    backgroundColor: BLACK_08,
-    marginHorizontal: 22,
-  },
-
-  /* Match — compact horizontal */
-  matchSection: {
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  matchHeader: {
-    flex: 1,
-    gap: 6,
-  },
   matchHint: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 12,
+    fontFamily: 'Outfit-Medium',
+    fontSize: 11,
     color: BLACK_70,
-    lineHeight: 16,
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
 
   /* Stack preview — anonymous plate, no identity content. Muted sailor gold

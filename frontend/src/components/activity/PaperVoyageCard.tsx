@@ -6,11 +6,14 @@ import { colors } from '../../theme/colors';
 import { layout } from '../../theme/spacing';
 import { officeImageFor } from './companyOffices';
 import { BoatVoyage } from './BoatVoyage';
-
-const BLACK = '#0F1115';
-const BLACK_70 = 'rgba(15, 17, 21, 0.70)';
-const BLACK_55 = 'rgba(15, 17, 21, 0.55)';
-const GOLD = '#C8A24B';
+import {
+  BLACK,
+  BLACK_70,
+  BLACK_55,
+  formatEndorserName,
+  StatusPill,
+  statusMeta,
+} from './referralCardShared';
 
 function stageIndex(status: ReferralStatus): number {
   switch (status) {
@@ -25,41 +28,6 @@ function stageIndex(status: ReferralStatus): number {
       return 3;
     default:
       return -1;
-  }
-}
-
-function daysSince(iso?: string | null): number | null {
-  if (!iso) return null;
-  const ms = Date.now() - new Date(iso).getTime();
-  return Math.max(0, Math.floor(ms / 86_400_000));
-}
-
-interface StatusMeta {
-  label: string;
-  variant: 'gold' | 'plain' | 'bad';
-}
-
-function statusMeta(status: ReferralStatus, ts?: string | null): StatusMeta {
-  switch (status) {
-    case 'hired':
-      return { label: 'HIRED', variant: 'gold' };
-    case 'interviewing':
-      return { label: 'INTERVIEWING', variant: 'plain' };
-    case 'submitted': {
-      const d = daysSince(ts);
-      return { label: d != null ? `SUBMITTED · ${d}D` : 'SUBMITTED', variant: 'plain' };
-    }
-    case 'accepted':
-    case 'requested':
-      return { label: 'MATCHED', variant: 'plain' };
-    case 'rejected':
-      return { label: 'PASSED', variant: 'bad' };
-    case 'withdrawn':
-      return { label: 'WITHDRAWN', variant: 'bad' };
-    case 'expired':
-      return { label: 'EXPIRED', variant: 'bad' };
-    default:
-      return { label: String(status).toUpperCase(), variant: 'plain' };
   }
 }
 
@@ -145,38 +113,6 @@ export function PaperVoyageCard({ data }: Props) {
           <BoatVoyage current={current} />
         </View>
       </View>
-    </View>
-  );
-}
-
-function formatEndorserName(full: string): string {
-  const trimmed = full.trim();
-  if (!trimmed) return '';
-  return trimmed
-    .split(/\s+/)
-    .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
-    .join(' ');
-}
-
-function StatusPill({ meta }: { meta: StatusMeta }) {
-  if (meta.variant === 'gold') {
-    return (
-      <View style={[styles.pill, styles.pillGold]}>
-        <Text style={styles.pillStar}>★</Text>
-        <Text style={[styles.pillText, styles.pillTextGold]}>{meta.label}</Text>
-      </View>
-    );
-  }
-  if (meta.variant === 'bad') {
-    return (
-      <View style={[styles.pill, styles.pillBad]}>
-        <Text style={[styles.pillText, styles.pillTextBad]}>{meta.label}</Text>
-      </View>
-    );
-  }
-  return (
-    <View style={styles.pillPlain}>
-      <Text style={[styles.pillText, styles.pillTextPlain]}>{meta.label}</Text>
     </View>
   );
 }
@@ -284,43 +220,4 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     color: BLACK_55,
   },
-
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  pillGold: {
-    backgroundColor: GOLD,
-    shadowColor: GOLD,
-    shadowOpacity: 0.55,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-  pillStar: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 11,
-    color: '#FAFAF7',
-    marginTop: -1,
-  },
-  pillBad: { backgroundColor: 'rgba(178, 30, 50, 0.10)' },
-  pillPlain: {
-    paddingHorizontal: 0,
-    paddingVertical: 5,
-    alignSelf: 'flex-start',
-  },
-  pillText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
-    letterSpacing: 1.4,
-  },
-  pillTextGold: { color: '#FAFAF7' },
-  pillTextPlain: { color: BLACK_55 },
-  pillTextBad: { color: '#B21E32' },
-
 });
