@@ -3,7 +3,7 @@ import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SwipeDeck, type SwipeDirection } from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
-import { SeekerProfileSheet } from '../components/discover/ProfileSheet';
+import { ExpandedSeekerCard } from '../components/discover/ExpandedSeekerCard';
 import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
 import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
@@ -30,7 +30,7 @@ export function EndorserDiscoverScreen() {
   const cards = useMemo(() => buildSeekerCards('2'), [queueKey]);
   const [index, setIndex] = useState(0);
   const [lastAction, setLastAction] = useState<string | null>(null);
-  const [previewCard, setPreviewCard] = useState<SeekerCard | null>(null);
+  const [expandedCard, setExpandedCard] = useState<SeekerCard | null>(null);
   // Trigger token: bumping this fires the celebration once. Null = idle.
   const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
 
@@ -74,16 +74,15 @@ export function EndorserDiscoverScreen() {
   }, []);
 
   const handleCardTap = useCallback((card: SeekerCard) => {
-    Phrase.tap();
-    setPreviewCard(card);
+    setExpandedCard(card);
   }, []);
 
-  const handlePreviewCommit = useCallback(
+  const handleExpandedCommit = useCallback(
     (direction: SwipeDirection) => {
-      if (previewCard) commitSwipe(previewCard, direction);
-      setPreviewCard(null);
+      if (expandedCard) commitSwipe(expandedCard, direction);
+      setExpandedCard(null);
     },
-    [previewCard, commitSwipe],
+    [expandedCard, commitSwipe],
   );
 
   return (
@@ -138,14 +137,15 @@ export function EndorserDiscoverScreen() {
           </View>
         )}
 
-        <SeekerProfileSheet
-          visible={previewCard !== null}
-          card={previewCard}
-          onClose={() => setPreviewCard(null)}
-          onPass={() => handlePreviewCommit('pass')}
-          onCommit={() => handlePreviewCommit('request')}
-        />
       </SafeAreaView>
+
+      {/* Card-to-full-screen container transform when a card is tapped */}
+      <ExpandedSeekerCard
+        card={expandedCard}
+        onClose={() => setExpandedCard(null)}
+        onPass={() => handleExpandedCommit('pass')}
+        onCommit={() => handleExpandedCommit('request')}
+      />
 
       {/* Full-screen overlay celebration — sits above the safe area + tab bar */}
       <MatchCelebration trigger={celebrationTrigger} />
@@ -154,7 +154,7 @@ export function EndorserDiscoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: 'transparent' },
   safe: { flex: 1 },
   header: {
     paddingHorizontal: layout.screenPaddingH,
@@ -186,7 +186,10 @@ const styles = StyleSheet.create({
   },
   deckFrame: {
     flex: 1,
-    marginTop: spacing[2],
+    // Match the seeker DiscoverScreen vertical rhythm: header(60) + filter
+    // row(54+4) + spacing[2]. Endorser has no filter row, so push the deck
+    // down by the equivalent so the two tabs feel like the same screen.
+    marginTop: 58 + spacing[2],
     paddingBottom: 116,
   },
   remainingBadge: {

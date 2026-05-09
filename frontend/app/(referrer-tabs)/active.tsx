@@ -321,8 +321,8 @@ function SummaryTile({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  safe: { flex: 1, backgroundColor: 'transparent' },
+  center: { flex: 1, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   header: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[6],

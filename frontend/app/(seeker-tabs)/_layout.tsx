@@ -4,7 +4,10 @@ import { LiquidGlassTabBar } from '../../src/components/navigation/LiquidGlassTa
 export default function SeekerTabsLayout() {
   return (
     <Tabs
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        sceneStyle: { backgroundColor: 'transparent' },
+      }}
       tabBar={(props) => <LiquidGlassTabBar {...props} />}
     >
       <Tabs.Screen name="discover" options={{ title: 'Discover' }} />

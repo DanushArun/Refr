@@ -290,7 +290,7 @@ export default function ProfileSetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   kav: { flex: 1 },
   scroll: { flex: 1 },
   content: {

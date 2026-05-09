@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Phrase } from '../utils/haptics';
 import { SwipeDeck } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
-import { EndorserProfileSheet } from '../components/discover/ProfileSheet';
+import { ExpandedEndorserCard } from '../components/discover/ExpandedEndorserCard';
 import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
 import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
@@ -22,7 +22,8 @@ export function DiscoverScreen() {
   const cards = useMemo(() => buildEndorserCards('1'), [queueKey]);
   const [index, setIndex] = useState(0);
   const [activeFilter, setActiveFilter] = useState('All');
-  const [previewCard, setPreviewCard] = useState<EndorserCard | null>(null);
+  // Tapped card animates from its deck position into a full-screen detail sheet
+  const [expandedCard, setExpandedCard] = useState<EndorserCard | null>(null);
 
   const remainingSwipes = Math.max(0, cards.length - index);
   // Token-based trigger so the celebration fires once per right-swipe
@@ -57,15 +58,15 @@ export function DiscoverScreen() {
   }, []);
 
   const handleCardTap = useCallback((card: EndorserCard) => {
-    setPreviewCard(card);
+    setExpandedCard(card);
   }, []);
 
-  const handlePreviewCommit = useCallback(
+  const handleExpandedCommit = useCallback(
     (direction: 'request' | 'pass') => {
-      if (previewCard) commitSwipe(previewCard, direction);
-      setPreviewCard(null);
+      if (expandedCard) commitSwipe(expandedCard, direction);
+      setExpandedCard(null);
     },
-    [previewCard, commitSwipe],
+    [expandedCard, commitSwipe],
   );
 
   return (
@@ -138,14 +139,15 @@ export function DiscoverScreen() {
           </View>
         </View>
 
-        <EndorserProfileSheet
-          visible={previewCard !== null}
-          card={previewCard}
-          onClose={() => setPreviewCard(null)}
-          onPass={() => handlePreviewCommit('pass')}
-          onCommit={() => handlePreviewCommit('request')}
-        />
       </SafeAreaView>
+
+      {/* Card-to-full-screen container transform when a card is tapped */}
+      <ExpandedEndorserCard
+        card={expandedCard}
+        onClose={() => setExpandedCard(null)}
+        onPass={() => handleExpandedCommit('pass')}
+        onCommit={() => handleExpandedCommit('request')}
+      />
 
       {/* Full-screen overlay celebration — fires on right-swipe commit */}
       <MatchCelebration trigger={celebrationTrigger} />
@@ -154,7 +156,7 @@ export function DiscoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: 'transparent' },
   safe: { flex: 1 },
   header: {
     paddingHorizontal: layout.screenPaddingH,

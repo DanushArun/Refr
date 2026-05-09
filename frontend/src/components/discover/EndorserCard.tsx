@@ -180,7 +180,7 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
   const brand = getCompanyBrand(card.companyId);
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       {/* === HERO: Company brand panel === */}
       <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
         <View style={styles.brandRow}>
@@ -240,7 +240,7 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
           <MatchArc percent={card.matchPercent} size={84} animate light />
         </View>
       </View>
-    </>
+    </View>
   );
 }
 

@@ -29,9 +29,8 @@ const CARD_HEIGHT = Math.min(580, Math.round(WINDOW_HEIGHT * 0.62));
 
 const BLACK = '#000000';
 const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
-const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
-const BLACK_45 = 'rgba(0, 0, 0, 0.45)';
-const BLACK_35 = 'rgba(0, 0, 0, 0.35)';
+const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
+const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
 const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
 
 interface SeekerCardProps {
@@ -170,7 +169,7 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
   const brand = brandForName(primaryTarget);
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       {/* HERO: target company brand panel */}
       <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
         <View style={styles.brandRow}>
@@ -181,9 +180,9 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
             {primaryTarget}
           </Text>
           <View style={styles.brandSpacer} />
-          <View style={styles.matchPill}>
-            <Text style={styles.matchPillValue}>{card.matchPercent}</Text>
-            <Text style={styles.matchPillLabel}>MATCH</Text>
+          <View style={[styles.openTag, { borderColor: brand.accent }]}>
+            <View style={[styles.openDot, { backgroundColor: brand.accent }]} />
+            <Text style={[styles.openText, { color: brand.accent }]}>OPEN</Text>
           </View>
         </View>
 
@@ -202,7 +201,7 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
         )}
       </View>
 
-      {/* CREAM ZONE — candidate + headline, full navy perimeter */}
+      {/* CREAM ZONE — candidate + stats + match, full navy perimeter */}
       <View style={styles.creamZone}>
         <View style={styles.candidateSection}>
           <Text style={styles.sectionLabel}>CANDIDATE</Text>
@@ -215,18 +214,35 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
               </Text>
             </View>
           </View>
+          <View style={styles.candidateStats}>
+            <StatPill label="Exp" value={`${card.yearsOfExperience}y`} />
+            <StatPill label="Targets" value={`${card.targetCompanies.length}`} />
+            <StatPill label="Skills" value={`${card.fullSkills.length}`} />
+          </View>
         </View>
 
         <View style={styles.divider} />
 
-        <View style={styles.headlineSection}>
-          <Text style={styles.headlineQuote}>“</Text>
-          <Text style={styles.headlineText} numberOfLines={3}>
-            {card.headline}
-          </Text>
+        <View style={styles.matchSection}>
+          <View style={styles.matchHeader}>
+            <Text style={styles.sectionLabel}>THEIR PITCH</Text>
+            <Text style={styles.matchHint} numberOfLines={3}>
+              {card.headline}
+            </Text>
+          </View>
+          <MatchArc percent={card.matchPercent} size={84} animate light />
         </View>
       </View>
-    </>
+    </View>
+  );
+}
+
+function StatPill({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.statPill}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
   );
 }
 
@@ -316,28 +332,20 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   brandSpacer: { flex: 1 },
-  matchPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.20)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
+  openTag: {
+    flexDirection: 'row',
     alignItems: 'center',
-    minWidth: 56,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
   },
-  matchPillValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-  },
-  matchPillLabel: {
+  openDot: { width: 5, height: 5, borderRadius: 3 },
+  openText: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 8,
-    color: 'rgba(255,255,255,0.85)',
-    letterSpacing: 1.4,
-    marginTop: -1,
+    fontSize: 9,
+    letterSpacing: 1.5,
   },
   role: {
     fontFamily: 'InstrumentSerif-Regular',
@@ -363,17 +371,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  /* Candidate (bridge) on cream */
+  /* Candidate on cream */
   candidateSection: {
     paddingTop: 18,
     paddingHorizontal: 22,
-    paddingBottom: 14,
+    paddingBottom: 16,
     gap: 12,
   },
   sectionLabel: {
     fontFamily: 'Outfit-Bold',
     fontSize: 10,
-    color: BLACK_55,
+    color: BLACK_50,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
@@ -382,7 +390,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
-  candidateMeta: { flex: 1, gap: 3 },
+  candidateMeta: { flex: 1, gap: 2 },
   candidateName: {
     fontFamily: 'Outfit-Bold',
     fontSize: 22,
@@ -394,33 +402,55 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: BLACK_70,
   },
+  candidateStats: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  statPill: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    backgroundColor: BLACK_05,
+    alignItems: 'center',
+    gap: 1,
+  },
+  statValue: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 13,
+    color: BLACK,
+  },
+  statLabel: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 9,
+    color: BLACK_50,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
 
   divider: {
     height: 1,
-    backgroundColor: BLACK_05,
+    backgroundColor: BLACK_08,
     marginHorizontal: 22,
   },
 
-  /* Headline / pitch on cream */
-  headlineSection: {
+  /* Match — compact horizontal, mirrors EndorserCard */
+  matchSection: {
     paddingHorizontal: 22,
     paddingVertical: 14,
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 16,
   },
-  headlineQuote: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 36,
-    color: BLACK_45,
-    lineHeight: 28,
-  },
-  headlineText: {
+  matchHeader: {
     flex: 1,
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 18,
-    color: BLACK,
-    lineHeight: 24,
-    letterSpacing: -0.2,
+    gap: 6,
+  },
+  matchHint: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 12,
+    color: BLACK_70,
+    lineHeight: 16,
   },
 
   /* Stack preview — anonymous navy plate, no identity content */

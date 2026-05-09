@@ -311,7 +311,7 @@ function StatPill({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   center: {
     flex: 1,
     alignItems: 'center',

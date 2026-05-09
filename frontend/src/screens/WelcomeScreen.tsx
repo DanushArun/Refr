@@ -158,7 +158,7 @@ export function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   container: {
     flex: 1,
     paddingHorizontal: layout.screenPaddingH,

@@ -21,7 +21,6 @@ import Animated, {
 import { type GalaxyData } from '../../lib/constellation/buildGalaxy';
 import { getDemoGalaxy } from './demoGalaxy';
 import { useDeviceTilt } from '../../hooks/useDeviceTilt';
-import { AuroraShader } from './AuroraShader';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -105,13 +104,10 @@ export function ConstellationBackdrop({
 
   return (
     <View style={styles.overlay} pointerEvents="none">
-      {/* Aurora SkSL shader is ALWAYS on — never fades. The aurora is the
-          constant atmospheric background of the app. */}
-      <AuroraShader speed={0.85} />
-
-      {/* The constellation network (orbs, paths, stars) is the only thing
-          that fades. Hidden while there are cards to swipe so the user
-          isn't distracted, fades back in when the queue is empty. */}
+      {/* The aurora itself is mounted globally in app/_layout.tsx so it
+          stays consistent across every route. This component now only owns
+          the constellation network (orbs, paths, stars), which fades in/out
+          per the `visible` prop. */}
       <Animated.View style={[StyleSheet.absoluteFillObject, fadeStyle]} pointerEvents="none">
         <Canvas style={StyleSheet.absoluteFillObject}>
           {/* BACK LAYER — distant ambient orbs (slowest parallax) */}

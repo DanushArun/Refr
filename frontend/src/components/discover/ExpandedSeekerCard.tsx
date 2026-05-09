@@ -1,0 +1,552 @@
+import React, { useEffect, useMemo } from 'react';
+import {
+  Dimensions,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  Easing,
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { Avatar } from '../common/Avatar';
+import { brandForName } from './companyBrand';
+import { Phrase } from '../../utils/haptics';
+import { colors } from '../../theme/colors';
+import type { SeekerCard as SeekerCardData } from './seekerCardData';
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+
+const CARD_LEFT = 20;
+const CARD_WIDTH = SCREEN_W - 40;
+const CARD_HEIGHT = Math.min(580, Math.round(SCREEN_H * 0.62));
+const CARD_TOP_FROM_SCREEN = 60 + 8;
+
+const BLACK = '#000000';
+const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
+const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
+const BLACK_45 = 'rgba(0, 0, 0, 0.45)';
+const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
+const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
+
+interface ExpandedSeekerCardProps {
+  card: SeekerCardData | null;
+  onClose: () => void;
+  onPass: () => void;
+  onCommit: () => void;
+}
+
+/**
+ * Card-to-full-screen container transform — referrer side.
+ * Mirrors ExpandedEndorserCard but renders seeker info as the cream content.
+ */
+export function ExpandedSeekerCard({
+  card,
+  onClose,
+  onPass,
+  onCommit,
+}: ExpandedSeekerCardProps) {
+  const progress = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  const safe = useMemo(() => card, [card]);
+
+  useEffect(() => {
+    if (!card) return;
+    Phrase.tap();
+    dragY.value = 0;
+    progress.value = withSpring(1, {
+      damping: 24,
+      stiffness: 220,
+      mass: 0.9,
+    });
+  }, [card, progress, dragY]);
+
+  const handleClose = () => {
+    Phrase.tap();
+    progress.value = withTiming(
+      0,
+      { duration: 280, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(onClose)();
+      },
+    );
+  };
+
+  // Swipe-down dismiss — same pattern as ExpandedEndorserCard
+  const dismissGesture = Gesture.Pan()
+    .activeOffsetY(15)
+    .failOffsetY([-15, 0])
+    .onUpdate((e) => {
+      if (e.translationY > 0) dragY.value = e.translationY;
+    })
+    .onEnd((e) => {
+      if (e.translationY > 120 || e.velocityY > 800) {
+        runOnJS(handleClose)();
+      } else {
+        dragY.value = withSpring(0, { stiffness: 220, damping: 22 });
+      }
+    });
+
+  const surfaceStyle = useAnimatedStyle(() => {
+    const t = progress.value;
+    const dragScale = 1 - Math.min(0.06, Math.max(0, dragY.value) / 1400);
+    return {
+      position: 'absolute',
+      left: interpolate(t, [0, 1], [CARD_LEFT, 0], Extrapolation.CLAMP),
+      top: interpolate(t, [0, 1], [CARD_TOP_FROM_SCREEN, 0], Extrapolation.CLAMP),
+      width: interpolate(t, [0, 1], [CARD_WIDTH, SCREEN_W], Extrapolation.CLAMP),
+      height: interpolate(t, [0, 1], [CARD_HEIGHT, SCREEN_H], Extrapolation.CLAMP),
+      borderRadius: interpolate(t, [0, 1], [32, 0], Extrapolation.CLAMP),
+      transform: [
+        { translateY: dragY.value },
+        { scale: dragScale },
+      ],
+    };
+  });
+
+  const backdropStyle = useAnimatedStyle(() => {
+    const dragFade = Math.max(0, 1 - dragY.value / 400);
+    return {
+      opacity:
+        interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP) *
+        dragFade,
+    };
+  });
+
+  const extrasStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0.65, 1], [0, 1], Extrapolation.CLAMP),
+    transform: [
+      {
+        translateY: interpolate(
+          progress.value,
+          [0.65, 1],
+          [16, 0],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
+
+  const closeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0.4, 1], [0, 1], Extrapolation.CLAMP),
+  }));
+
+  if (!safe) return null;
+
+  const primaryTarget = safe.targetCompanies[0] ?? 'Bangalore';
+  const brand = brandForName(primaryTarget);
+
+  return (
+    <Modal
+      visible
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={handleClose}
+    >
+    <View style={StyleSheet.absoluteFillObject}>
+      <Animated.View style={[styles.backdrop, backdropStyle]} pointerEvents="auto">
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+      </Animated.View>
+
+      <GestureDetector gesture={dismissGesture}>
+      <Animated.View style={[styles.surface, surfaceStyle]}>
+        <View style={styles.grabberRow} pointerEvents="none">
+          <View style={styles.grabber} />
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {/* Brand zone — target company hero */}
+          <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
+            <View style={styles.brandRow}>
+              <View style={[styles.brandMark, { borderColor: brand.accent }]}>
+                <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
+              </View>
+              <Text style={[styles.brandName, { color: brand.text }]} numberOfLines={1}>
+                {primaryTarget}
+              </Text>
+              <View style={styles.brandSpacer} />
+              <View style={styles.matchPill}>
+                <Text style={styles.matchPillValue}>{safe.matchPercent}</Text>
+                <Text style={styles.matchPillLabel}>MATCH</Text>
+              </View>
+            </View>
+            <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
+              {safe.targetRole}
+            </Text>
+            <View style={styles.skillsRow}>
+              {safe.skills.slice(0, 3).map((s) => (
+                <View key={s} style={styles.skillChip}>
+                  <Text style={[styles.skillText, { color: brand.text }]}>{s}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.creamZone}>
+            {/* Candidate hero — same as swipe card */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>CANDIDATE</Text>
+              <View style={styles.candidateBlock}>
+                <Avatar displayName={safe.name} size="xl" verificationRing />
+                <View style={styles.candidateMeta}>
+                  <Text style={styles.candidateName} numberOfLines={1}>{safe.name}</Text>
+                  <Text style={styles.candidateSignal} numberOfLines={1}>
+                    {safe.currentSignal}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Headline — their pitch */}
+            <View style={styles.headlineSection}>
+              <Text style={styles.headlineQuote}>“</Text>
+              <Text style={styles.headlineText}>{safe.headline}</Text>
+            </View>
+
+            {/* Extras crossfade in once mostly expanded */}
+            <Animated.View style={extrasStyle}>
+              <View style={styles.divider} />
+
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>CAREER STORY</Text>
+                <Text style={styles.story}>{safe.fullStory}</Text>
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>SKILLS</Text>
+                <View style={styles.skillsExtras}>
+                  {safe.fullSkills.map((s) => (
+                    <View key={s} style={styles.skillExtraChip}>
+                      <Text style={styles.skillExtraText}>{s}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>TARGET ROLES</Text>
+                <View style={styles.skillsExtras}>
+                  {safe.targetRoles.map((r) => (
+                    <View key={r} style={styles.skillExtraChip}>
+                      <Text style={styles.skillExtraText}>{r}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>WANTS TO JOIN</Text>
+                <View style={styles.skillsExtras}>
+                  {safe.targetCompanies.map((c) => (
+                    <View key={c} style={styles.skillExtraChip}>
+                      <Text style={styles.skillExtraText}>{c}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </Animated.View>
+
+            <View style={{ height: 96 }} />
+          </View>
+        </ScrollView>
+
+        <Animated.View style={[styles.closeWrap, closeStyle]} pointerEvents="box-none">
+          <Pressable onPress={handleClose} style={styles.closeBtn}>
+            <Ionicons name="close" size={22} color="#FFFFFF" />
+          </Pressable>
+        </Animated.View>
+
+        <Animated.View style={[styles.actionBar, extrasStyle]}>
+          <Pressable onPress={onPass} style={styles.passBtn}>
+            <Ionicons name="close" size={20} color={colors.error} />
+            <Text style={styles.passBtnText}>Pass</Text>
+          </Pressable>
+          <Pressable onPress={onCommit} style={styles.commitBtn}>
+            <Ionicons name="checkmark" size={20} color="#0A1F44" />
+            <Text style={styles.commitBtnText}>Endorse {safe.name.split(' ')[0]}</Text>
+          </Pressable>
+        </Animated.View>
+      </Animated.View>
+      </GestureDetector>
+    </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(7, 12, 28, 0.85)',
+  },
+  surface: {
+    backgroundColor: colors.cardSurface,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 24 },
+    shadowOpacity: 0.5,
+    shadowRadius: 40,
+    elevation: 24,
+  },
+  scroll: { paddingBottom: 0 },
+
+  brandZone: {
+    paddingTop: 64,
+    paddingHorizontal: 28,
+    paddingBottom: 32,
+    gap: 18,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  brandMark: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandMarkText: { fontFamily: 'InstrumentSerif-Regular', fontSize: 22 },
+  brandName: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 14,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  brandSpacer: { flex: 1 },
+  matchPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.20)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.40)',
+    alignItems: 'center',
+    minWidth: 64,
+  },
+  matchPillValue: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 16,
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  matchPillLabel: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 9,
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 1.4,
+    marginTop: -1,
+  },
+  role: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 44,
+    lineHeight: 48,
+    letterSpacing: -0.6,
+    marginTop: 6,
+  },
+  skillsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  skillChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+  },
+  skillText: { fontFamily: 'Outfit-Medium', fontSize: 13 },
+
+  creamZone: {
+    flex: 1,
+  },
+
+  section: {
+    paddingHorizontal: 28,
+    paddingTop: 26,
+    paddingBottom: 22,
+    gap: 16,
+  },
+  sectionLabel: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 11,
+    color: BLACK_50,
+    letterSpacing: 2.4,
+    textTransform: 'uppercase',
+  },
+
+  candidateBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+  },
+  candidateMeta: { flex: 1, gap: 4 },
+  candidateName: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 28,
+    color: BLACK,
+    letterSpacing: -0.4,
+  },
+  candidateSignal: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    color: BLACK_70,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: BLACK_08,
+    marginHorizontal: 28,
+  },
+
+  headlineSection: {
+    paddingHorizontal: 28,
+    paddingVertical: 22,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  headlineQuote: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 44,
+    color: BLACK_45,
+    lineHeight: 32,
+  },
+  headlineText: {
+    flex: 1,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 22,
+    color: BLACK,
+    lineHeight: 30,
+  },
+
+  story: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 15,
+    color: BLACK,
+    lineHeight: 24,
+  },
+  skillsExtras: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  skillExtraChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: BLACK_05,
+  },
+  skillExtraText: {
+    fontFamily: 'Outfit-Medium',
+    fontSize: 13,
+    color: BLACK,
+  },
+
+  /* Pill grabber — swipe-down dismiss affordance */
+  grabberRow: {
+    position: 'absolute',
+    top: 14,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  grabber: {
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(245, 241, 232, 0.55)',
+  },
+
+  closeWrap: {
+    position: 'absolute',
+    top: 56,
+    right: 18,
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.30)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  actionBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    paddingBottom: 32,
+    flexDirection: 'row',
+    gap: 12,
+    backgroundColor: colors.cardSurface,
+    borderTopWidth: 1,
+    borderTopColor: BLACK_08,
+  },
+  passBtn: {
+    flex: 1,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.4,
+    borderColor: colors.error,
+    backgroundColor: 'rgba(248, 113, 113, 0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  passBtnText: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
+    color: colors.error,
+  },
+  commitBtn: {
+    flex: 2,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.accent,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: colors.accent,
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  commitBtnText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 15,
+    color: '#0A1F44',
+    letterSpacing: 0.2,
+  },
+});

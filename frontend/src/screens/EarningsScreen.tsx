@@ -3,14 +3,17 @@ import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../components/common/Avatar';
 import { EndorserOrb } from '../components/constellation/EndorserOrb';
+import { Phrase } from '../utils/haptics';
 import { TierBadge } from '../components/tier/TierBadge';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -46,6 +49,7 @@ export function EarningsScreen() {
   const [reputation, setReputation] = useState<ReputationData | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [payoutsExpanded, setPayoutsExpanded] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -97,34 +101,50 @@ export function EarningsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1 · HERO — earnings on a cream credit-card */}
+        {/* 1 · HERO — gold "money" card */}
         <View style={styles.earningsHero}>
-          <View style={styles.heroOrbWrap}>
-            <EndorserOrb
-              score={reputation.endorsementScore}
-              hires={reputation.successfulHires ?? 0}
-              active={inFlight}
-              size={120}
-              showLabel={false}
-            />
-          </View>
-          <Text style={styles.heroLabel}>LIFETIME EARNINGS</Text>
-          <Text style={styles.heroValue}>{formatINR(lifetime)}</Text>
-          <Text style={styles.heroSub}>
-            {reputation.user.displayName} · {reputation.company.name}
-          </Text>
-
-          {/* Material overlays — same nautical credit-card treatment */}
+          {/* Gold metallic gradient — bright top-left to deeper gold bottom-right */}
           <LinearGradient
-            colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.05)']}
+            colors={['#E8BD58', '#D4A744', '#B7892A']}
             locations={[0, 0.55, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
+            style={styles.heroGoldFill}
+            pointerEvents="none"
+          />
+          {/* Top sheen + bottom shade for material depth */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.10)']}
+            locations={[0, 0.5, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
             style={styles.materialSheen}
             pointerEvents="none"
           />
           <View style={styles.bevelTop} pointerEvents="none" />
           <View style={styles.bevelBottom} pointerEvents="none" />
+
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroTopInfo}>
+              <Text style={styles.heroLabel}>LIFETIME EARNINGS</Text>
+              <Text style={styles.heroSub} numberOfLines={1}>
+                {reputation.user.displayName} · {reputation.company.name}
+              </Text>
+            </View>
+            <View style={styles.heroOrbWrap}>
+              <EndorserOrb
+                score={reputation.endorsementScore}
+                hires={reputation.successfulHires ?? 0}
+                active={inFlight}
+                size={56}
+                showLabel={false}
+              />
+            </View>
+          </View>
+
+          <Text style={styles.heroValue} numberOfLines={1} adjustsFontSizeToFit>
+            {formatINRFull(lifetime)}
+          </Text>
 
           <View style={styles.heroSplits}>
             <HeroTile label="This month" value={formatINR(thisMonth)} accent={thisMonth > 0} />
@@ -133,20 +153,40 @@ export function EarningsScreen() {
           </View>
         </View>
 
-        {/* 2 · PAYOUTS — cream credit-card list */}
+        {/* 2 · PAYOUTS — collapsible dark glass list */}
         <View style={styles.section}>
-          <View style={styles.sectionHead}>
+          <Pressable
+            onPress={() => {
+              if (payouts.length === 0) return;
+              Phrase.tick();
+              setPayoutsExpanded((v) => !v);
+            }}
+            style={styles.sectionHead}
+            accessibilityRole="button"
+            accessibilityLabel={
+              payoutsExpanded ? 'Collapse recent payouts' : 'Expand recent payouts'
+            }
+          >
             <Text style={styles.sectionTitle}>Recent payouts</Text>
-            <Text style={styles.sectionCount}>{payouts.length}</Text>
-          </View>
+            <View style={styles.sectionRight}>
+              <Text style={styles.sectionCount}>{payouts.length}</Text>
+              {payouts.length > 0 ? (
+                <Ionicons
+                  name={payoutsExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.textTertiary}
+                />
+              ) : null}
+            </View>
+          </Pressable>
           {payouts.length === 0 ? (
-            <CreamCard>
+            <DarkCard>
               <Text style={styles.emptyText}>
                 No hires yet. Submit matched candidates from Activity to start earning.
               </Text>
-            </CreamCard>
-          ) : (
-            <CreamCard padded={false}>
+            </DarkCard>
+          ) : payoutsExpanded ? (
+            <DarkCard padded={false}>
               {payouts.map((p, i) => (
                 <PayoutRow
                   key={p.id}
@@ -154,8 +194,8 @@ export function EarningsScreen() {
                   isLast={i === payouts.length - 1}
                 />
               ))}
-            </CreamCard>
-          )}
+            </DarkCard>
+          ) : null}
         </View>
 
         {/* 3 · TIER — cream credit-card with material */}
@@ -192,6 +232,12 @@ function formatINR(n: number): string {
   if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
   if (n >= 1000) return `₹${Math.round(n / 1000)}K`;
   return `₹${n}`;
+}
+
+// Full Indian-locale grouping (e.g. ₹66,000, ₹2,20,000) — used for the hero
+// lifetime number where there's room for the actual amount.
+function formatINRFull(n: number): string {
+  return `₹${n.toLocaleString('en-IN')}`;
 }
 
 function isThisMonth(iso: string): boolean {
@@ -245,8 +291,8 @@ function HeroTile({
   accent?: boolean;
   muted?: boolean;
 }) {
-  // Hero card is cream — text is dark by default; gold accent stays brand-colored
-  const color = accent ? '#B07A1A' : muted ? 'rgba(0, 0, 0, 0.55)' : '#000000';
+  // Hero card is gold — text is dark; accent (positive money) goes deeper bronze
+  const color = accent ? '#5D3F0E' : muted ? 'rgba(0, 0, 0, 0.55)' : '#000000';
   return (
     <View style={styles.heroTile}>
       <Text style={styles.heroTileLabel}>{label.toUpperCase()}</Text>
@@ -274,8 +320,9 @@ function PayoutRow({ payout, isLast }: { payout: Payout; isLast?: boolean }) {
 }
 
 /**
- * Cream credit-card container with material overlays. Used for any list/section
- * surface so the entire screen reads as one consistent vocabulary.
+ * Cream credit-card container with material overlays — used for the leaderboard
+ * (and any future "achievement" surface) so it feels like the same artefact as
+ * the earnings hero.
  */
 function CreamCard({
   children,
@@ -297,6 +344,21 @@ function CreamCard({
       />
       <View style={styles.creamCardBevelTop} pointerEvents="none" />
       <View style={styles.creamCardBevelBottom} pointerEvents="none" />
+    </View>
+  );
+}
+
+/** Dark glass section surface — used for the payouts list. */
+function DarkCard({
+  children,
+  padded = true,
+}: {
+  children: React.ReactNode;
+  padded?: boolean;
+}) {
+  return (
+    <View style={styles.glassCard}>
+      <View style={padded ? styles.glassCardBody : undefined}>{children}</View>
     </View>
   );
 }
@@ -446,10 +508,10 @@ function LeaderboardRow({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   center: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -460,38 +522,57 @@ const styles = StyleSheet.create({
     gap: spacing[6],
   },
 
-  /* Hero — gold-trimmed cream credit-card */
+  /* Hero — gold metallic "money" card (compact) */
   earningsHero: {
-    backgroundColor: colors.cardSurface,
     borderRadius: layout.cardBorderRadiusLarge,
-    padding: spacing[6],
-    alignItems: 'center',
-    gap: spacing[1],
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
     overflow: 'hidden',
+    gap: spacing[2],
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.30,
-    shadowRadius: 22,
+    shadowRadius: 20,
     elevation: 14,
+  },
+  heroGoldFill: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: layout.cardBorderRadiusLarge,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
+  heroOrbWrap: {
+    // Orb component renders a small overshoot for halo bleed. Negative margins
+    // recover that overshoot so the orb aligns to the card's right padding
+    // instead of pushing the row taller.
+    marginRight: -spacing[1],
+    marginVertical: -spacing[1],
+  },
+  heroTopInfo: {
+    flex: 1,
+    alignItems: 'flex-start',
+    gap: 2,
   },
   heroLabel: {
     fontFamily: 'Outfit-Bold',
     fontSize: 10,
-    color: 'rgba(0, 0, 0, 0.55)',
+    color: 'rgba(0, 0, 0, 0.65)',
     letterSpacing: 2.4,
-  },
-  heroValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 56,
-    lineHeight: 62,
-    letterSpacing: -2,
-    color: '#000000',
   },
   heroSub: {
     fontFamily: 'Outfit-Medium',
     fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.60)',
-    marginBottom: spacing[4],
+    color: 'rgba(0, 0, 0, 0.62)',
+  },
+  heroValue: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 44,
+    lineHeight: 50,
+    letterSpacing: -1.6,
+    color: '#000000',
   },
   heroSplits: {
     flexDirection: 'row',
@@ -500,7 +581,7 @@ const styles = StyleSheet.create({
   },
   heroTile: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: 'rgba(0, 0, 0, 0.10)',
     borderRadius: 12,
     paddingVertical: spacing[3],
     alignItems: 'center',
@@ -509,16 +590,13 @@ const styles = StyleSheet.create({
   heroTileLabel: {
     fontFamily: 'Outfit-Bold',
     fontSize: 9,
-    color: 'rgba(0, 0, 0, 0.50)',
+    color: 'rgba(0, 0, 0, 0.55)',
     letterSpacing: 1.0,
   },
   heroTileValue: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 16,
     letterSpacing: -0.3,
-  },
-  heroOrbWrap: {
-    marginBottom: spacing[2],
   },
   materialSheen: {
     ...StyleSheet.absoluteFillObject,
@@ -530,7 +608,7 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
   },
   bevelBottom: {
     position: 'absolute',
@@ -538,15 +616,20 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     height: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.18)',
+    backgroundColor: 'rgba(0, 0, 0, 0.22)',
   },
 
   /* Section */
   section: { gap: spacing[2] },
   sectionHead: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  sectionRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
   },
   sectionTitle: {
     fontFamily: 'InstrumentSerif-Regular',
@@ -561,17 +644,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  /* Payouts — cream credit-card list with material */
-  payoutCard: {
-    backgroundColor: colors.cardSurface,
-    borderRadius: layout.cardBorderRadius,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.20,
-    shadowRadius: 14,
-    elevation: 8,
-  },
+  /* Payouts — dark glass list */
   payoutRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -579,70 +652,62 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.06)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   payoutRowLast: { borderBottomWidth: 0 },
   payoutMeta: { flex: 1, gap: 2 },
   payoutName: {
     fontFamily: 'Outfit-SemiBold',
     fontSize: 14,
-    color: '#000000',
+    color: colors.text,
   },
   payoutSub: {
     fontFamily: 'Outfit-Medium',
     fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.60)',
+    color: colors.textSecondary,
   },
   payoutRight: { alignItems: 'flex-end', gap: 2 },
   payoutAmount: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 14,
-    color: '#15803D',
+    color: colors.success,
   },
   payoutDate: {
     fontFamily: 'JetBrainsMono-Regular',
     fontSize: 11,
-    color: 'rgba(0, 0, 0, 0.45)',
+    color: colors.textTertiary,
   },
 
   /* Empty state */
-  emptyBlock: {
-    backgroundColor: colors.cardSurface,
-    borderRadius: layout.cardBorderRadius,
-    padding: spacing[4],
-  },
   emptyText: {
     fontFamily: 'Outfit-Regular',
     fontSize: 13,
-    color: 'rgba(0, 0, 0, 0.60)',
+    color: colors.textSecondary,
     lineHeight: 19,
   },
 
-  /* Tier card — cream credit-card */
+  /* Tier card — dark glass */
   tierCard: {
-    backgroundColor: colors.cardSurface,
+    backgroundColor: colors.surfaceLevel1,
     borderRadius: layout.cardBorderRadius,
     padding: spacing[5],
     gap: spacing[4],
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 16,
-    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.18)',
   },
   tierScoreLabel: {
     fontFamily: 'Outfit-Bold',
     fontSize: 10,
-    color: 'rgba(0, 0, 0, 0.50)',
+    color: colors.textSecondary,
     letterSpacing: 1.8,
   },
   tierScoreValue: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 64,
     lineHeight: 68,
-    color: '#000000',
+    color: colors.text,
     letterSpacing: -2,
     marginTop: -spacing[1],
   },
@@ -652,13 +717,13 @@ const styles = StyleSheet.create({
     gap: spacing[2],
   },
   tierContextDot: {
-    color: 'rgba(0, 0, 0, 0.40)',
+    color: colors.textTertiary,
     fontSize: 16,
   },
   tierContextRank: {
     fontFamily: 'Outfit-SemiBold',
     fontSize: 13,
-    color: '#000000',
+    color: colors.text,
   },
   progressBlock: {
     alignSelf: 'stretch',
@@ -679,7 +744,7 @@ const styles = StyleSheet.create({
   progressEndNum: {
     fontFamily: 'JetBrainsMono-Regular',
     fontSize: 11,
-    color: 'rgba(0, 0, 0, 0.45)',
+    color: colors.textTertiary,
   },
   progressRailWrap: {
     paddingHorizontal: 2,
@@ -687,7 +752,7 @@ const styles = StyleSheet.create({
   progressRail: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.10)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     position: 'relative',
   },
   progressFill: {
@@ -701,7 +766,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FAFAF7',
+    backgroundColor: colors.background,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -709,7 +774,7 @@ const styles = StyleSheet.create({
   progressKnobNum: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 10,
-    color: '#000000',
+    color: colors.text,
   },
   progressHint: {
     textAlign: 'center',
@@ -724,7 +789,7 @@ const styles = StyleSheet.create({
   },
   scoreRule: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 10,
     paddingVertical: spacing[2],
     paddingHorizontal: spacing[2],
@@ -734,7 +799,7 @@ const styles = StyleSheet.create({
   scoreRuleLabel: {
     fontFamily: 'Outfit-Medium',
     fontSize: 10,
-    color: 'rgba(0, 0, 0, 0.55)',
+    color: colors.textSecondary,
     letterSpacing: 0.3,
   },
   scoreRuleDelta: {
@@ -787,7 +852,7 @@ const styles = StyleSheet.create({
     color: 'rgba(0, 0, 0, 0.45)',
   },
 
-  /* Reusable cream credit-card with material */
+  /* Cream credit-card container — used for leaderboard */
   creamCard: {
     backgroundColor: colors.cardSurface,
     borderRadius: layout.cardBorderRadius,
@@ -820,5 +885,17 @@ const styles = StyleSheet.create({
     right: 18,
     height: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.18)',
+  },
+
+  /* Dark glass section card — used for the payouts list */
+  glassCard: {
+    backgroundColor: colors.surfaceLevel1,
+    borderRadius: layout.cardBorderRadius,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  glassCardBody: {
+    padding: spacing[4],
   },
 });

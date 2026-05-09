@@ -41,7 +41,7 @@ export function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: 'transparent' },
   tapTarget: { ...StyleSheet.absoluteFillObject },
   continueHint: {
     position: 'absolute',

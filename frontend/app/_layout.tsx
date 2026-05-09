@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ import {
 import { colors } from '../src/theme/colors';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { loadDemoRole } from '../src/services/demoRoleStorage';
+import { AuroraShader } from '../src/components/constellation/AuroraShader';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,9 +54,15 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <SystemBars style="light" hidden={false} />
           <StatusBar style="light" backgroundColor="transparent" translucent />
+          {/* Global aurora — sits behind every route so the atmosphere is
+              constant across navigation. Pointer events disabled so it never
+              steals taps from the foreground UI. */}
+          <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            <AuroraShader speed={0.85} />
+          </View>
           <Stack screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
+            contentStyle: { backgroundColor: 'transparent' },
           }} />
         </SafeAreaProvider>
       </GestureHandlerRootView>

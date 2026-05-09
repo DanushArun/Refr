@@ -11,6 +11,9 @@ public class LiquidGlassModule: Module {
       Prop("tintColor") { (view: LiquidGlassView, value: String?) in
         view.applyTintColor(value)
       }
+      Prop("tintIntensity") { (view: LiquidGlassView, value: CGFloat) in
+        view.applyTintIntensity(value)
+      }
       Prop("cornerRadius") { (view: LiquidGlassView, value: CGFloat) in
         view.applyCornerRadius(value)
       }

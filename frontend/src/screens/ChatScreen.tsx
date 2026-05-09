@@ -705,7 +705,7 @@ const RADIUS_LG = 20;
 const RADIUS_SM = 6;
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   kav: { flex: 1 },
 
