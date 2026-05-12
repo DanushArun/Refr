@@ -93,7 +93,15 @@ export interface DemoSeeker {
   yearsOfExperience: number;
   targetRoles: string[];
   targetCompanies: string[];
+  /** Curated remote portrait URL for the demo. Mix is ~80% female / 20% male
+   *  as requested. Replace with owned/licensed Indian student photography
+   *  for production — these IDs are best-effort placeholders. */
+  photoUrl: string;
 }
+
+// Helper for curated portrait URLs — same shape as the office photo helper.
+const P = (id: string): string =>
+  `https://images.unsplash.com/${id}?w=480&q=80&auto=format&fit=crop&crop=faces`;
 
 export const DEMO_SEEKERS: DemoSeeker[] = [
   {
@@ -109,6 +117,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 6,
     targetRoles: ['Senior Backend Engineer', 'Staff Engineer'],
     targetCompanies: ['Razorpay', 'Zepto', 'Swiggy'],
+    photoUrl: P('photo-1531123897727-8f129e1688ce'),
   },
   {
     id: '5',
@@ -123,6 +132,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['Senior Backend Engineer'],
     targetCompanies: ['Razorpay', 'CRED', 'Groww'],
+    photoUrl: P('photo-1494790108377-be9c29b29330'),
   },
   {
     id: '6',
@@ -137,6 +147,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 5,
     targetRoles: ['Senior Product Engineer', 'Full-stack Engineer'],
     targetCompanies: ['Zepto', 'Meesho', 'Groww'],
+    photoUrl: P('photo-1527980965255-d3b416303d12'),
   },
   {
     id: '7',
@@ -151,11 +162,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['Senior Data Engineer', 'Analytics Engineer'],
     targetCompanies: ['Swiggy', 'PhonePe', 'Groww'],
+    photoUrl: P('photo-1573496359142-b8d87734a5a2'),
   },
   {
     id: '8',
-    name: 'Karthik Ramesh',
-    email: 'karthik.r@gmail.com',
+    name: 'Kavya Ramesh',
+    email: 'kavya.ramesh@gmail.com',
     headline: 'Ex-Walmart Labs backend. Targeting pure product startups.',
     story:
       '5 years at Walmart Labs building supply chain services in Java/Kotlin. '
@@ -165,6 +177,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 5,
     targetRoles: ['Senior Backend Engineer', 'Tech Lead'],
     targetCompanies: ['Zepto', 'Meesho', 'Razorpay'],
+    photoUrl: P('photo-1580489944761-15a19d654956'),
   },
   {
     id: '9',
@@ -179,11 +192,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 3,
     targetRoles: ['Senior Frontend Engineer', 'Design Engineer'],
     targetCompanies: ['CRED', 'Razorpay', 'Atlassian India'],
+    photoUrl: P('photo-1546961342-c7c8ecb1a4d4'),
   },
   {
     id: '10',
-    name: 'Rohan Bhat',
-    email: 'rohan.bhat@gmail.com',
+    name: 'Riya Bhat',
+    email: 'riya.bhat@gmail.com',
     headline: 'SRE at Uber India. Exploring platform engineering roles.',
     story:
       '4 years on-call at Uber. Shipped the multi-region failover playbook. '
@@ -193,6 +207,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 6,
     targetRoles: ['Platform Engineer', 'Staff Engineer'],
     targetCompanies: ['Razorpay', 'Atlassian India', 'Google India'],
+    photoUrl: P('photo-1531746020798-e6953c6e8e04'),
   },
   {
     id: '11',
@@ -207,11 +222,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['Senior Product Manager', 'Product Lead'],
     targetCompanies: ['CRED', 'PhonePe', 'Zepto'],
+    photoUrl: P('photo-1517841905240-472988babdf9'),
   },
   {
     id: '12',
-    name: 'Nikhil Rao',
-    email: 'nikhil.rao@gmail.com',
+    name: 'Nidhi Rao',
+    email: 'nidhi.rao@gmail.com',
     headline: 'ML engineer. Ranking systems at scale. Want bigger data.',
     story:
       '3 years at InMobi building ad ranking models. Moved 5% of the global '
@@ -221,6 +237,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['ML Engineer', 'Applied Scientist'],
     targetCompanies: ['Flipkart', 'Swiggy', 'Google India'],
+    photoUrl: P('photo-1438761681033-6461ffad8d80'),
   },
   {
     id: '13',
@@ -235,11 +252,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 5,
     targetRoles: ['Senior Product Designer', 'Design Lead'],
     targetCompanies: ['CRED', 'Razorpay', 'Meesho'],
+    photoUrl: P('photo-1592595896616-c37162298647'),
   },
   {
     id: '14',
-    name: 'Harsh Agarwal',
-    email: 'harsh.agarwal@gmail.com',
+    name: 'Harshita Agarwal',
+    email: 'harshita.agarwal@gmail.com',
     headline: 'DevOps + security. Left consulting, want product company.',
     story:
       '4 years at Deloitte doing DevSecOps for banks. Miserable. Want to '
@@ -249,6 +267,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['DevOps Engineer', 'Security Engineer'],
     targetCompanies: ['Razorpay', 'PhonePe', 'CRED'],
+    photoUrl: P('photo-1607746882042-944635dfe10e'),
   },
   {
     id: '15',
@@ -263,6 +282,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 3,
     targetRoles: ['Senior Full-stack Engineer', 'Product Engineer'],
     targetCompanies: ['Razorpay', 'Groww', 'CRED'],
+    photoUrl: P('photo-1607990281513-2c110a25bd8c'),
   },
 ];
 
@@ -870,38 +890,8 @@ const baseReferrerReferral = {
   companyId: COMPANY.razorpay.id,
 } as const;
 
-/**
- * Stable demo headshot per seeker.
- *
- * Why RandomUser instead of Pravatar: Pravatar's portrait pool skews
- * middle-aged Western and reads as stock photography on a card designed
- * for early-career tech folks. RandomUser's `api/portraits/{men|women}/N`
- * dataset leans younger and more contemporary — the Endorsly target user
- * is fresh-out-of-college through ~mid-30s, which is what we want
- * represented in the demo.
- *
- * The URL is deterministic per seeker id (hash → folder + index), so each
- * seeker keeps the same face across reloads without us having to thread
- * an `avatarUrl` field through every DemoSeeker entry by hand.
- *
- * Honest caveat: RandomUser's static portraits aren't filtered by
- * nationality, so some won't visually match the South-Asian names in
- * DEMO_SEEKERS. Bundled licensed photography is the upgrade path; until
- * then, this is closer to "young professional" than the prior approach.
- */
-function demoHeadshotFor(seekerId: string): string {
-  // Tiny FNV-ish hash so the same seeker always lands on the same portrait.
-  let hash = 0;
-  for (let i = 0; i < seekerId.length; i++) {
-    hash = (hash * 31 + seekerId.charCodeAt(i)) | 0;
-  }
-  const abs = Math.abs(hash);
-  // RandomUser exposes 0-99 portraits per folder. Even hash → men, odd → women,
-  // so the demo set has gender variety without us tagging each seeker.
-  const folder = abs % 2 === 0 ? 'men' : 'women';
-  const idx = abs % 100;
-  return `https://randomuser.me/api/portraits/${folder}/${idx}.jpg`;
-}
+// Stable demo headshots are now stored as `photoUrl` on each DemoSeeker
+// entry — curated to be ~80% female / 20% male per the visual brief.
 
 function inboxFromSeeker(seekerId: string, overrides: {
   id: string;
@@ -932,7 +922,10 @@ function inboxFromSeeker(seekerId: string, overrides: {
       seekerNote: overrides.seekerNote ?? `Hi Nivrant, I am ${s.name.split(' ')[0]}. ${s.story.slice(0, 100)}...`,
     },
     seekerName: s.name,
-    seekerAvatar: demoHeadshotFor(s.id),
+    // Use the curated portrait from DEMO_SEEKERS so the endorser's Inbox /
+    // Active / chat all show the SAME face for a given seeker — instead of
+    // the previous RandomUser hash which sometimes mismatched gender.
+    seekerAvatar: s.photoUrl,
     seekerHeadline: seekerHeadline(s),
     matchScore: overrides.matchScore,
   };

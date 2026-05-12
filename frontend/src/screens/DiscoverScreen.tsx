@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { PressableScale } from '../components/common/PressableScale';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,22 +16,53 @@ import {
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { spacing, layout } from '../theme/spacing';
+import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
-const COMPANIES = ['All', 'Google', 'Flipkart', 'Razorpay', 'Swiggy'];
+type CompanyFilter = 'all' | string;
 
 export function DiscoverScreen() {
   const [queueKey, setQueueKey] = useState(0);
-  const cards = useMemo(() => buildEndorserCards('1'), [queueKey]);
+  const allCards = useMemo(() => buildEndorserCards('1'), [queueKey]);
 
-  // Warm the image cache for ALL upcoming office photos in this queue so the
-  // first paint of each card already has its hero image. Without this, every
-  // card flashes navy → image on its first reveal. Refetched only when the
-  // queue itself rotates (queueKey change).
+  // Warm the image cache for ALL upcoming office photos in the unfiltered
+  // queue so the first paint of each card already has its hero image.
+  // Refetched only when the queue itself rotates (queueKey change).
   useEffect(() => {
-    prefetchImages(cards.map((c) => officeImageUrlFor(c.companyName)));
-  }, [cards]);
+    prefetchImages(allCards.map((c) => officeImageUrlFor(c.companyName)));
+  }, [allCards]);
+
   const [index, setIndex] = useState(0);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState<CompanyFilter>('all');
+
+  // Apply the company filter to the queue, and reset index whenever the
+  // active set changes so the user always lands at the top of the new list.
+  const cards = useMemo(
+    () =>
+      activeFilter === 'all'
+        ? allCards
+        : allCards.filter((c) => c.companyName === activeFilter),
+    [allCards, activeFilter],
+  );
+  useEffect(() => {
+    setIndex(0);
+  }, [activeFilter, queueKey]);
+
+  // Build filter options from companies actually present in the queue, with
+  // a per-company count so the user can see at a glance which lanes have
+  // candidates. Stable until the underlying queue rebuilds.
+  const filterOptions = useMemo<readonly FilterOption<CompanyFilter>[]>(() => {
+    const counts = new Map<string, number>();
+    for (const c of allCards) {
+      counts.set(c.companyName, (counts.get(c.companyName) ?? 0) + 1);
+    }
+    const companyOpts: FilterOption<CompanyFilter>[] = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ key: name, label: name, count }));
+    return [
+      { key: 'all', label: 'All', count: allCards.length },
+      ...companyOpts,
+    ];
+  }, [allCards]);
   // Tapped card animates from its deck position into a full-screen detail sheet
   const [expandedCard, setExpandedCard] = useState<EndorserCard | null>(null);
   // Token-based trigger so the celebration fires once per right-swipe
@@ -117,8 +147,7 @@ export function DiscoverScreen() {
     setCelebrationTrigger(null);
   }, []);
 
-  const handleFilterPress = useCallback((company: string) => {
-    Phrase.tick();
+  const handleFilterPress = useCallback((company: CompanyFilter) => {
     setActiveFilter(company);
   }, []);
 
@@ -142,33 +171,12 @@ export function DiscoverScreen() {
           </View>
         </View>
 
-        <View style={styles.filterContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScroll}
-          >
-            {COMPANIES.map((company) => (
-              <PressableScale
-                key={company}
-                onPress={() => handleFilterPress(company)}
-                style={[
-                  styles.filterChip,
-                  activeFilter === company && styles.filterChipActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    activeFilter === company && styles.filterTextActive,
-                  ]}
-                >
-                  {company}
-                </Text>
-              </PressableScale>
-            ))}
-          </ScrollView>
-        </View>
+        <FilterBar
+          options={filterOptions}
+          current={activeFilter}
+          onChange={handleFilterPress}
+          ariaLabel="Endorser company filter"
+        />
 
         <View style={styles.deckFrame}>
           <SwipeDeck<EndorserCard>
@@ -265,40 +273,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  filterContainer: {
-    height: 54,
-    marginTop: 4,
-  },
-  filterScroll: {
-    paddingHorizontal: layout.screenPaddingH,
-    alignItems: 'center',
-    gap: 10,
-  },
-  filterChip: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  filterChipActive: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.35,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  filterText: {
-    fontFamily: 'Outfit-Medium',
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  filterTextActive: {
-    color: '#000000',
-    fontFamily: 'Outfit-Bold',
   },
   deckFrame: {
     flex: 1,

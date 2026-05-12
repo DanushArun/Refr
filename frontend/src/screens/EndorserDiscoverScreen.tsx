@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { PressableScale } from '../components/common/PressableScale';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
@@ -16,9 +16,11 @@ import {
   type SeekerCard,
 } from '../components/discover/seekerCardData';
 import { Phrase } from '../utils/haptics';
+import { prefetchImages } from '../utils/prefetchImages';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { spacing, layout } from '../theme/spacing';
+import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 /**
  * Endorser Discover — referrer's swipe stack of incoming candidates.
@@ -56,6 +58,13 @@ export function EndorserDiscoverScreen() {
   useEffect(() => {
     setIndex(0);
   }, [expFilter, queueKey]);
+
+  // Warm the portrait cache for every upcoming candidate so the first paint
+  // of each card already has the face — no flash from initials → photo on
+  // reveal. Refetched only when the queue itself rotates.
+  useEffect(() => {
+    prefetchImages(allCards.map((c) => c.photoUrl));
+  }, [allCards]);
 
   // Per-bucket counts for the chip badges — calculated against the full
   // queue so chip totals don't shift around as the user toggles between
@@ -124,10 +133,17 @@ export function EndorserDiscoverScreen() {
   }, []);
 
   const onPickExp = useCallback((next: ExpFilter) => {
-    if (next === expFilter) return;
-    Phrase.tick();
     setExpFilter(next);
-  }, [expFilter]);
+  }, []);
+
+  const filterOptions = useMemo<readonly FilterOption<ExpFilter>[]>(
+    () =>
+      EXP_FILTERS.map((opt) => ({
+        ...opt,
+        count: opt.key === 'all' ? allCards.length : expCounts[opt.key],
+      })),
+    [expCounts, allCards.length],
+  );
 
   return (
     <View style={styles.container}>
@@ -147,61 +163,14 @@ export function EndorserDiscoverScreen() {
           </View>
         </View>
 
-        {/* Experience-level filter strip — bespoke to the endorser's queue.
-            Same chip language as the seeker's Discovery + Matches so the
-            three swipe/list surfaces feel like one product. */}
-        <View style={styles.filterContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScroll}
-          >
-            {EXP_FILTERS.map((opt) => {
-              const active = opt.key === expFilter;
-              const count = opt.key === 'all' ? allCards.length : expCounts[opt.key];
-              const empty = !active && count === 0 && opt.key !== 'all';
-              return (
-                <PressableScale
-                  key={opt.key}
-                  onPress={() => onPickExp(opt.key)}
-                  hitSlop={6}
-                  style={[
-                    styles.filterChip,
-                    active && styles.filterChipActive,
-                    empty && styles.filterChipEmpty,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.filterText,
-                      active && styles.filterTextActive,
-                      empty && styles.filterTextEmpty,
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                  {count > 0 && (
-                    <View
-                      style={[
-                        styles.filterBadge,
-                        active && styles.filterBadgeActive,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.filterBadgeText,
-                          active && styles.filterBadgeTextActive,
-                        ]}
-                      >
-                        {count}
-                      </Text>
-                    </View>
-                  )}
-                </PressableScale>
-              );
-            })}
-          </ScrollView>
-        </View>
+        {/* Experience-level filter strip — same shared FilterBar used by
+            every list surface in the app. */}
+        <FilterBar
+          options={filterOptions}
+          current={expFilter}
+          onChange={onPickExp}
+          ariaLabel="Candidate experience filter"
+        />
 
         <View style={styles.deckFrame}>
           <SwipeDeck<SeekerCard>
@@ -362,75 +331,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(212, 167, 68, 0.20)',
-  },
-
-  /* Filter strip — same chip language as Matches + Discovery, scaled to
-     match this screen's denser top bar. */
-  filterContainer: {
-    height: 50,
-    marginBottom: 4,
-  },
-  filterScroll: {
-    paddingHorizontal: layout.screenPaddingH,
-    alignItems: 'center',
-    gap: 8,
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.10)',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  filterChipActive: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.30,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  filterChipEmpty: {
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    backgroundColor: 'transparent',
-  },
-  filterText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    color: colors.textSecondary,
-    letterSpacing: 0.1,
-  },
-  filterTextActive: {
-    color: '#0A1F44',
-    fontFamily: 'Outfit-Bold',
-  },
-  filterTextEmpty: {
-    color: colors.textTertiary,
-  },
-  filterBadge: {
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 5,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  filterBadgeActive: {
-    backgroundColor: 'rgba(10, 31, 68, 0.20)',
-  },
-  filterBadgeText: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10,
-    color: colors.textSecondary,
-    letterSpacing: 0.2,
-  },
-  filterBadgeTextActive: {
-    color: '#0A1F44',
   },
 
   deckFrame: {

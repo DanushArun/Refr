@@ -14,6 +14,7 @@ import type { ReferrerInboxItem, ReferralStatus } from '@refr/shared';
 import { referralsApi } from '../../src/services/api';
 import { Button } from '../../src/components/common/Button';
 import { EndorserVoyageCard } from '../../src/components/activity/EndorserVoyageCard';
+import { FilterBar, type FilterOption } from '../../src/components/common/FilterBar';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
@@ -27,6 +28,26 @@ const ACTIVE_STATES: Set<ReferralStatus> = new Set([
   'interviewing',
   'hired',
 ]);
+
+/** Stage taxonomy for the FilterBar — same axis the seeker pipeline uses,
+ *  so both sides of the marketplace see the voyage in the same stages. */
+type StageFilter = 'all' | 'matched' | 'submitted' | 'interviewing' | 'hired';
+
+const STAGE_FILTERS: { key: StageFilter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'matched', label: 'Matched' },
+  { key: 'submitted', label: 'Submitted' },
+  { key: 'interviewing', label: 'Interviewing' },
+  { key: 'hired', label: 'Hired' },
+];
+
+function bucketFor(status: ReferralStatus): Exclude<StageFilter, 'all'> | null {
+  if (status === 'accepted') return 'matched';
+  if (status === 'submitted') return 'submitted';
+  if (status === 'interviewing') return 'interviewing';
+  if (status === 'hired') return 'hired';
+  return null;
+}
 
 /** Sort order: closest-to-hired first, hired (done) at the bottom.
  *  Drives urgency — interviewing needs action soonest, hired is celebratory. */
@@ -51,6 +72,7 @@ export default function ActiveRoute() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [stageFilter, setStageFilter] = useState<StageFilter>('all');
 
   const load = useCallback(async () => {
     setError(null);
@@ -66,8 +88,13 @@ export default function ActiveRoute() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const filteredItems = useMemo(() => {
+    if (stageFilter === 'all') return items;
+    return items.filter((it) => bucketFor(it.referral.status) === stageFilter);
+  }, [items, stageFilter]);
+
   const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
+    return [...filteredItems].sort((a, b) => {
       const rankA = STAGE_SORT_RANK[a.referral.status] ?? 99;
       const rankB = STAGE_SORT_RANK[b.referral.status] ?? 99;
       if (rankA !== rankB) return rankA - rankB;
@@ -76,11 +103,36 @@ export default function ActiveRoute() {
       const tB = latestTimestampForStage(b.referral);
       return new Date(tB ?? 0).getTime() - new Date(tA ?? 0).getTime();
     });
+  }, [filteredItems]);
+
+  // Stage counts on the unfiltered set so chip badges don't re-shuffle as
+  // the user toggles between filters.
+  const stageCounts = useMemo(() => {
+    const out: Record<Exclude<StageFilter, 'all'>, number> = {
+      matched: 0,
+      submitted: 0,
+      interviewing: 0,
+      hired: 0,
+    };
+    for (const it of items) {
+      const b = bucketFor(it.referral.status);
+      if (b) out[b] += 1;
+    }
+    return out;
   }, [items]);
 
-  const { pendingValue, paidValue, hiredThisMonth, inFlightCount } = useMemo(() => {
-    let pending = 0;
-    let paid = 0;
+  const filterOptions = useMemo<readonly FilterOption<StageFilter>[]>(
+    () =>
+      STAGE_FILTERS.map((opt) => ({
+        ...opt,
+        count: opt.key === 'all' ? items.length : stageCounts[opt.key],
+      })),
+    [stageCounts, items.length],
+  );
+
+  // Subtitle counts: kept here for context (in-flight + hired-this-month);
+  // ₹ values now live on the Earnings tab per founder direction.
+  const { hiredThisMonth, inFlightCount } = useMemo(() => {
     let thisMonth = 0;
     let inFlight = 0;
     const start = new Date();
@@ -88,15 +140,13 @@ export default function ActiveRoute() {
     start.setHours(0, 0, 0, 0);
     for (const it of items) {
       if (it.referral.status === 'hired') {
-        paid += PAYOUT_PER_HIRE;
         const t = it.referral.outcomeAt ? new Date(it.referral.outcomeAt).getTime() : 0;
         if (t >= start.getTime()) thisMonth += 1;
       } else {
-        pending += PAYOUT_PER_HIRE;
         inFlight += 1;
       }
     }
-    return { pendingValue: pending, paidValue: paid, hiredThisMonth: thisMonth, inFlightCount: inFlight };
+    return { hiredThisMonth: thisMonth, inFlightCount: inFlight };
   }, [items]);
 
   const transition = useCallback(
@@ -210,9 +260,6 @@ export default function ActiveRoute() {
     );
   }
 
-  const formatINR = (n: number) =>
-    n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : n >= 1000 ? `₹${Math.round(n / 1000)}K` : `₹${n}`;
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
@@ -222,11 +269,27 @@ export default function ActiveRoute() {
         </Text>
       </View>
 
+      {items.length > 0 && (
+        <FilterBar
+          options={filterOptions}
+          current={stageFilter}
+          onChange={setStageFilter}
+          ariaLabel="Active stage filter"
+        />
+      )}
+
       {items.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Nothing active</Text>
           <Text style={styles.emptyBody}>
             Swipe right on Seekers in Discover. Matches that pass through their chat land here.
+          </Text>
+        </View>
+      ) : sortedItems.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>Nothing in this lane</Text>
+          <Text style={styles.emptyBody}>
+            No referrals match this filter yet.
           </Text>
         </View>
       ) : (
@@ -237,13 +300,6 @@ export default function ActiveRoute() {
           showsVerticalScrollIndicator={false}
           onRefresh={load}
           refreshing={loading}
-          ListHeaderComponent={
-            <View style={styles.summaryRow}>
-              <SummaryTile label="Pending" value={formatINR(pendingValue)} accent />
-              <SummaryTile label="Earned" value={formatINR(paidValue)} success />
-              <SummaryTile label="In flight" value={String(inFlightCount)} />
-            </View>
-          }
           renderItem={({ item }) => {
             const ts = latestTimestampForStage(item.referral);
             return (
@@ -276,30 +332,6 @@ export default function ActiveRoute() {
   );
 }
 
-function SummaryTile({
-  label,
-  value,
-  accent,
-  success,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  success?: boolean;
-}) {
-  const valueColor = success
-    ? colors.success
-    : accent
-    ? colors.accent
-    : colors.text;
-  return (
-    <View style={styles.tile}>
-      <Text style={[styles.tileValue, { color: valueColor }]}>{value}</Text>
-      <Text style={styles.tileLabel}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: 'transparent' },
   center: { flex: 1, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
@@ -317,33 +349,6 @@ const styles = StyleSheet.create({
   },
   subtitle: { ...typography.caption, color: colors.textSecondary },
   list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: 116 },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: spacing[3],
-    marginBottom: spacing[4],
-  },
-  tile: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 14,
-    padding: spacing[3],
-    alignItems: 'center',
-    gap: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.18)',
-  },
-  tileValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 20,
-    letterSpacing: -0.3,
-  },
-  tileLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    fontSize: 10,
-  },
   empty: {
     flex: 1,
     alignItems: 'center',

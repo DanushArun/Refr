@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -20,6 +19,7 @@ import { latestStageTimestamp } from '../components/activity/referralCardShared'
 import { MatchInboxRow } from '../components/matches/MatchInboxRow';
 import { NewMatchesCarousel } from '../components/matches/NewMatchesCarousel';
 import { RestingSection } from '../components/matches/RestingSection';
+import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 import {
   partitionMatches,
   relativeLabel,
@@ -192,10 +192,17 @@ export function EndorserInboxScreen() {
   const stageCounts = useMemo(() => buildStageCounts(items), [items]);
 
   const onPickStage = useCallback((next: StageFilter) => {
-    if (next === stageFilter) return;
-    Phrase.tick();
     setStageFilter(next);
-  }, [stageFilter]);
+  }, []);
+
+  const filterOptions = useMemo<readonly FilterOption<StageFilter>[]>(
+    () =>
+      STAGE_FILTERS.map((opt) => ({
+        ...opt,
+        count: opt.key === 'all' ? items.length : stageCounts[opt.key],
+      })),
+    [stageCounts, items.length],
+  );
 
   const openChat = useCallback((item: SeekerPipelineItem) => {
     // We need the original ReferrerInboxItem to pull avatar + headline;
@@ -247,59 +254,12 @@ export function EndorserInboxScreen() {
         </View>
 
         {total > 0 && (
-          <View style={styles.filterContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterScroll}
-            >
-              {STAGE_FILTERS.map((opt) => {
-                const active = opt.key === stageFilter;
-                const count =
-                  opt.key === 'all' ? total : stageCounts[opt.key];
-                const empty = !active && count === 0 && opt.key !== 'all';
-                return (
-                  <Pressable
-                    key={opt.key}
-                    onPress={() => onPickStage(opt.key)}
-                    hitSlop={6}
-                    style={[
-                      styles.filterChip,
-                      active && styles.filterChipActive,
-                      empty && styles.filterChipEmpty,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.filterText,
-                        active && styles.filterTextActive,
-                        empty && styles.filterTextEmpty,
-                      ]}
-                    >
-                      {opt.label}
-                    </Text>
-                    {count > 0 && (
-                      <View
-                        style={[
-                          styles.filterBadge,
-                          active && styles.filterBadgeActive,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.filterBadgeText,
-                            active && styles.filterBadgeTextActive,
-                          ]}
-                        >
-                          {count}
-                        </Text>
-                      </View>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
+          <FilterBar
+            options={filterOptions}
+            current={stageFilter}
+            onChange={onPickStage}
+            ariaLabel="Inbox stage filter"
+          />
         )}
 
         {total === 0 ? (
@@ -404,73 +364,6 @@ const styles = StyleSheet.create({
   },
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.caption, color: colors.textSecondary },
-
-  filterContainer: {
-    height: 50,
-    marginBottom: spacing[1],
-  },
-  filterScroll: {
-    paddingHorizontal: layout.screenPaddingH,
-    alignItems: 'center',
-    gap: 8,
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.10)',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  filterChipActive: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.30,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  filterChipEmpty: {
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    backgroundColor: 'transparent',
-  },
-  filterText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    color: colors.textSecondary,
-    letterSpacing: 0.1,
-  },
-  filterTextActive: {
-    color: '#0A1F44',
-    fontFamily: 'Outfit-Bold',
-  },
-  filterTextEmpty: {
-    color: colors.textTertiary,
-  },
-  filterBadge: {
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 5,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  filterBadgeActive: {
-    backgroundColor: 'rgba(10, 31, 68, 0.20)',
-  },
-  filterBadgeText: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10,
-    color: colors.textSecondary,
-    letterSpacing: 0.2,
-  },
-  filterBadgeTextActive: {
-    color: '#0A1F44',
-  },
 
   scroll: {
     paddingHorizontal: layout.screenPaddingH,

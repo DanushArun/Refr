@@ -14,6 +14,7 @@ export interface SeekerCard {
   targetCompanies: string[];  // shown as chips
   matchPercent: number;       // 0-100 against viewer's company
   currentSignal: string;      // e.g. "Ex-Amazon Pay · 6y" — derived from story+YOE
+  photoUrl: string;           // curated portrait for the identity hero
 }
 
 function hash(s: string): number {
@@ -57,6 +58,7 @@ export function buildSeekerCards(viewerEndorserId = '2'): SeekerCard[] {
         targetCompanies: s.targetCompanies.slice(0, 3),
         matchPercent,
         currentSignal: currentSignalFrom(s.story, s.yearsOfExperience),
+        photoUrl: s.photoUrl,
       };
     })
     .sort((a: SeekerCard, b: SeekerCard) => b.matchPercent - a.matchPercent);

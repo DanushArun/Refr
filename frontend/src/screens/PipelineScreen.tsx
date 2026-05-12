@@ -10,9 +10,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
-  ScrollView,
 } from 'react-native';
-import { PressableScale } from '../components/common/PressableScale';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
@@ -20,7 +18,8 @@ import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
 import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
 import { Skeleton } from '../components/common/Skeleton';
-import { Phrase, hapticSelection } from '../utils/haptics';
+import { FilterBar, type FilterOption } from '../components/common/FilterBar';
+import { Phrase } from '../utils/haptics';
 
 type FilterKey = 'all' | 'matched' | 'submitted' | 'interview' | 'hired' | 'closed';
 
@@ -185,10 +184,13 @@ export function PipelineScreen() {
   );
 
   const handleFilterChange = useCallback((next: FilterKey) => {
-    if (next === filter) return;
-    hapticSelection();
     setFilter(next);
-  }, [filter]);
+  }, []);
+
+  const filterOptions = useMemo<readonly FilterOption<FilterKey>[]>(
+    () => FILTERS.map((f) => ({ ...f, count: counts[f.key] })),
+    [counts],
+  );
 
   if (loading) {
     // Skeleton placeholder cards — same overall rhythm as the real list so
@@ -223,9 +225,10 @@ export function PipelineScreen() {
         </View>
 
         <FilterBar
+          options={filterOptions}
           current={filter}
-          counts={counts}
           onChange={handleFilterChange}
+          ariaLabel="Pipeline stage filter"
         />
 
         {visibleItems.length === 0 ? (
@@ -258,72 +261,6 @@ export function PipelineScreen() {
           />
         )}
       </SafeAreaView>
-    </View>
-  );
-}
-
-function FilterBar({
-  current,
-  counts,
-  onChange,
-}: {
-  current: FilterKey;
-  counts: Record<FilterKey, number>;
-  onChange: (next: FilterKey) => void;
-}) {
-  return (
-    <View style={styles.filterBarWrap}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterBarContent}
-      >
-        {FILTERS.map((f) => {
-          const active = f.key === current;
-          const count = counts[f.key];
-          const dim = !active && count === 0 && f.key !== 'all';
-          return (
-            <PressableScale
-              key={f.key}
-              onPress={() => onChange(f.key)}
-              hitSlop={6}
-              style={[
-                styles.chip,
-                active && styles.chipActive,
-                !active && styles.chipInactive,
-                dim && styles.chipDim,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.chipLabel,
-                  active ? styles.chipLabelActive : styles.chipLabelInactive,
-                  dim && styles.chipLabelDim,
-                ]}
-              >
-                {f.label.toUpperCase()}
-              </Text>
-              {count > 0 && (
-                <View
-                  style={[
-                    styles.chipCount,
-                    active ? styles.chipCountActive : styles.chipCountInactive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.chipCountText,
-                      active ? styles.chipCountTextActive : styles.chipCountTextInactive,
-                    ]}
-                  >
-                    {count}
-                  </Text>
-                </View>
-              )}
-            </PressableScale>
-          );
-        })}
-      </ScrollView>
     </View>
   );
 }
@@ -416,65 +353,4 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 
-  filterBarWrap: {
-    paddingBottom: spacing[3],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(212, 167, 68, 0.18)',
-    marginBottom: spacing[3],
-  },
-  filterBarContent: {
-    paddingHorizontal: layout.screenPaddingH,
-    gap: spacing[2],
-    alignItems: 'center',
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    height: 32,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  chipActive: {
-    backgroundColor: colors.gold,
-    borderColor: colors.gold,
-  },
-  chipInactive: {
-    backgroundColor: 'transparent',
-    borderColor: 'rgba(212, 167, 68, 0.45)',
-  },
-  chipDim: {
-    borderColor: 'rgba(212, 167, 68, 0.18)',
-  },
-  chipLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10.5,
-    letterSpacing: 1.4,
-  },
-  chipLabelActive: { color: '#0A1F44' },
-  chipLabelInactive: { color: colors.gold },
-  chipLabelDim: { color: 'rgba(212, 167, 68, 0.45)' },
-
-  chipCount: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    paddingHorizontal: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chipCountActive: {
-    backgroundColor: 'rgba(10, 31, 68, 0.18)',
-  },
-  chipCountInactive: {
-    backgroundColor: 'rgba(212, 167, 68, 0.14)',
-  },
-  chipCountText: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10,
-    letterSpacing: 0,
-  },
-  chipCountTextActive: { color: '#0A1F44' },
-  chipCountTextInactive: { color: colors.gold },
 });

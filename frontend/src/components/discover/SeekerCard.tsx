@@ -336,7 +336,7 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
           pointerEvents="none"
         />
         <View style={styles.identityHeroContent}>
-          <Avatar displayName={card.name} size="xl" verificationRing />
+          <Avatar uri={card.photoUrl} displayName={card.name} size="xl" verificationRing />
           <PersonName
             name={card.name}
             textStyle={[styles.heroName, { color: brand.text }]}

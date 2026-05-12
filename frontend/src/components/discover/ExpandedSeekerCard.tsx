@@ -223,7 +223,7 @@ export function ExpandedSeekerCard({
               pointerEvents="none"
             />
             <View style={styles.identityHeroContent}>
-              <Avatar displayName={safe.name} size="xl" verificationRing />
+              <Avatar uri={safe.photoUrl} displayName={safe.name} size="xl" verificationRing />
               <PersonName
                 name={safe.name}
                 textStyle={[styles.heroName, { color: brand.text }]}

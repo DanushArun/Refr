@@ -80,11 +80,8 @@ export function EarningsScreen() {
   }
 
   const lifetime = reputation.successfulHires * PAYOUT_PER_HIRE;
-  const thisMonth = payouts
-    .filter((p) => isThisMonth(p.dateISO))
-    .reduce((sum, p) => sum + p.amount, 0);
-  // In-flight count: referrals still pending. For the mock we estimate based on
-  // totalReferrals – successfulHires clamped to a sensible display range.
+  // In-flight count: referrals still pending. For the mock we estimate based
+  // on totalReferrals – successfulHires clamped to a sensible display range.
   const inFlight = Math.max(
     0,
     reputation.totalReferrals - reputation.successfulHires,
@@ -147,9 +144,9 @@ export function EarningsScreen() {
           </Text>
 
           <View style={styles.heroSplits}>
-            <HeroTile label="This month" value={formatINR(thisMonth)} accent={thisMonth > 0} />
-            <HeroTile label="Pending" value={formatINR(pending)} muted />
-            <HeroTile label="Per hire" value={formatINR(PAYOUT_PER_HIRE)} muted />
+            <HeroTile label="Pending" value={formatINR(pending)} accent={pending > 0} />
+            <HeroTile label="Earned" value={formatINR(lifetime)} muted />
+            <HeroTile label="In flight" value={String(inFlight)} muted />
           </View>
         </View>
 
@@ -239,12 +236,6 @@ function formatINR(n: number): string {
 // lifetime number where there's room for the actual amount.
 function formatINRFull(n: number): string {
   return `₹${n.toLocaleString('en-IN')}`;
-}
-
-function isThisMonth(iso: string): boolean {
-  const d = new Date(iso);
-  const now = new Date();
-  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
 }
 
 interface Payout {
