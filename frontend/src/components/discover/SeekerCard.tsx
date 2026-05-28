@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -15,9 +15,6 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from '../common/Avatar';
-import { PersonName } from '../common/PersonName';
-import { MatchArc } from './MatchArc';
 import { brandForName } from './companyBrand';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
@@ -39,19 +36,13 @@ const MAX_DRIFT_Y = 90;
 const BACK_RISE_TRANSLATE_Y = 8;
 const BACK_RISE_SCALE = 0.025;
 
-const BLACK = '#000000';
-const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
-const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
-const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
-const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
-
 interface SeekerCardProps {
   card: SeekerCardData;
   isTop: boolean;
   stackIndex: number;
   headProgress: SharedValue<number>;
   entryFrom: EntryFrom;
-  /** Number to render on the card's clip-on tag — "{n} swipes left." */
+  /** Retained for deck accounting. The count is intentionally not rendered. */
   swipesRemaining: number;
   /** Top-card-only undo affordance, attached to the left of the pill. */
   canUndo?: boolean;
@@ -67,7 +58,6 @@ export function SeekerCard({
   stackIndex,
   headProgress,
   entryFrom,
-  swipesRemaining,
   canUndo = false,
   onUndo,
   onSwiped,
@@ -259,7 +249,7 @@ export function SeekerCard({
                 pointerEvents="none"
                 style={[styles.reactiveGlow, reactiveGlowStyle]}
               />
-              <SwipeStamp translateX={translateX} kind="request" commitLabel="ACCEPT" />
+              <SwipeStamp translateX={translateX} kind="request" commitLabel="ENDORSE" />
               <SwipeStamp translateX={translateX} kind="pass" />
             </>
           )}
@@ -281,32 +271,21 @@ export function SeekerCard({
           />
         </View>
 
-        {/* Clip-on cluster — only on the top card so back-of-deck preview
-            cards stay clean. Undo circle attaches when there's history. */}
-        {isTop && (
+        {isTop && canUndo && onUndo && (
           <View
             style={styles.clipMount}
-            pointerEvents={canUndo ? 'box-none' : 'none'}
+            pointerEvents="box-none"
           >
-            <View style={styles.clipCluster}>
-              {canUndo && onUndo && (
-                <Pressable
-                  onPress={onUndo}
-                  hitSlop={8}
-                  style={({ pressed }) => [
-                    styles.undoCircle,
-                    pressed && styles.undoCirclePressed,
-                  ]}
-                >
-                  <Ionicons name="arrow-undo" size={14} color={colors.gold} />
-                </Pressable>
-              )}
-              <View style={styles.clipPill}>
-                <Text style={styles.clipText}>
-                  {swipesRemaining} {swipesRemaining === 1 ? 'SWIPE LEFT' : 'SWIPES LEFT'}
-                </Text>
-              </View>
-            </View>
+            <Pressable
+              onPress={onUndo}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.undoCircle,
+                pressed && styles.undoCirclePressed,
+              ]}
+            >
+              <Ionicons name="arrow-undo" size={14} color={colors.gold} />
+            </Pressable>
           </View>
         )}
       </Animated.View>
@@ -315,95 +294,97 @@ export function SeekerCard({
 }
 
 function TopCardContent({ card }: { card: SeekerCardData }) {
-  // The endorser already works at the company — they don't need an office
-  // photo, they need to see the SEEKER. So the hero zone is identity-led:
-  // a hero-sized avatar + the seeker's full name + their pitch one-liner.
-  // Below it, a slim band with the role they want and their years of
-  // experience. The cream zone splits horizontally between target companies
-  // (left) and the match arc (right), mirroring the seeker-side card's
-  // referrer/match split.
   const primaryTarget = card.targetCompanies[0] ?? 'India';
   const brand = brandForName(primaryTarget);
+  const roleLine = `${card.targetRole} · ${primaryTarget}`;
+  const proofLine = candidateProofLine(card);
+  const skillLine = compactSkillLine(card.skills);
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* === HERO: seeker identity, navy backdrop with brand-tint accent === */}
-      <View style={styles.identityHero}>
-        <View style={[styles.identityHeroFill, { backgroundColor: brand.tint }]} />
-        <LinearGradient
-          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.28)']}
-          style={styles.identityHeroShade}
-          pointerEvents="none"
-        />
-        <View style={styles.identityHeroContent}>
-          <Avatar uri={card.photoUrl} displayName={card.name} size="xl" verificationRing />
-          <PersonName
-            name={card.name}
-            textStyle={[styles.heroName, { color: brand.text }]}
-            containerStyle={styles.heroNameWrap}
-          />
+    <View style={styles.fullMediaCard}>
+      <View style={[styles.mediaFallback, { backgroundColor: brand.tint }]} />
+      <Image source={{ uri: card.photoUrl }} style={styles.heroPhoto} resizeMode="cover" />
+      <LinearGradient
+        colors={[
+          'rgba(1, 7, 17, 0.02)',
+          'rgba(1, 7, 17, 0.34)',
+          'rgba(1, 7, 17, 0.96)',
+        ]}
+        locations={[0.36, 0.62, 1]}
+        style={styles.bottomScrim}
+        pointerEvents="none"
+      />
+
+      <View style={styles.overlayContent}>
+        <View style={styles.overlayTitleRow}>
           <Text
-            style={[styles.heroHeadline, { color: brand.text }]}
+            adjustsFontSizeToFit
+            minimumFontScale={0.86}
             numberOfLines={2}
+            style={styles.candidateName}
           >
-            {card.headline}
+            {card.name}
           </Text>
-        </View>
-      </View>
-
-      {/* === BAND: target role + experience pill === */}
-      <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
-        <View style={styles.brandRow}>
-          <View style={[styles.brandMark, { borderColor: brand.accent }]}>
-            <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
-          </View>
-          <Text style={[styles.brandName, { color: brand.text }]} numberOfLines={1}>
-            {primaryTarget}
-          </Text>
-          <View style={styles.brandSpacer} />
-          <View style={styles.expTag}>
-            <Text style={styles.expTagText}>
-              {card.yearsOfExperience}Y EXP
-            </Text>
+          <View style={styles.experienceChip}>
+            <Text style={styles.experienceChipText}>{card.yearsOfExperience}Y EXP</Text>
           </View>
         </View>
 
-        <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
-          {card.targetRole}
+        <Text
+          adjustsFontSizeToFit
+          minimumFontScale={0.86}
+          numberOfLines={1}
+          style={styles.overlayRole}
+        >
+          {roleLine}
         </Text>
-      </View>
-
-      {/* === CREAM ZONE — horizontal split: signal (left) | match (right) === */}
-      <View style={styles.creamZone}>
-        <View style={styles.signalCol}>
-          <Text style={styles.sectionLabel}>SIGNAL</Text>
-          <Text style={styles.signalText} numberOfLines={1}>
-            {card.currentSignal}
-          </Text>
-          <View style={styles.signalStats}>
-            <StatPill label="EXP" value={`${card.yearsOfExperience}y`} />
-            <StatPill label="TARGETS" value={`${card.targetCompanies.length}`} />
-            <StatPill label="SKILLS" value={`${card.fullSkills.length}`} />
-          </View>
-        </View>
-
-        <View style={styles.matchCol}>
-          <Text style={styles.sectionLabel}>YOUR MATCH</Text>
-          <MatchArc percent={card.matchPercent} size={76} animate light />
-          <Text style={styles.matchHint} numberOfLines={1}>Skill overlap</Text>
-        </View>
+        <Text numberOfLines={2} style={styles.overlayProof}>
+          {proofLine}
+        </Text>
+        <Text numberOfLines={1} style={styles.overlayMeta}>
+          {skillLine}
+        </Text>
+        <View style={styles.grabberHint} />
       </View>
     </View>
   );
 }
 
-function StatPill({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statPill}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
+function candidateProofLine(card: SeekerCardData): string {
+  const firstSentence = card.headline.split('.')[0]?.trim();
+  if (!firstSentence) return card.currentSignal;
+  const match = firstSentence.match(/^(.+?)\s+at\s+(.+)$/i);
+  if (!match) return firstSentence;
+  const role = shortRole(match[1]);
+  const company = shortCompany(match[2]);
+  const target = roleFamily(card.targetRole);
+  return `${company} ${role} targeting ${target} referrals.`;
+}
+
+function compactSkillLine(skills: string[]): string {
+  const topSkills = skills.slice(0, 2).filter(Boolean);
+  return topSkills.length > 0 ? topSkills.join(' + ') : 'Strong role fit';
+}
+
+function shortRole(role: string): string {
+  return role
+    .replace(/Software Development Engineer/gi, 'SDE')
+    .replace(/Site Reliability Engineer/gi, 'SRE')
+    .trim();
+}
+
+function shortCompany(company: string): string {
+  return company.replace(/\s+India$/i, '').trim();
+}
+
+function roleFamily(role: string): string {
+  const normalized = role.toLowerCase();
+  if (normalized.includes('platform')) return 'platform';
+  if (normalized.includes('frontend')) return 'frontend';
+  if (normalized.includes('backend')) return 'backend';
+  if (normalized.includes('product')) return 'product';
+  if (normalized.includes('data')) return 'data';
+  return 'role-fit';
 }
 
 function StackPreview() {
@@ -445,185 +426,86 @@ const styles = StyleSheet.create({
   },
   tapArea: { flex: 1 },
 
-  /* Identity hero — large avatar + name + headline against a brand-tinted
-     backdrop. Takes ALL the leftover space after the band + cream zone size
-     to content. The seeker IS the desire-driver here. */
-  identityHero: {
+  fullMediaCard: {
     flex: 1,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    overflow: 'hidden',
-    backgroundColor: '#0A1F44',
+    backgroundColor: colors.navy,
   },
-  identityHeroFill: {
+  mediaFallback: {
     ...StyleSheet.absoluteFillObject,
   },
-  identityHeroShade: {
+  heroPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  bottomScrim: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  overlayContent: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 80,
-  },
-  identityHeroContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingHorizontal: 28,
-    paddingVertical: 20,
-    gap: 10,
+    paddingBottom: 28,
+    gap: 9,
   },
-  heroNameWrap: {
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  heroName: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.3,
-    textAlign: 'center',
-  },
-  heroHeadline: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: 'center',
-    opacity: 0.85,
-    paddingHorizontal: 12,
-  },
-
-  /* Slim band — target role + experience tag */
-  brandZone: {
-    paddingTop: 16,
-    paddingHorizontal: 22,
-    paddingBottom: 18,
-    gap: 10,
-  },
-  /* Cream zone — horizontal split: signal (left) | match (right) */
-  creamZone: {
+  overlayTitleRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 18,
+    alignItems: 'center',
     gap: 14,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
   },
-  signalCol: {
+  candidateName: {
     flex: 1,
-    gap: 10,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 36,
+    lineHeight: 40,
+    color: colors.cream,
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
-  signalText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    color: BLACK,
-  },
-  signalStats: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  matchCol: {
-    width: 110,
-    alignItems: 'center',
-    gap: 6,
-    paddingTop: 8,
-    paddingHorizontal: 6,
-    paddingBottom: 12,
-    borderRadius: 14,
+  experienceChip: {
+    minWidth: 78,
+    height: 34,
+    borderRadius: 17,
     borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.35)',
-    backgroundColor: 'rgba(212, 167, 68, 0.06)',
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  brandMark: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    borderWidth: 1.5,
+    borderColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(3, 7, 18, 0.42)',
   },
-  brandMarkText: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 18,
-  },
-  brandName: {
+  experienceChipText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
-    letterSpacing: 1.2,
+    fontSize: 12,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
+    color: colors.goldBright,
   },
-  brandSpacer: { flex: 1 },
-  /* EXP tag — replaces OPEN since the role is the seeker's wanted role,
-     and the most useful at-a-glance signal next to it is years of
-     experience. Brand-color independent so it reads consistently. */
-  expTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(212, 167, 68, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.55)',
-  },
-  expTagText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9.5,
-    letterSpacing: 1.4,
-    color: '#E8BD58',
-  },
-  role: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.4,
-  },
-
-  /* Section labels — used by REFERRED / SIGNAL / YOUR MATCH */
-  sectionLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
-    color: BLACK_50,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-
-  /* Compact stat pill (mirrors the seeker side EndorserCard pill) */
-  statPill: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    backgroundColor: BLACK_05,
-    alignItems: 'center',
-    gap: 1,
-  },
-  statValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 13,
-    color: BLACK,
-  },
-  statLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
-    color: BLACK_50,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-
-  /* "Skill overlap" caption under the match arc */
-  matchHint: {
+  overlayRole: {
     fontFamily: 'Outfit-Medium',
-    fontSize: 11,
-    color: BLACK_70,
-    letterSpacing: 0.2,
-    textAlign: 'center',
+    fontSize: 16,
+    lineHeight: 21,
+    color: 'rgba(245, 241, 232, 0.78)',
+  },
+  overlayProof: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 16,
+    lineHeight: 21,
+    color: colors.goldBright,
+  },
+  overlayMeta: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 15,
+    lineHeight: 20,
+    color: 'rgba(245, 241, 232, 0.72)',
+  },
+  grabberHint: {
+    alignSelf: 'center',
+    width: 36,
+    height: 5,
+    borderRadius: 999,
+    marginTop: 18,
+    backgroundColor: 'rgba(245, 241, 232, 0.44)',
   },
 
   /* Stack preview — muted sailor gold plate, mirrors EndorserCard back-of-deck */
@@ -646,19 +528,13 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
 
-  /* Clip-on cluster — undo circle (optional) + counter pill anchored to the
-     card's bottom edge. */
+  /* Undo affordance anchored to the card's bottom edge. */
   clipMount: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: -14,
     alignItems: 'center',
-  },
-  clipCluster: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
   undoCircle: {
     width: 28,
@@ -678,24 +554,5 @@ const styles = StyleSheet.create({
   undoCirclePressed: {
     opacity: 0.85,
     transform: [{ scale: 0.94 }],
-  },
-  clipPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 14,
-    backgroundColor: 'rgba(10, 31, 68, 0.95)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.40)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  clipText: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10.5,
-    color: '#E8BD58',
-    letterSpacing: 1.2,
   },
 });

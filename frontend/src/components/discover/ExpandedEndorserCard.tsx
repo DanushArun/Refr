@@ -23,8 +23,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Avatar } from '../common/Avatar';
-import { PersonName } from '../common/PersonName';
-import { MatchArc } from './MatchArc';
 import { getCompanyBrand } from './companyBrand';
 import { officeImageFor } from '../activity/companyOffices';
 import { Phrase } from '../../utils/haptics';
@@ -43,8 +41,6 @@ const CARD_HEIGHT = Math.min(580, Math.round(SCREEN_H * 0.62));
 const CARD_TOP_FROM_SCREEN = 60 + 54 + 8;
 
 const BLACK = '#000000';
-const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
-const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
 const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
 const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
 const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
@@ -241,6 +237,7 @@ export function ExpandedEndorserCard({
 
   const brand = getCompanyBrand(safe.companyId);
   const officeImage = officeImageFor(safe.companyName);
+  const metaLine = `${safe.hires} hires · ${safe.responseTime} reply`;
 
   return (
     <Modal
@@ -282,68 +279,59 @@ export function ExpandedEndorserCard({
                 resizeMode="cover"
               />
             )}
-            {/* Bottom shade so the seam into the brand zone reads softly */}
             <LinearGradient
-              colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.35)']}
+              colors={[
+                'rgba(1, 7, 17, 0.02)',
+                'rgba(1, 7, 17, 0.36)',
+                'rgba(1, 7, 17, 0.97)',
+              ]}
+              locations={[0.34, 0.64, 1]}
               style={styles.heroImageShade}
               pointerEvents="none"
             />
-            {/* Hairline at the very bottom — premium magazine-cover feel */}
-            <View style={styles.heroImageEdge} pointerEvents="none" />
-          </View>
+            <View style={styles.heroOverlay}>
+              <View style={styles.heroTitleRow}>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.84}
+                  numberOfLines={1}
+                  style={styles.companyTitle}
+                >
+                  {safe.companyName}
+                </Text>
+                <View style={styles.verifiedChip}>
+                  <Text style={styles.verifiedChipText}>VERIFIED</Text>
+                </View>
+              </View>
 
-          {/* Brand band — slim, same as the redesigned swipe card */}
-          <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
-            <View style={styles.brandRow}>
-              <View style={[styles.brandMark, { borderColor: brand.accent }]}>
-                <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
-              </View>
               <Text
-                style={[styles.brandName, { color: brand.text }]}
-                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
+                numberOfLines={2}
+                style={styles.companyRole}
               >
-                {safe.companyName}
+                {safe.jobTitle}
               </Text>
-              <View style={styles.brandSpacer} />
-              <View style={styles.openTag}>
-                <View style={styles.openDot} />
-                <Text style={styles.openText}>OPEN</Text>
+
+              <View style={styles.endorserProofRow}>
+                <Avatar
+                  displayName={safe.name}
+                  size="sm"
+                  uri={safe.avatarUrl}
+                  verificationRing
+                />
+                <Text style={styles.endorserProofText} numberOfLines={2}>
+                  {safe.name} can endorse this role.
+                </Text>
               </View>
+
+              <Text style={styles.endorserMetaLine} numberOfLines={1}>
+                {metaLine}
+              </Text>
             </View>
-            <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
-              {safe.jobTitle}
-            </Text>
           </View>
 
           <View style={styles.creamZone}>
-            {/* === Headline row: REFERRED BY (left) | YOUR MATCH (right) === */}
-            <View style={styles.headlineRow}>
-              <View style={styles.referrerCol}>
-                <Text style={styles.sectionLabel}>REFERRED BY</Text>
-                <View style={styles.referrerCard}>
-                  <Avatar displayName={safe.name} size="lg" verificationRing />
-                  <View style={styles.referrerMeta}>
-                    <PersonName name={safe.name} textStyle={styles.referrerName} />
-                    <View style={styles.verifiedRow}>
-                      <Ionicons name="checkmark-circle" size={14} color="#3897F0" />
-                      <Text style={styles.verifiedText}>Verified at {safe.companyName}</Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.statRow}>
-                  <Stat label="TRUST" value={`★ ${safe.trustScore}`} />
-                  <Stat label="HIRES" value={`${safe.hires}`} />
-                  <Stat label="REPLY" value={safe.responseTime} />
-                </View>
-              </View>
-
-              <View style={styles.matchCol}>
-                <Text style={styles.sectionLabel}>YOUR MATCH</Text>
-                <MatchArc percent={safe.matchPercent} size={92} animate light />
-                <Text style={styles.matchHint} numberOfLines={1}>Skill overlap</Text>
-              </View>
-            </View>
-
             {/* === Extras — fade in once surface is mostly expanded === */}
             <Animated.View style={[styles.extras, extrasStyle]}>
               <View style={styles.section}>
@@ -352,8 +340,8 @@ export function ExpandedEndorserCard({
                   Works at <Text style={styles.aboutAccent}>{safe.companyName}</Text> as
                   a {safe.jobTitle}. Typical response time is {safe.responseTime}.
                   Has endorsed {safe.hires} successful hire{safe.hires === 1 ? '' : 's'}
-                  {' '}to date. Accepts {safe.acceptanceRate}% of incoming requests
-                  — prioritises strong match-fit over volume.
+                  {' '}to date. Selects {safe.acceptanceRate}% of incoming requests
+                  and prioritizes strong context over volume.
                 </Text>
               </View>
 
@@ -369,11 +357,12 @@ export function ExpandedEndorserCard({
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>WHY THIS MATCH</Text>
+                <Text style={styles.sectionLabel}>WHY THIS ENDORSER</Text>
                 <Text style={styles.about}>
-                  Computed from your target companies, your skill overlap with
-                  {' '}{safe.name.split(' ')[0]}, and historical acceptance patterns
-                  at {safe.companyName}.
+                  {safe.name.split(' ')[0]} works at{' '}
+                  <Text style={styles.aboutAccent}>{safe.companyName}</Text>, endorses
+                  for {safe.skills.slice(0, 2).join(' and ')}, and has {safe.hires}
+                  {' '}confirmed hire{safe.hires === 1 ? '' : 's'}.
                 </Text>
               </View>
             </Animated.View>
@@ -395,26 +384,17 @@ export function ExpandedEndorserCard({
         <Animated.View style={[styles.actionBar, extrasStyle]}>
           <Pressable onPress={handlePass} style={styles.passBtn}>
             <Ionicons name="close" size={20} color={colors.error} />
-            <Text style={styles.passBtnText}>Pass</Text>
+            <Text style={styles.passBtnText}>Skip</Text>
           </Pressable>
           <Pressable onPress={handleCommit} style={styles.commitBtn}>
             <Ionicons name="checkmark" size={20} color="#0A1F44" />
-            <Text style={styles.commitBtnText}>Request {safe.name.split(' ')[0]}</Text>
+            <Text style={styles.commitBtnText}>Request endorsement</Text>
           </Pressable>
         </Animated.View>
       </Animated.View>
       </GestureDetector>
     </View>
     </Modal>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statTile}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
   );
 }
 
@@ -454,19 +434,72 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   heroImageShade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 64,
+    ...StyleSheet.absoluteFillObject,
   },
-  heroImageEdge: {
+  heroOverlay: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 28,
+    paddingBottom: 30,
+    gap: 12,
+  },
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  companyTitle: {
+    flex: 1,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 40,
+    lineHeight: 45,
+    color: colors.cream,
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  verifiedChip: {
+    minWidth: 96,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(3, 7, 18, 0.42)',
+  },
+  verifiedChipText: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 12,
+    letterSpacing: 0.9,
+    color: colors.goldBright,
+  },
+  companyRole: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 30,
+    lineHeight: 35,
+    color: colors.cream,
+  },
+  endorserProofRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  endorserProofText: {
+    flex: 1,
+    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    lineHeight: 20,
+    color: 'rgba(245, 241, 232, 0.82)',
+  },
+  endorserMetaLine: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
+    lineHeight: 21,
+    color: 'rgba(245, 241, 232, 0.76)',
   },
 
   /* Pill grabber — swipe-down dismiss affordance, sits in the safe area
@@ -486,91 +519,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(245, 241, 232, 0.55)',
   },
 
-  /* Brand band — slim, sits directly under the hero image. No status-bar
-     padding here because the image (and the grabber) already occupy the
-     top safe area. */
-  brandZone: {
-    paddingTop: 18,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    gap: 10,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  brandMark: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandMarkText: { fontFamily: 'InstrumentSerif-Regular', fontSize: 18 },
-  brandName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    flexShrink: 1,
-  },
-  brandSpacer: { flex: 1 },
-  /* OPEN = green pill, brand-color independent (same as the swipe card) */
-  openTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(34, 197, 94, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.55)',
-  },
-  openDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
-  openText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
-    letterSpacing: 1.5,
-    color: '#22C55E',
-  },
-  role: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 32,
-    lineHeight: 36,
-    letterSpacing: -0.5,
-  },
-
   /* Cream zone wrapper */
   creamZone: { flex: 1 },
-
-  /* Headline row — REFERRED BY (left flex:1) | YOUR MATCH (right fixed col) */
-  headlineRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 22,
-    paddingTop: 22,
-    paddingBottom: 18,
-    gap: 16,
-  },
-  referrerCol: {
-    flex: 1,
-    gap: 14,
-  },
-  matchCol: {
-    width: 132,
-    alignItems: 'center',
-    gap: 8,
-    paddingTop: 10,
-    paddingHorizontal: 8,
-    paddingBottom: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.35)',
-    backgroundColor: 'rgba(212, 167, 68, 0.06)',
-  },
 
   /* Generic section — used by ABOUT, SKILLS, WHY THIS MATCH */
   section: {
@@ -585,67 +535,6 @@ const styles = StyleSheet.create({
     color: BLACK_50,
     letterSpacing: 2,
     textTransform: 'uppercase',
-  },
-
-  /* Referrer block (inside referrerCol). Avatar aligns to the TOP of the
-     name block so it sits next to the first name, not centered between
-     the two name lines. */
-  referrerCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
-  },
-  referrerMeta: { flex: 1, gap: 4 },
-  referrerName: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 22,
-    lineHeight: 26,
-    color: BLACK,
-    letterSpacing: -0.3,
-  },
-  verifiedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  verifiedText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
-    color: BLACK_70,
-  },
-
-  statRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  statTile: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderRadius: 12,
-    backgroundColor: BLACK_05,
-    alignItems: 'center',
-    gap: 2,
-  },
-  statValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: BLACK,
-  },
-  statLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
-    color: BLACK_50,
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-  },
-
-  matchHint: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 11.5,
-    color: BLACK_70,
-    letterSpacing: 0.2,
-    textAlign: 'center',
   },
 
   /* Extras wrapper — fades in when surface is mostly expanded */

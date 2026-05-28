@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { PressableScale } from '../components/common/PressableScale';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -153,14 +151,6 @@ export function EndorserDiscoverScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.wordmark}>Endorsly</Text>
-          <View style={styles.headerIcons}>
-            <PressableScale style={styles.iconBtn}>
-              <Ionicons name="options-outline" size={22} color={colors.text} />
-            </PressableScale>
-            <PressableScale style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={22} color={colors.text} />
-            </PressableScale>
-          </View>
         </View>
 
         {/* Experience-level filter strip — same shared FilterBar used by
@@ -318,21 +308,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     letterSpacing: 0.3,
   },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.20)',
-  },
-
   deckFrame: {
     flex: 1,
     // Header(60) + filter(50+4) + breathing room — matches the seeker's

@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
-import { Ionicons } from '@expo/vector-icons';
 import { Phrase } from '../utils/haptics';
 import { SwipeDeck, type SwipeDeckHandle } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
@@ -161,14 +160,6 @@ export function DiscoverScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.wordmark}>Endorsly</Text>
-          <View style={styles.headerIcons}>
-            <Pressable style={styles.iconBtn}>
-              <Ionicons name="options-outline" size={22} color={colors.text} />
-            </Pressable>
-            <Pressable style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={22} color={colors.text} />
-            </Pressable>
-          </View>
         </View>
 
         <FilterBar
@@ -259,20 +250,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: colors.text,
     letterSpacing: 0.3,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   deckFrame: {
     flex: 1,

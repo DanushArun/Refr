@@ -16,9 +16,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
-import { PersonName } from '../common/PersonName';
 import { Phrase } from '../../utils/haptics';
-import { MatchArc } from './MatchArc';
 import { getCompanyBrand } from './companyBrand';
 import { officeImageFor } from '../activity/companyOffices';
 import { colors } from '../../theme/colors';
@@ -47,21 +45,13 @@ const MAX_DRIFT_Y = 90;
 const BACK_RISE_TRANSLATE_Y = 8;
 const BACK_RISE_SCALE = 0.025;
 
-const BLACK = '#000000';
-const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
-const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
-const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
-const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
-
 interface EndorserCardProps {
   card: EndorserCardData;
   isTop: boolean;
   stackIndex: number;
   headProgress: SharedValue<number>;
   entryFrom: EntryFrom;
-  /** Number to render on the card's clip-on tag — "{n} swipes left." Stable
-   *  per card identity (not per stack position) so the count belongs to the
-   *  card, not the slot. */
+  /** Retained for deck accounting. The count is intentionally not rendered. */
   swipesRemaining: number;
   /** When true and this is the top card, render the undo affordance as a
    *  circular button attached to the left edge of the swipes-left pill. */
@@ -81,7 +71,6 @@ export function EndorserCard({
   stackIndex,
   headProgress,
   entryFrom,
-  swipesRemaining,
   canUndo = false,
   onUndo,
   onCommitStart,
@@ -406,37 +395,21 @@ export function EndorserCard({
           />
         </View>
 
-        {/**
-          * Clip-on cluster — counter pill plus an optional undo circle button
-          * attached to its left. Rendered ONLY on the top card so back-of-deck
-          * preview cards stay clean (no pill peek-through). The cluster is a
-          * child of cardWrapper, so it inherits every transform applied to
-          * the top card.
-          */}
-        {isTop && (
+        {isTop && canUndo && onUndo && (
           <View
             style={styles.clipMount}
-            pointerEvents={canUndo ? 'box-none' : 'none'}
+            pointerEvents="box-none"
           >
-            <View style={styles.clipCluster}>
-              {canUndo && onUndo && (
-                <Pressable
-                  onPress={onUndo}
-                  hitSlop={8}
-                  style={({ pressed }) => [
-                    styles.undoCircle,
-                    pressed && styles.undoCirclePressed,
-                  ]}
-                >
-                  <Ionicons name="arrow-undo" size={14} color={colors.gold} />
-                </Pressable>
-              )}
-              <View style={styles.clipPill}>
-                <Text style={styles.clipText}>
-                  {swipesRemaining} {swipesRemaining === 1 ? 'SWIPE LEFT' : 'SWIPES LEFT'}
-                </Text>
-              </View>
-            </View>
+            <Pressable
+              onPress={onUndo}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.undoCircle,
+                pressed && styles.undoCirclePressed,
+              ]}
+            >
+              <Ionicons name="arrow-undo" size={14} color={colors.gold} />
+            </Pressable>
           </View>
         )}
       </Animated.View>
@@ -447,84 +420,64 @@ export function EndorserCard({
 function TopCardContent({ card }: { card: EndorserCardData }) {
   const brand = getCompanyBrand(card.companyId);
   const officeImage = useMemo(() => officeImageFor(card.companyName), [card.companyName]);
+  const proofLine = `${card.name} can endorse this role.`;
+  const metaLine = `${card.hires} hires · ${card.responseTime} reply`;
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* === IMAGE ZONE — company office photograph === */}
-      <View style={styles.imageZone}>
-        {/* Brand-tinted base sits beneath the image so a slow load or net
-            failure never reveals an empty white frame — the user always sees
-            the company's color. */}
-        <View style={[styles.officeFallback, { backgroundColor: brand.tint }]} />
-        {officeImage && (
-          <Image source={officeImage} style={styles.officeImage} resizeMode="cover" />
-        )}
-        {/* Faint bottom-edge gradient so the seam into the brand zone is soft,
-            not a hard line — same trick as the Activity card. */}
-        <LinearGradient
-          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.18)']}
-          style={styles.imageBottomShade}
-          pointerEvents="none"
-        />
-      </View>
+    <View style={styles.fullMediaCard}>
+      <View style={[styles.officeFallback, { backgroundColor: brand.tint }]} />
+      {officeImage && <Image source={officeImage} style={styles.officeImage} resizeMode="cover" />}
+      <LinearGradient
+        colors={[
+          'rgba(1, 7, 17, 0.02)',
+          'rgba(1, 7, 17, 0.34)',
+          'rgba(1, 7, 17, 0.97)',
+        ]}
+        locations={[0.34, 0.62, 1]}
+        style={styles.bottomScrim}
+        pointerEvents="none"
+      />
 
-      {/* === BRAND ZONE — navy band with company + role === */}
-      <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
-        <View style={styles.brandRow}>
-          <View style={[styles.brandMark, { borderColor: brand.accent }]}>
-            <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
-          </View>
-          <Text style={[styles.brandName, { color: brand.text }]} numberOfLines={1}>
+      <View style={styles.overlayContent}>
+        <View style={styles.overlayTitleRow}>
+          <Text
+            adjustsFontSizeToFit
+            minimumFontScale={0.84}
+            numberOfLines={1}
+            style={styles.companyTitle}
+          >
             {card.companyName}
           </Text>
-          <View style={styles.brandSpacer} />
-          <View style={styles.openTag}>
-            <View style={styles.openDot} />
-            <Text style={styles.openText}>OPEN</Text>
+          <View style={styles.verifiedChip}>
+            <Text style={styles.verifiedChipText}>VERIFIED</Text>
           </View>
         </View>
 
-        <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
+        <Text
+          adjustsFontSizeToFit
+          minimumFontScale={0.82}
+          numberOfLines={2}
+          style={styles.companyRole}
+        >
           {card.jobTitle}
         </Text>
-      </View>
 
-      {/* === CREAM ZONE — horizontal split: REFERRED BY (left) | YOUR MATCH (right) === */}
-      <View style={styles.creamZone}>
-        <View style={styles.referrerCol}>
-          <Text style={styles.sectionLabel}>REFERRED BY</Text>
-          <View style={styles.referrerCard}>
-            <Avatar displayName={card.name} size="md" verificationRing />
-            <View style={styles.referrerMeta}>
-              <PersonName name={card.name} textStyle={styles.referrerName} />
-              <View style={styles.verifiedRow}>
-                <Ionicons name="checkmark-circle" size={13} color="#3897F0" />
-                <Text style={styles.verifiedText}>Verified</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.referrerStats}>
-            <StatPill label="TRUST" value={`★ ${card.trustScore}`} />
-            <StatPill label="HIRES" value={`${card.hires}`} />
-            <StatPill label="REPLY" value={card.responseTime} />
-          </View>
+        <View style={styles.endorserProofRow}>
+          <Avatar
+            displayName={card.name}
+            size="sm"
+            uri={card.avatarUrl}
+            verificationRing
+          />
+          <Text numberOfLines={2} style={styles.endorserProofText}>
+            {proofLine}
+          </Text>
         </View>
 
-        <View style={styles.matchCol}>
-          <Text style={styles.sectionLabel}>YOUR MATCH</Text>
-          <MatchArc percent={card.matchPercent} size={76} animate light />
-          <Text style={styles.matchHint} numberOfLines={1}>Skill overlap</Text>
-        </View>
+        <Text numberOfLines={1} style={styles.endorserMetaLine}>
+          {metaLine}
+        </Text>
       </View>
-    </View>
-  );
-}
-
-function StatPill({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statPill}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
@@ -584,15 +537,9 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
 
-  /* Image zone — company office photograph at top of card.
-     Takes ALL the leftover space after the brand band + cream zone size to
-     content. That's the desire-driving hero. */
-  imageZone: {
+  fullMediaCard: {
     flex: 1,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    overflow: 'hidden',
-    backgroundColor: '#0A1F44',
+    backgroundColor: colors.navy,
   },
   officeImage: {
     width: '100%',
@@ -601,175 +548,73 @@ const styles = StyleSheet.create({
   officeFallback: {
     ...StyleSheet.absoluteFillObject,
   },
-  imageBottomShade: {
+  bottomScrim: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  overlayContent: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 24,
-  },
-
-  brandZone: {
-    paddingTop: 16,
-    paddingHorizontal: 22,
-    paddingBottom: 18,
-    gap: 10,
-  },
-  creamZone: {
-    // No flex:1 — let the zone size to its content. Otherwise it stretches
-    // to fill the remaining card height and you get a huge empty white area
-    // below the stats. The imageZone (flex:1 above) now absorbs the slack.
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 18,
-    gap: 14,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-  },
-  referrerCol: {
-    flex: 1,
+    paddingHorizontal: 28,
+    paddingBottom: 32,
     gap: 12,
   },
-  matchCol: {
-    width: 110,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 6,
-    paddingTop: 8,
-    paddingHorizontal: 6,
-    paddingBottom: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.35)',
-    backgroundColor: 'rgba(212, 167, 68, 0.06)',
-  },
-  verifiedRow: {
+  overlayTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
-  verifiedText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.55)',
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  brandMark: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandMarkText: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 18,
-  },
-  brandName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
-  brandSpacer: { flex: 1 },
-  /* OPEN = "actively hiring" — green pill regardless of company brand color
-     so the signal reads consistently across cards. */
-  openTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(34, 197, 94, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.55)',
-  },
-  openDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#22C55E',
-  },
-  openText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9.5,
-    letterSpacing: 1.4,
-    color: '#22C55E',
-  },
-  role: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.4,
-  },
-  sectionLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
-    color: BLACK_50,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  /* Avatar sits flush with the TOP of the name block (next to the first
-     name) instead of vertically centered across both name lines, which
-     read as the avatar dropping low. */
-  referrerCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     gap: 14,
   },
-  referrerMeta: { flex: 1, gap: 4 },
-  referrerName: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 20,
-    lineHeight: 24,
-    color: BLACK,
-    letterSpacing: -0.3,
-  },
-  referrerTitle: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    color: BLACK_70,
-  },
-  referrerStats: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  statPill: {
+  companyTitle: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    backgroundColor: BLACK_05,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 38,
+    lineHeight: 43,
+    color: colors.cream,
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  verifiedChip: {
+    minWidth: 92,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.gold,
     alignItems: 'center',
-    gap: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(3, 7, 18, 0.42)',
   },
-  statValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 13,
-    color: BLACK,
+  verifiedChipText: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 12,
+    letterSpacing: 0.9,
+    color: colors.goldBright,
   },
-  statLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
-    color: BLACK_50,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+  companyRole: {
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 29,
+    lineHeight: 34,
+    color: colors.cream,
   },
-
-  matchHint: {
+  endorserProofRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  endorserProofText: {
+    flex: 1,
     fontFamily: 'Outfit-Medium',
-    fontSize: 11,
-    color: BLACK_70,
-    letterSpacing: 0.2,
-    textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 20,
+    color: 'rgba(245, 241, 232, 0.82)',
+  },
+  endorserMetaLine: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
+    lineHeight: 21,
+    color: 'rgba(245, 241, 232, 0.76)',
   },
 
   /* Stack preview — anonymous plate, no identity content. Muted sailor gold
@@ -780,20 +625,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#7A5F2E',
   },
 
-  /* Clip-on cluster — undo circle (optional) + counter pill anchored to the
-     card's bottom edge so it travels with the card during gestures and
-     stack-promotions. */
+  /* Undo affordance anchored to the card. */
   clipMount: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: -14,
     alignItems: 'center',
-  },
-  clipCluster: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
   undoCircle: {
     width: 28,
@@ -813,24 +651,5 @@ const styles = StyleSheet.create({
   undoCirclePressed: {
     opacity: 0.85,
     transform: [{ scale: 0.94 }],
-  },
-  clipPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 14,
-    backgroundColor: 'rgba(10, 31, 68, 0.95)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.40)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  clipText: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10.5,
-    color: '#E8BD58',
-    letterSpacing: 1.2,
   },
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   Dimensions,
+  Image,
   Modal,
   Pressable,
   StyleSheet,
@@ -21,9 +22,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Avatar } from '../common/Avatar';
-import { PersonName } from '../common/PersonName';
-import { brandForName } from './companyBrand';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
 import type { SeekerCard as SeekerCardData } from './seekerCardData';
@@ -36,7 +34,6 @@ const CARD_HEIGHT = Math.min(580, Math.round(SCREEN_H * 0.62));
 const CARD_TOP_FROM_SCREEN = 60 + 8;
 
 const BLACK = '#000000';
-const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
 const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
 const BLACK_45 = 'rgba(0, 0, 0, 0.45)';
 const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
@@ -187,7 +184,8 @@ export function ExpandedSeekerCard({
   if (!safe) return null;
 
   const primaryTarget = safe.targetCompanies[0] ?? 'India';
-  const brand = brandForName(primaryTarget);
+  const roleLine = `${safe.targetRole} · ${primaryTarget}`;
+  const proofLine = candidateProofLine(safe);
 
   return (
     <Modal
@@ -215,47 +213,46 @@ export function ExpandedSeekerCard({
           onScroll={scrollHandler}
           scrollEventThrottle={16}
         >
-          {/* === HERO IDENTITY — full-bleed, the seeker IS the desire driver === */}
-          <View style={[styles.identityHero, { backgroundColor: brand.tint }]}>
+          <View style={styles.identityHero}>
+            <Image
+              source={{ uri: safe.photoUrl }}
+              style={styles.identityPhoto}
+              resizeMode="cover"
+            />
             <LinearGradient
-              colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.32)']}
+              colors={[
+                'rgba(1, 7, 17, 0.02)',
+                'rgba(1, 7, 17, 0.36)',
+                'rgba(1, 7, 17, 0.96)',
+              ]}
+              locations={[0.38, 0.66, 1]}
               style={styles.identityHeroShade}
               pointerEvents="none"
             />
             <View style={styles.identityHeroContent}>
-              <Avatar uri={safe.photoUrl} displayName={safe.name} size="xl" verificationRing />
-              <PersonName
-                name={safe.name}
-                textStyle={[styles.heroName, { color: brand.text }]}
-                containerStyle={styles.heroNameWrap}
-              />
+              <View style={styles.heroTitleRow}>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.84}
+                  numberOfLines={2}
+                  style={styles.heroName}
+                >
+                  {safe.name}
+                </Text>
+                <View style={styles.expChip}>
+                  <Text style={styles.expChipText}>{safe.yearsOfExperience}Y EXP</Text>
+                </View>
+              </View>
               <Text
-                style={[styles.heroSignal, { color: brand.text }]}
+                adjustsFontSizeToFit
+                minimumFontScale={0.86}
+                style={styles.heroRole}
                 numberOfLines={1}
               >
-                {safe.currentSignal}
+                {roleLine}
               </Text>
+              <Text numberOfLines={2} style={styles.heroProof}>{proofLine}</Text>
             </View>
-          </View>
-
-          {/* Slim band — target company + role */}
-          <View style={[styles.brandZone, { backgroundColor: brand.tint }]}>
-            <View style={styles.brandRow}>
-              <View style={[styles.brandMark, { borderColor: brand.accent }]}>
-                <Text style={[styles.brandMarkText, { color: brand.text }]}>{brand.mark}</Text>
-              </View>
-              <Text style={[styles.brandName, { color: brand.text }]} numberOfLines={1}>
-                {primaryTarget}
-              </Text>
-              <View style={styles.brandSpacer} />
-              <View style={styles.matchPill}>
-                <Text style={styles.matchPillValue}>{safe.matchPercent}</Text>
-                <Text style={styles.matchPillLabel}>MATCH</Text>
-              </View>
-            </View>
-            <Text style={[styles.role, { color: brand.text }]} numberOfLines={2}>
-              {safe.targetRole}
-            </Text>
           </View>
 
           <View style={styles.creamZone}>
@@ -336,7 +333,7 @@ export function ExpandedSeekerCard({
             style={styles.passBtn}
           >
             <Ionicons name="close" size={20} color={colors.error} />
-            <Text style={styles.passBtnText}>Pass</Text>
+            <Text style={styles.passBtnText}>Skip</Text>
           </Pressable>
           <Pressable
             onPress={() => {
@@ -348,7 +345,7 @@ export function ExpandedSeekerCard({
             style={styles.commitBtn}
           >
             <Ionicons name="checkmark" size={20} color="#0A1F44" />
-            <Text style={styles.commitBtnText}>Accept {safe.name.split(' ')[0]}</Text>
+            <Text style={styles.commitBtnText}>Endorse candidate</Text>
           </Pressable>
         </Animated.View>
       </Animated.View>
@@ -356,6 +353,41 @@ export function ExpandedSeekerCard({
     </View>
     </Modal>
   );
+}
+
+function candidateProofLine(card: SeekerCardData): string {
+  const firstSentence = card.headline.split('.')[0]?.trim();
+  if (!firstSentence) return card.currentSignal;
+  const match = firstSentence.match(/^(.+?)\s+at\s+(.+)$/i);
+  if (!match) return firstSentence;
+  return [
+    shortCompany(match[2]),
+    shortRole(match[1]),
+    'targeting',
+    roleFamily(card.targetRole),
+    'referrals.',
+  ].join(' ');
+}
+
+function shortRole(role: string): string {
+  return role
+    .replace(/Software Development Engineer/gi, 'SDE')
+    .replace(/Site Reliability Engineer/gi, 'SRE')
+    .trim();
+}
+
+function shortCompany(company: string): string {
+  return company.replace(/\s+India$/i, '').trim();
+}
+
+function roleFamily(role: string): string {
+  const normalized = role.toLowerCase();
+  if (normalized.includes('platform')) return 'platform';
+  if (normalized.includes('frontend')) return 'frontend';
+  if (normalized.includes('backend')) return 'backend';
+  if (normalized.includes('product')) return 'product';
+  if (normalized.includes('data')) return 'data';
+  return 'role-fit';
 }
 
 const styles = StyleSheet.create({
@@ -374,105 +406,71 @@ const styles = StyleSheet.create({
   },
   scroll: { paddingBottom: 0 },
 
-  /* Identity hero — full-width, the seeker's avatar + name + signal sits
-     at the top of the sheet (replaces the office-image hero used by the
-     seeker-side ExpandedEndorserCard). */
   identityHero: {
     width: '100%',
     aspectRatio: 4 / 3,
     overflow: 'hidden',
     backgroundColor: '#0A1F44',
   },
+  identityPhoto: {
+    width: '100%',
+    height: '100%',
+  },
   identityHeroShade: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  identityHeroContent: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 80,
-  },
-  identityHeroContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingHorizontal: 28,
-    gap: 12,
+    paddingBottom: 28,
+    gap: 9,
   },
-  heroNameWrap: {
+  heroTitleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    gap: 14,
   },
   heroName: {
+    flex: 1,
     fontFamily: 'InstrumentSerif-Regular',
     fontSize: 36,
     lineHeight: 40,
-    letterSpacing: -0.5,
-    textAlign: 'center',
+    color: colors.cream,
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
-  heroSignal: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 14,
-    lineHeight: 20,
-    opacity: 0.85,
-    textAlign: 'center',
-  },
-
-  /* Slim band — target company + role, sits directly under the hero */
-  brandZone: {
-    paddingTop: 18,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    gap: 10,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  brandMark: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1.5,
+  expChip: {
+    minWidth: 78,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(3, 7, 18, 0.42)',
   },
-  brandMarkText: { fontFamily: 'InstrumentSerif-Regular', fontSize: 18 },
-  brandName: {
+  expChipText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
-    letterSpacing: 1.4,
+    fontSize: 12,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    flexShrink: 1,
+    color: colors.goldBright,
   },
-  brandSpacer: { flex: 1 },
-  matchPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.20)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
-    alignItems: 'center',
-    minWidth: 64,
-  },
-  matchPillValue: {
-    fontFamily: 'JetBrainsMono-Medium',
+  heroRole: {
+    fontFamily: 'Outfit-Medium',
     fontSize: 16,
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
+    lineHeight: 21,
+    color: 'rgba(245, 241, 232, 0.78)',
   },
-  matchPillLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
-    color: 'rgba(255,255,255,0.85)',
-    letterSpacing: 1.4,
-    marginTop: -1,
-  },
-  role: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 32,
-    lineHeight: 36,
-    letterSpacing: -0.5,
+  heroProof: {
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 16,
+    lineHeight: 21,
+    color: colors.goldBright,
   },
 
   creamZone: {
