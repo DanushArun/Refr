@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { layout } from '../../theme/spacing';
-import { hapticImpact } from '../../utils/haptics';
+import { hapticImpact, playSensoryEvent, type SensoryEvent } from '../../utils/haptics';
 
 type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger';
 type ButtonSize = 'small' | 'medium' | 'large';
@@ -27,6 +27,8 @@ interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   fullWidth?: boolean;
+  sensoryEvent?: SensoryEvent;
+  emphasis?: string;
 }
 
 const heightMap: Record<ButtonSize, number> = {
@@ -59,10 +61,17 @@ export function Button({
   style,
   labelStyle,
   fullWidth = true,
+  sensoryEvent,
+  emphasis: _emphasis,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const height = heightMap[size];
   const fontSize = fontSizeMap[size];
+
+  const handlePress = () => {
+    if (sensoryEvent) void playSensoryEvent(sensoryEvent);
+    onPress();
+  };
 
   const baseContainer: ViewStyle = {
     height,
@@ -77,7 +86,7 @@ export function Button({
   if (variant === 'primary') {
     return (
       <TouchableOpacity
-        onPress={onPress}
+        onPress={handlePress}
         disabled={isDisabled}
         activeOpacity={0.8}
         style={[baseContainer, { overflow: 'hidden' }, style]}
@@ -100,7 +109,7 @@ export function Button({
   if (variant === 'secondary') {
     return (
       <TouchableOpacity
-        onPress={onPress}
+        onPress={handlePress}
         disabled={isDisabled}
         activeOpacity={0.7}
         style={[baseContainer, styles.secondaryContainer, style]}
@@ -119,7 +128,7 @@ export function Button({
   if (variant === 'danger') {
     return (
       <TouchableOpacity
-        onPress={onPress}
+        onPress={handlePress}
         disabled={isDisabled}
         activeOpacity={0.7}
         style={[baseContainer, styles.dangerContainer, style]}
@@ -138,7 +147,14 @@ export function Button({
   // variant === 'text'
   return (
     <TouchableOpacity
-      onPress={() => { hapticImpact(); onPress(); }}
+      onPress={() => {
+        if (sensoryEvent) {
+          void playSensoryEvent(sensoryEvent);
+        } else {
+          void hapticImpact();
+        }
+        onPress();
+      }}
       disabled={isDisabled}
       activeOpacity={0.6}
       style={[{ height, alignItems: 'center', justifyContent: 'center', opacity: isDisabled ? 0.45 : 1 }, style]}

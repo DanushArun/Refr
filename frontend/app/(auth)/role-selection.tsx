@@ -20,13 +20,13 @@ const ROLES: Array<{
 }> = [
   {
     id: 'seeker',
-    title: 'I want referrals',
-    description: 'Find verified employees who can refer you to your dream company',
+    title: 'I want endorsements',
+    description: 'Find verified employees who can endorse you for the right role',
   },
   {
     id: 'referrer',
-    title: 'I can refer people',
-    description: 'Earn up to 80K per successful hire by referring qualified candidates',
+    title: 'I can endorse people',
+    description: 'Back qualified candidates and track every endorsement in one place',
   },
 ];
 
@@ -43,7 +43,7 @@ export default function RoleSelectionScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>
-            How do you want{'\n'}to use REFR?
+            How do you want{'\n'}to use Endorsly?
           </Text>
         </View>
 
@@ -129,11 +129,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: 'rgba(124, 58, 237, 0.15)',
+    backgroundColor: colors.goldGlow,
     marginBottom: 4, // 12px gap minus standard 8px from gap if it wasn't flex
   },
   cardTitle: {
-    fontFamily: 'Outfit-SemiBold', // Satoshi
+    fontFamily: 'Outfit-SemiBold',
     fontSize: 20,
     color: colors.text,
   },
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   buttonText: {
-    fontFamily: 'Outfit-SemiBold', // Satoshi
+    fontFamily: 'Outfit-SemiBold',
     fontSize: 16,
     color: colors.text,
   },

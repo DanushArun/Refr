@@ -1,12 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
   RefreshControl,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -14,9 +10,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
 import { latestStageTimestamp } from '../components/activity/referralCardShared';
+import { Button } from '../components/common/Button';
 import { MatchInboxRow } from '../components/matches/MatchInboxRow';
 import { Skeleton } from '../components/common/Skeleton';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
@@ -27,7 +22,16 @@ import {
   relativeLabel,
 } from '../components/matches/matchTiering';
 import { referralsApi } from '../services/api';
-import type { ReferralStatus, SeekerPipelineItem } from '@refr/shared';
+import type { SeekerPipelineItem } from '@refr/shared';
+import { matchesStyles as styles } from './matches/matchesStyles';
+import {
+  buildStageCounts,
+  filterByStage,
+  resolveMatchesError,
+  STAGE_FILTERS,
+  STAGE_LABEL,
+  type StageFilter,
+} from './matches/matchesLogic';
 
 /**
  * Matches inbox — the seeker's social surface.
@@ -54,13 +58,15 @@ export function MatchesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stageFilter, setStageFilter] = useState<StageFilter>('all');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
       const data = await referralsApi.getPipeline();
       setItems(data as SeekerPipelineItem[]);
-    } catch {
-      Alert.alert('Error', 'Failed to load matches');
+      setErrorMessage(null);
+    } catch (error: unknown) {
+      setErrorMessage(resolveMatchesError(error));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,6 +100,15 @@ export function MatchesScreen() {
   const onPickStage = useCallback((next: StageFilter) => {
     setStageFilter(next);
   }, []);
+
+  const openDiscover = useCallback(() => {
+    router.push('/(seeker-tabs)/discover');
+  }, []);
+
+  const retryLoad = useCallback(() => {
+    setLoading(true);
+    load();
+  }, [load]);
 
   const filterOptions = useMemo<readonly FilterOption<StageFilter>[]>(
     () =>
@@ -168,6 +183,8 @@ export function MatchesScreen() {
   const total = items.length;
   const activeCount = liveTiers.active.length;
   const filtering = stageFilter !== 'all';
+  const showBlockingError = errorMessage !== null && total === 0;
+  const showInlineError = errorMessage !== null && total > 0;
 
   return (
     <View style={styles.container}>
@@ -175,7 +192,9 @@ export function MatchesScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Matches</Text>
           <Text style={styles.subtitle}>
-            {total === 0
+            {showBlockingError
+              ? 'Could not load your matches'
+              : total === 0
               ? 'No matches yet'
               : filtering
               ? `${activeCount} ${STAGE_LABEL[stageFilter].toLowerCase()}`
@@ -198,8 +217,10 @@ export function MatchesScreen() {
           />
         )}
 
-        {total === 0 ? (
-          <EmptyState />
+        {showBlockingError ? (
+          <MatchesErrorState message={errorMessage} onRetry={retryLoad} />
+        ) : total === 0 ? (
+          <EmptyState onDiscover={openDiscover} />
         ) : (
           <ScrollView
             contentContainerStyle={styles.scroll}
@@ -212,6 +233,15 @@ export function MatchesScreen() {
               />
             }
           >
+            {showInlineError && (
+              <View style={styles.inlineNotice}>
+                <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
+                <Text style={styles.inlineNoticeText}>
+                  Could not refresh. Showing your last loaded matches.
+                </Text>
+              </View>
+            )}
+
             {/* Tier 1 — Fresh. Hidden when filtering by a stage other than
                 'all' (the carousel is the recency surface; if you've narrowed
                 to a stage, give the conversation list the spotlight). */}
@@ -272,67 +302,44 @@ export function MatchesScreen() {
   );
 }
 
-// ─────────── stage filters ───────────
-
-type StageFilter = 'all' | 'matched' | 'submitted' | 'interviewing';
-
-const STAGE_FILTERS: { key: StageFilter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'matched', label: 'Matched' },
-  { key: 'submitted', label: 'Submitted' },
-  { key: 'interviewing', label: 'Interviewing' },
-];
-
-const STAGE_LABEL: Record<StageFilter, string> = {
-  all: 'All',
-  matched: 'Matched',
-  submitted: 'Submitted',
-  interviewing: 'Interviewing',
-};
-
-/** Map a referral status to the filter bucket it belongs to. `requested`
- *  and `accepted` both fall under "matched" — same as the stage rail. */
-function bucketFor(status: ReferralStatus): Exclude<StageFilter, 'all'> | null {
-  switch (status) {
-    case 'requested':
-    case 'accepted':
-      return 'matched';
-    case 'submitted':
-      return 'submitted';
-    case 'interviewing':
-      return 'interviewing';
-    default:
-      return null; // hired / rejected / withdrawn / expired — terminal
-  }
-}
-
-function filterByStage(
-  items: SeekerPipelineItem[],
-  filter: StageFilter,
-): SeekerPipelineItem[] {
-  if (filter === 'all') return items;
-  return items.filter((it) => bucketFor(it.referral.status) === filter);
-}
-
-function buildStageCounts(
-  items: SeekerPipelineItem[],
-): Record<Exclude<StageFilter, 'all'>, number> {
-  const out = { matched: 0, submitted: 0, interviewing: 0 };
-  for (const it of items) {
-    const b = bucketFor(it.referral.status);
-    if (b) out[b] += 1;
-  }
-  return out;
-}
-
-function EmptyState() {
+function EmptyState({ onDiscover }: { onDiscover: () => void }) {
   return (
     <View style={styles.empty}>
       <Ionicons name="compass-outline" size={32} color={colors.accent} />
       <Text style={styles.emptyTitle}>No matches yet</Text>
       <Text style={styles.emptyBody}>
-        Once a referrer accepts your request, they'll appear here and you can chat.
+        When an Endorser accepts your request, the conversation opens here.
       </Text>
+      <Button
+        label="Find Endorsers"
+        onPress={onDiscover}
+        size="small"
+        fullWidth={false}
+        style={styles.emptyAction}
+      />
+    </View>
+  );
+}
+
+function MatchesErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <View style={styles.empty}>
+      <Ionicons name="warning-outline" size={32} color={colors.warning} />
+      <Text style={styles.emptyTitle}>Matches unavailable</Text>
+      <Text style={styles.emptyBody}>{message}</Text>
+      <Button
+        label="Try Again"
+        onPress={onRetry}
+        size="small"
+        fullWidth={false}
+        style={styles.emptyAction}
+      />
     </View>
   );
 }
@@ -351,111 +358,3 @@ function MatchSkeletonRow() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
-  safe: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: spacing[3],
-    gap: spacing[1],
-  },
-  title: { ...typography.h2, color: colors.text },
-  subtitle: { ...typography.caption, color: colors.textSecondary },
-
-
-  scroll: {
-    paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[2],
-    // Tab bar = 70px tall + 26px bottom inset + breathing room
-    paddingBottom: 116,
-    gap: spacing[5],
-  },
-
-  /* Skeleton — fresh-tier carousel placeholder */
-  skelCarousel: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingVertical: 8,
-  },
-  skelTile: {
-    alignItems: 'center',
-    width: 76,
-  },
-  skelActiveStack: {
-    gap: 8,
-    marginTop: spacing[3],
-  },
-  skelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-  },
-  skelRowMiddle: {
-    flex: 1,
-  },
-
-  /* Tier 2 — stack of independent pills with breathing room between. */
-  activeWrap: { gap: 8 },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    paddingHorizontal: 4,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontFamily: 'InstrumentSerif-Italic',
-    fontSize: 20,
-    color: colors.text,
-    letterSpacing: -0.2,
-  },
-  sectionCount: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 12,
-    color: colors.textTertiary,
-  },
-  sectionHint: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 11,
-    color: 'rgba(250, 250, 247, 0.32)',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  activeStack: { gap: 8 },
-
-  /* Inline empty state when the active filter narrows to nothing. Reads
-     like a quiet log line, not a marquee — just enough to tell the user
-     why their list is short. */
-  filteredEmpty: {
-    paddingHorizontal: 4,
-    paddingVertical: 12,
-  },
-  filteredEmptyText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-
-  /* Universal empty state — only shown when the entire pipeline is empty. */
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: layout.screenPaddingH,
-    gap: spacing[3],
-  },
-  emptyTitle: { ...typography.h4, color: colors.text },
-  emptyBody: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});

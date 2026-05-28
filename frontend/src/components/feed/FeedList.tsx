@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   footerText: {
     ...typography.caption,
     color: colors.textTertiary,
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
   empty: {
     flex: 1,

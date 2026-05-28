@@ -14,6 +14,7 @@ import { TagRow } from '../common/Tag';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
+import { playSensoryEvent } from '../../utils/haptics';
 
 interface CareerStoryCardProps {
   card: CareerStoryCardType;
@@ -25,7 +26,7 @@ interface CareerStoryCardProps {
  * CareerStoryCard — the core conversion card in the REFR feed.
  *
  * Shows a seeker's narrative headline and story excerpt. The "I can refer" CTA
- * (violet primary button) is the referral entry point — a referrer tapping it
+ * (gold primary button) is the referral entry point — an endorser tapping it
  * triggers a referral request. Scrollers who can't refer still see the seeker's
  * story and can bookmark.
  *
@@ -38,8 +39,13 @@ export function CareerStoryCard({ card, onReferPress, onCardPress }: CareerStory
   }, [card, onReferPress]);
 
   const handleCardPress = useCallback(() => {
+    void playSensoryEvent('control.tap');
     onCardPress?.(card);
   }, [card, onCardPress]);
+
+  const handleBookmarkPress = useCallback(() => {
+    void playSensoryEvent('control.select');
+  }, []);
 
   // Truncate story to ~3 lines
   const storyExcerpt =
@@ -57,7 +63,7 @@ export function CareerStoryCard({ card, onReferPress, onCardPress }: CareerStory
         <View style={styles.headerMeta}>
           <Text style={styles.seekerName}>{card.seekerName}</Text>
           <Text style={styles.yearsExp}>
-            {card.yearsOfExperience}y exp · seeking referral
+            {card.yearsOfExperience}y exp · seeking endorsement
           </Text>
         </View>
         <View style={styles.reactionCount}>
@@ -99,9 +105,15 @@ export function CareerStoryCard({ card, onReferPress, onCardPress }: CareerStory
           variant="primary"
           size="medium"
           fullWidth={false}
+          sensoryEvent="endorsement.commit"
+          emphasis="critical"
           style={styles.referButton}
         />
-        <TouchableOpacity style={styles.bookmarkButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity
+          style={styles.bookmarkButton}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          onPress={handleBookmarkPress}
+        >
           <Text style={styles.bookmarkIcon}>{card.isBookmarked ? '★' : '☆'}</Text>
         </TouchableOpacity>
       </View>
@@ -155,7 +167,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 30,
     color: colors.text,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   story: {
     fontFamily: 'Outfit-Regular',
@@ -171,7 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textTertiary,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
   ctaRow: {
     flexDirection: 'row',

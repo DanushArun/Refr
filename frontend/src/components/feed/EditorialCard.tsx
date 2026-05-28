@@ -62,13 +62,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[2.5],
     paddingVertical: spacing[0.5],
     borderRadius: 6,
-    backgroundColor: 'rgba(124, 58, 237, 0.12)',
+    backgroundColor: colors.goldGlow,
   },
   badgeText: {
     ...typography.caption,
     color: colors.accent,
     fontFamily: 'Outfit-SemiBold',
-    letterSpacing: 1,
+    letterSpacing: 0,
     fontSize: 10,
   },
   author: {

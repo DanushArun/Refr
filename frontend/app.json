@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "REFR",
+    "name": "Endorsly",
     "slug": "refr",
     "version": "0.1.0",
     "scheme": "refr",
@@ -10,7 +10,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.refr.app",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "newArchEnabled": true,
     "android": {

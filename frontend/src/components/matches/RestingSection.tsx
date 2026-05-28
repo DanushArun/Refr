@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 18,
     color: '#FAFAF7',
-    letterSpacing: -0.2,
+    letterSpacing: 0,
   },
   count: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     fontSize: 11,
     color: 'rgba(250, 250, 247, 0.32)',
-    letterSpacing: 0.3,
+    letterSpacing: 0,
     textTransform: 'uppercase',
   },
   spacer: { flex: 1 },

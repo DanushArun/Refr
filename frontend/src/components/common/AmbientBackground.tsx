@@ -12,12 +12,12 @@ import {
 const { width: W, height: H } = Dimensions.get('window');
 
 /**
- * Ambient orbs for the app backdrop — three large soft glows that breathe
+ * Ambient light for the app backdrop — three large soft glows that breathe
  * continuously.
  *
  * Performance: previously this animated each orb's RADIUS via `withRepeat`,
  * which forced Skia to recompute three full-screen Gaussian blurs (blur=70-90)
- * every frame. The orbs now have static geometry; only their `opacity` is
+ * every frame. The glows now have static geometry; only their `opacity` is
  * animated. Skia caches the blurred shape once and only re-composites with the
  * new alpha each frame — a cheap pixel-shader pass instead of a fresh blur.
  * Same visible "breathing" effect, a fraction of the GPU cost.
@@ -58,7 +58,7 @@ export function AmbientBackground() {
           cx={W * 0.22}
           cy={H * 0.17}
           r={150}
-          color="rgba(124, 58, 237, 0.20)"
+          color="rgba(212, 167, 68, 0.14)"
           opacity={opacity1}
         >
           <BlurMask blur={70} style="normal" />
@@ -67,7 +67,7 @@ export function AmbientBackground() {
           cx={W * 0.82}
           cy={H * 0.77}
           r={120}
-          color="rgba(0, 255, 204, 0.13)"
+          color="rgba(245, 241, 232, 0.10)"
           opacity={opacity2}
         >
           <BlurMask blur={75} style="normal" />
@@ -76,7 +76,7 @@ export function AmbientBackground() {
           cx={W * 0.55}
           cy={H * 0.52}
           r={92}
-          color="rgba(6, 182, 212, 0.07)"
+          color="rgba(134, 168, 216, 0.06)"
           opacity={opacity3}
         >
           <BlurMask blur={90} style="normal" />

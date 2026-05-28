@@ -8,9 +8,19 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SystemBars } from 'react-native-edge-to-edge';
 import {
-  JetBrainsMono_400Regular,
-  JetBrainsMono_500Medium,
-} from '@expo-google-fonts/jetbrains-mono';
+  IBMPlexSans_400Regular,
+  IBMPlexSans_500Medium,
+  IBMPlexSans_600SemiBold,
+  IBMPlexSans_700Bold,
+} from '@expo-google-fonts/ibm-plex-sans';
+import {
+  IBMPlexSerif_600SemiBold,
+  IBMPlexSerif_600SemiBold_Italic,
+} from '@expo-google-fonts/ibm-plex-serif';
+import {
+  IBMPlexMono_400Regular,
+  IBMPlexMono_500Medium,
+} from '@expo-google-fonts/ibm-plex-mono';
 import { colors } from '../src/theme/colors';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { loadDemoRole } from '../src/services/demoRoleStorage';
@@ -25,19 +35,14 @@ export default function RootLayout() {
   }, []);
 
   const [fontsLoaded, fontError] = useFonts({
-    // Body + UI — Satoshi (the free Gilroy; CRED-grade geometric sans)
-    // Aliased to legacy "Outfit-*" keys so existing components render without edits
-    'Outfit-Regular': require('../assets/fonts/Satoshi-Regular.otf'),
-    'Outfit-Medium': require('../assets/fonts/Satoshi-Medium.otf'),
-    'Outfit-SemiBold': require('../assets/fonts/Satoshi-Bold.otf'),
-    'Outfit-Bold': require('../assets/fonts/Satoshi-Black.otf'),
-    // Hero / editorial — Clash Display (replaces Instrument Serif)
-    // CRED does not use a serif — geometric display is the correct brand move
-    'InstrumentSerif-Regular': require('../assets/fonts/ClashDisplay-Semibold.otf'),
-    'InstrumentSerif-Italic': require('../assets/fonts/ClashDisplay-Medium.otf'),
-    // Numbers + stats — JetBrains Mono retained (CRED uses a mono for amounts)
-    'JetBrainsMono-Regular': JetBrainsMono_400Regular,
-    'JetBrainsMono-Medium': JetBrainsMono_500Medium,
+    'Outfit-Regular': IBMPlexSans_400Regular,
+    'Outfit-Medium': IBMPlexSans_500Medium,
+    'Outfit-SemiBold': IBMPlexSans_600SemiBold,
+    'Outfit-Bold': IBMPlexSans_700Bold,
+    'InstrumentSerif-Regular': IBMPlexSerif_600SemiBold,
+    'InstrumentSerif-Italic': IBMPlexSerif_600SemiBold_Italic,
+    'JetBrainsMono-Regular': IBMPlexMono_400Regular,
+    'JetBrainsMono-Medium': IBMPlexMono_500Medium,
   });
 
   useEffect(() => {

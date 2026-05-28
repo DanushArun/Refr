@@ -326,9 +326,9 @@ const FEED_CARDS: FeedCard[] = [
     reactionCount: 8,
     isBookmarked: false,
     referrerDisplayName: 'Priya Sharma',
-    seekerDisplayName: 'Karthik R.',
+    seekerDisplayName: 'Kavya R.',
     companyName: 'Flipkart',
-    eventDescription: 'referred Karthik to the Flipkart platform engineering team',
+    eventDescription: 'referred Kavya to the Flipkart platform engineering team',
   },
   {
     id: 'fc-cs-danush',
@@ -1061,9 +1061,9 @@ const CHAT_HISTORIES: Record<string, ChatMessage[]> = {
     { id: 'm-neha-4', body: 'Exactly the scale we operate at. I\'ll connect you with the team lead this week.', createdAt: hoursAgo(58), sender: nivrantSender },
   ],
   'ref-i6': [
-    { id: 'm-karthik-1', body: 'Hi Nivrant, Karthik here. Thanks for accepting - super excited about Razorpay payments platform.', createdAt: hoursAgo(82), sender: { id: '8', displayName: 'Karthik Ramesh' } },
+    { id: 'm-karthik-1', body: 'Hi Nivrant, Kavya here. Thanks for accepting - super excited about Razorpay payments platform.', createdAt: hoursAgo(82), sender: { id: '8', displayName: 'Kavya Ramesh' } },
     { id: 'm-karthik-2', body: 'Walmart Labs JVM background will translate well. I\'ve submitted your referral to the hiring team.', createdAt: hoursAgo(78), sender: nivrantSender },
-    { id: 'm-karthik-3', body: 'Recruiter reached out - first round is Tuesday. Any advice?', createdAt: hoursAgo(40), sender: { id: '8', displayName: 'Karthik Ramesh' } },
+    { id: 'm-karthik-3', body: 'Recruiter reached out - first round is Tuesday. Any advice?', createdAt: hoursAgo(40), sender: { id: '8', displayName: 'Kavya Ramesh' } },
     { id: 'm-karthik-4', body: 'They\'ll ask about concurrency and idempotency in payment flows. Think about what happens on duplicate webhooks.', createdAt: hoursAgo(38), sender: nivrantSender },
   ],
 };

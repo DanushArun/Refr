@@ -17,7 +17,6 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { Button } from '../components/common/Button';
-import { StatCard } from '../components/common/StatCard';
 import { referralsApi } from '../services/api';
 import type { FeedCard } from '@refr/shared';
 
@@ -54,7 +53,7 @@ export function FeedScreen() {
       });
       setReferModal({ visible: false, card: null, note: '', submitting: false });
       Alert.alert(
-        'Referral request sent',
+        'Endorsement request sent',
         'The seeker will be notified. You can chat once they respond.',
       );
     } catch (err) {
@@ -109,16 +108,10 @@ export function FeedScreen() {
                   You'll be able to chat with them once they accept. Your Endorsement Score increases when you submit.
                 </Text>
 
-                <View style={styles.seekerStats}>
-                  <StatCard
-                    label="Experience"
-                    value={`${referModal.card.yearsOfExperience}y`}
-                  />
-                  <StatCard
-                    label="Skills"
-                    value={String(referModal.card.skills?.length ?? 0)}
-                  />
-                </View>
+                <Text style={styles.modalMeta}>
+                  {referModal.card.yearsOfExperience}y experience ·{' '}
+                  {referModal.card.skills?.length ?? 0} skills
+                </Text>
 
                 <TextInput
                   style={styles.noteInput}
@@ -173,12 +166,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
     fontSize: 22,
     color: colors.text,
-    letterSpacing: 3,
+    letterSpacing: 0,
   },
   headerSub: {
     ...typography.caption,
     color: colors.textTertiary,
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
   modalBackdrop: {
     flex: 1,
@@ -211,9 +204,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 22,
   },
-  seekerStats: {
-    flexDirection: 'row',
-    gap: spacing[3],
+  modalMeta: {
+    ...typography.caption,
+    color: colors.textTertiary,
   },
   noteInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.07)',

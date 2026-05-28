@@ -160,23 +160,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
     fontSize: 14,
     color: 'rgba(250, 250, 247, 0.78)',
-    letterSpacing: -0.05,
+    letterSpacing: 0,
   },
   outcomeChip: {
     fontFamily: 'Outfit-Bold',
     fontSize: 9,
-    letterSpacing: 1.4,
+    letterSpacing: 0,
   },
   sub: {
     fontFamily: 'Outfit-Regular',
     fontSize: 11.5,
     color: 'rgba(250, 250, 247, 0.45)',
-    letterSpacing: 0.1,
+    letterSpacing: 0,
   },
   time: {
     fontFamily: 'JetBrainsMono-Regular',
     fontSize: 10,
     color: 'rgba(250, 250, 247, 0.35)',
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
 });

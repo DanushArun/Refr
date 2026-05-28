@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   wordmark: {
     ...typography.h3,
     color: colors.accent,
-    letterSpacing: 4,
+    letterSpacing: 0,
     marginBottom: spacing[4],
   },
   heading: {

@@ -139,7 +139,7 @@ export default function ProfileSetupScreen() {
           </Text>
           <Text style={styles.subheading}>
             {isSeeker
-              ? 'Help referrers understand who you are. Be specific — generic profiles get fewer referrals.'
+              ? 'Help endorsers understand who you are. Be specific — generic profiles get fewer endorsements.'
               : 'Tell potential seekers what you can champion. Verified profiles get more requests.'}
           </Text>
 

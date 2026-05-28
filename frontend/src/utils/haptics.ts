@@ -143,6 +143,22 @@ export const Phrase = {
     ]);
   },
 
+  /** Pipeline advance — the referral rail moves one station forward. */
+  pipelineAdvance: (): Promise<void> =>
+    play([
+      { kind: 'selection' },
+      { kind: 'rest', ms: 70 },
+      { kind: 'impact', style: I.Light },
+    ]),
+
+  /** Score delta — one ledger tick, not a celebration. */
+  scoreDelta: (): Promise<void> =>
+    play([
+      { kind: 'selection' },
+      { kind: 'rest', ms: 55 },
+      { kind: 'impact', style: I.Soft },
+    ]),
+
   /** Onboarding self-star ignite — soft attack, soft echo. */
   starIgnite: (): Promise<void> =>
     play([
@@ -194,6 +210,14 @@ export const Phrase = {
   error: (): Promise<void> =>
     play([{ kind: 'notify', type: N.Error }]),
 
+  /** Failure rollback — tactile reset before the visible rollback settles. */
+  failureRollback: (): Promise<void> =>
+    play([
+      { kind: 'impact', style: I.Soft },
+      { kind: 'rest', ms: 80 },
+      { kind: 'notify', type: N.Error },
+    ]),
+
   /** Pull-to-refresh release — a soft "got it" downbeat. */
   pullRefresh: (): Promise<void> =>
     play([
@@ -209,6 +233,29 @@ export const Phrase = {
    ────────────────────────────────────────────────────────────────────── */
 
 export const hapticSelection = (): Promise<void> => Phrase.tick();
+
+export type SensoryEvent =
+  | 'control.tap'
+  | 'control.select'
+  | 'endorsement.commit'
+  | 'failure.rollback'
+  | 'hire.confirmed'
+  | 'pipeline.advance'
+  | 'score.delta';
+
+const sensoryPlayers: Record<SensoryEvent, () => Promise<void>> = {
+  'control.tap': Phrase.tap,
+  'control.select': Phrase.tick,
+  'endorsement.commit': Phrase.swipeRequest,
+  'failure.rollback': Phrase.failureRollback,
+  'hire.confirmed': Phrase.hire,
+  'pipeline.advance': Phrase.pipelineAdvance,
+  'score.delta': Phrase.scoreDelta,
+};
+
+export function playSensoryEvent(event: SensoryEvent): Promise<void> {
+  return sensoryPlayers[event]();
+}
 
 export const hapticImpact = async (
   style: Haptics.ImpactFeedbackStyle = I.Light,

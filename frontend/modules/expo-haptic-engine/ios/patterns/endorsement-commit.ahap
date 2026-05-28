@@ -1,0 +1,12 @@
+{
+  "Version": 1.0,
+  "Metadata": { "Project": "Endorsly", "Description": "Endorsement commit - decisive two-beat intent" },
+  "Pattern": [
+    { "Event": { "Time": 0.00, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 0.72 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.62 }]}},
+    { "Event": { "Time": 0.10, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 0.48 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.42 }]}}
+  ]
+}

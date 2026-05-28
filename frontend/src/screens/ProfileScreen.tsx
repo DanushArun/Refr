@@ -2,28 +2,27 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
   Alert,
   RefreshControl,
-  DevSettings,
+  Switch,
 } from 'react-native';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
 import { Avatar } from '../components/common/Avatar';
 import { GlassCard } from '../components/common/GlassCard';
 import { Button } from '../components/common/Button';
 import { router } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
 import { profileApi } from '../services/api';
-import { saveDemoRole, clearDemoRole, type DemoRole } from '../services/demoRoleStorage';
+import { saveDemoRole, type DemoRole } from '../services/demoRoleStorage';
 import { DEMO } from '../config/demo';
 import { notifyAuthChange } from '../services/auth';
 import { MOCK_SEEKER_SESSION, MOCK_REFERRER_SESSION } from '../config/demo';
+import { profileStyles as styles } from './profile/profileStyles';
+import { useSensorySettings } from '../hooks/useSensorySettings';
 
 interface FullProfile {
   id: number;
@@ -57,9 +56,11 @@ interface FullProfile {
 
 export function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const isReferrer = user?.role === 'referrer';
   const [profile, setProfile] = useState<FullProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const sensory = useSensorySettings();
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -90,6 +91,20 @@ export function ProfileScreen() {
     ]);
   };
 
+  const handleRoleSwitch = useCallback(async () => {
+    const nextRole: DemoRole = isReferrer ? 'seeker' : 'referrer';
+    try {
+      await saveDemoRole(nextRole);
+      notifyAuthChange(nextRole === 'seeker' ? MOCK_SEEKER_SESSION : MOCK_REFERRER_SESSION);
+      router.replace(
+        nextRole === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/inbox',
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Please try again.';
+      Alert.alert('Could not switch view', message);
+    }
+  }, [isReferrer]);
+
   if (!user) return null;
 
   if (loading) {
@@ -102,7 +117,6 @@ export function ProfileScreen() {
     );
   }
 
-  const isReferrer = user.role === 'referrer';
   const displayName = profile?.displayName ?? user.displayName ?? 'User';
   const avatarUrl = profile?.avatarUrl ?? user.avatarUrl;
 
@@ -130,36 +144,14 @@ export function ProfileScreen() {
               <Text style={styles.displayName}>{displayName}</Text>
               <View style={styles.roleBadge}>
                 <Text style={styles.roleBadgeText}>
-                  {isReferrer ? 'Referrer' : 'Job Seeker'}
+                  {isReferrer ? 'Endorser' : 'Seeker'}
                 </Text>
               </View>
             </View>
           </View>
 
           {isReferrer && profile?.referrerProfile && (
-            <View style={styles.profileDetail}>
-              <Text style={styles.profileDetailText}>
-                {profile.referrerProfile.job_title} at{' '}
-                {profile.referrerProfile.company.name}
-              </Text>
-              <Text style={styles.profileDetailSub}>
-                Endorsement Score: {profile.referrerProfile.endorsement_score}
-              </Text>
-              <View style={styles.statsRow}>
-                <StatPill
-                  label="Referrals"
-                  value={profile.referrerProfile.total_referrals}
-                />
-                <StatPill
-                  label="Hires"
-                  value={profile.referrerProfile.successful_hires}
-                />
-                <StatPill
-                  label="Status"
-                  value={profile.referrerProfile.verification_status}
-                />
-              </View>
-            </View>
+            <EndorserTrustPanel profile={profile.referrerProfile} />
           )}
 
           {!isReferrer && profile?.seekerProfile && (
@@ -189,16 +181,22 @@ export function ProfileScreen() {
           <SettingsRow label="Email" value={user.email} />
           <SettingsRow
             label="Role"
-            value={isReferrer ? 'Referrer' : 'Seeker'}
+            value={isReferrer ? 'Endorser' : 'Seeker'}
           />
         </View>
 
-        {/* Preview mode — reviewer can switch sides anytime */}
+        <SensorySettingsSection
+          hapticsEnabled={sensory.hapticsEnabled}
+          reduceMotionEnabled={sensory.reduceMotionEnabled}
+          onHapticsChange={sensory.setHapticsEnabled}
+        />
+
+        {/* Demo-only view switcher. */}
         {DEMO.enabled && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preview mode</Text>
+            <Text style={styles.sectionTitle}>View mode</Text>
             <View style={styles.roleSwitchRow}>
-              <View style={{ flex: 1 }}>
+              <View style={styles.roleSwitchCopy}>
                 <Text style={styles.roleSwitchLabel}>Currently viewing as</Text>
                 <Text style={styles.roleSwitchValue}>
                   {isReferrer ? 'Endorser' : 'Seeker'}
@@ -206,55 +204,7 @@ export function ProfileScreen() {
               </View>
               <Button
                 label={`Switch to ${isReferrer ? 'Seeker' : 'Endorser'}`}
-                onPress={async () => {
-                  const nextRole: DemoRole = isReferrer ? 'seeker' : 'referrer';
-                  await saveDemoRole(nextRole);
-                  notifyAuthChange(
-                    nextRole === 'seeker' ? MOCK_SEEKER_SESSION : MOCK_REFERRER_SESSION,
-                  );
-                  router.replace(
-                    nextRole === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/inbox',
-                  );
-                }}
-                variant="secondary"
-                size="medium"
-                fullWidth={false}
-              />
-            </View>
-            <View style={styles.reloadRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.roleSwitchLabel}>Start over</Text>
-                <Text style={styles.reloadHint}>
-                  Reloads the app — resets swipes, matches, and preview state
-                </Text>
-              </View>
-              <Button
-                label="Reload"
-                onPress={() => {
-                  Alert.alert(
-                    'Reload app?',
-                    'Restarts the preview from the Welcome screen.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Reload',
-                        onPress: async () => {
-                          await clearDemoRole();
-                          // Give AsyncStorage a tick to flush to disk on iOS
-                          // before the bundle tears down — otherwise the reloaded
-                          // app reads the old role back and skips Welcome.
-                          await new Promise((resolve) => setTimeout(resolve, 200));
-                          // Navigate first so even if DevSettings.reload is a no-op
-                          // in this harness, we've still landed on Welcome.
-                          router.replace('/');
-                          if (typeof DevSettings?.reload === 'function') {
-                            DevSettings.reload();
-                          }
-                        },
-                      },
-                    ],
-                  );
-                }}
+                onPress={handleRoleSwitch}
                 variant="secondary"
                 size="medium"
                 fullWidth={false}
@@ -297,145 +247,86 @@ function SettingsRow({
   );
 }
 
-function StatPill({
-  label,
-  value,
+function SensorySettingsSection({
+  hapticsEnabled,
+  reduceMotionEnabled,
+  onHapticsChange,
 }: {
-  label: string;
-  value: string | number;
+  hapticsEnabled: boolean;
+  reduceMotionEnabled: boolean;
+  onHapticsChange: (enabled: boolean) => Promise<void>;
 }) {
   return (
-    <View style={styles.statPill}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Experience</Text>
+      <SettingsToggleRow
+        label="Haptics"
+        value={hapticsEnabled ? 'On' : 'Off'}
+        enabled={hapticsEnabled}
+        onChange={onHapticsChange}
+      />
+      <SettingsRow
+        label="Motion"
+        value={reduceMotionEnabled ? 'Reduced by system' : 'Full motion'}
+      />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'transparent' },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: layout.screenPaddingH,
-    paddingTop: spacing[8],
-    paddingBottom: spacing[20],
-    gap: spacing[6],
-  },
-  profileCard: { gap: spacing[4] },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[4],
-  },
-  profileMeta: { flex: 1, gap: spacing[2] },
-  displayName: { ...typography.h3, color: colors.text },
-  roleBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[0.5],
-    borderRadius: 100,
-    backgroundColor: 'rgba(124, 58, 237, 0.12)',
-  },
-  roleBadgeText: {
-    ...typography.caption,
-    color: colors.accent,
-    fontFamily: 'Outfit-SemiBold',
-  },
-  profileDetail: { gap: spacing[2] },
-  profileDetailText: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  profileDetailSub: {
-    ...typography.caption,
-    color: colors.accent,
-  },
-  headline: {
-    ...typography.body,
-    color: colors.textSecondary,
-    lineHeight: 22,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing[3],
-    marginTop: spacing[2],
-  },
-  statPill: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing[2],
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 12,
-  },
-  statValue: {
-    ...typography.h4,
-    color: colors.text,
-    fontFamily: 'JetBrainsMono-Regular',
-  },
-  statLabel: {
-    ...typography.caption,
-    color: colors.textTertiary,
-  },
-  section: {
-    gap: spacing[2],
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: layout.cardBorderRadius,
-    overflow: 'hidden',
-  },
-  sectionTitle: {
-    ...typography.label,
-    color: colors.textTertiary,
-    paddingHorizontal: layout.cardPadding,
-    paddingTop: layout.cardPadding,
-  },
-  settingsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: layout.cardPadding,
-    paddingVertical: spacing[3.5],
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  settingsLabel: { ...typography.body, color: colors.text },
-  settingsValue: { ...typography.body, color: colors.textSecondary },
-  signOutBtn: { marginTop: spacing[4] },
-  roleSwitchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingHorizontal: layout.cardPadding,
-    paddingVertical: spacing[3.5],
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  roleSwitchLabel: {
-    ...typography.caption,
-    color: colors.textTertiary,
-  },
-  roleSwitchValue: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 15,
-    color: colors.text,
-    marginTop: 2,
-  },
-  reloadRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingHorizontal: layout.cardPadding,
-    paddingVertical: spacing[3.5],
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  reloadHint: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    marginTop: 2,
-    lineHeight: 16,
-  },
-});
+function SettingsToggleRow({
+  label,
+  value,
+  enabled,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  enabled: boolean;
+  onChange: (enabled: boolean) => Promise<void>;
+}) {
+  return (
+    <View style={styles.settingsRow}>
+      <Text style={styles.settingsLabel}>{label}</Text>
+      <View style={styles.settingsToggleValue}>
+        <Text style={styles.settingsValue}>{value}</Text>
+        <Switch
+          value={enabled}
+          onValueChange={(next) => void onChange(next)}
+          thumbColor={enabled ? colors.goldBright : colors.textTertiary}
+          trackColor={{ false: colors.surfaceLevel2, true: colors.goldGlow }}
+        />
+      </View>
+    </View>
+  );
+}
+
+function EndorserTrustPanel({
+  profile,
+}: {
+  profile: NonNullable<FullProfile['referrerProfile']>;
+}) {
+  return (
+    <View style={styles.endorserPanel}>
+      <View style={styles.endorserTopRow}>
+        <View style={styles.endorserCopy}>
+          <Text style={styles.endorserTitle} numberOfLines={1}>
+            {profile.job_title}
+          </Text>
+          <Text style={styles.endorserCompany} numberOfLines={1}>
+            {profile.department} · {profile.company.name}
+          </Text>
+          <Text style={styles.profileDetailSub}>
+            {profile.verification_status}
+          </Text>
+        </View>
+        <View style={styles.scoreSeal}>
+          <Text style={styles.scoreValue}>{profile.endorsement_score}</Text>
+          <Text style={styles.scoreLabel}>ENDORSEMENT{'\n'}SCORE</Text>
+        </View>
+      </View>
+      <Text style={styles.endorserMetrics}>
+        {profile.total_referrals} endorsements · {profile.successful_hires} hires
+      </Text>
+    </View>
+  );
+}
