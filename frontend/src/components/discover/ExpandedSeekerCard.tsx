@@ -221,11 +221,12 @@ export function ExpandedSeekerCard({
             />
             <LinearGradient
               colors={[
-                'rgba(1, 7, 17, 0.02)',
-                'rgba(1, 7, 17, 0.36)',
-                'rgba(1, 7, 17, 0.96)',
+                'rgba(1, 7, 17, 0)',
+                'rgba(1, 7, 17, 0.52)',
+                'rgba(1, 7, 17, 0.86)',
+                'rgba(1, 7, 17, 0.98)',
               ]}
-              locations={[0.38, 0.66, 1]}
+              locations={[0.44, 0.58, 0.76, 1]}
               style={styles.identityHeroShade}
               pointerEvents="none"
             />

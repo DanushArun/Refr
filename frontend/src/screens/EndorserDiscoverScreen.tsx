@@ -1,9 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  FadeIn,
-  FadeOut,
-} from 'react-native-reanimated';
 import { SwipeDeck, type SwipeDeckHandle, type SwipeDirection } from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import { ExpandedSeekerCard } from '../components/discover/ExpandedSeekerCard';
@@ -23,7 +19,7 @@ import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 /**
  * Endorser Discover — referrer's swipe stack of incoming candidates.
  *
- * Right swipe = "I'd endorse this person" (mutual match opens chat).
+ * Right swipe = "I'd endorse this person".
  * Left swipe  = pass.
  *
  * Filter strip — bespoke to the endorser's question. Discovery (seeker
@@ -38,7 +34,6 @@ export function EndorserDiscoverScreen() {
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildSeekerCards('2'), [queueKey]);
   const [index, setIndex] = useState(0);
-  const [lastAction, setLastAction] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<SeekerCard | null>(null);
   // Trigger token: bumping this fires the celebration once. Null = idle.
   const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
@@ -79,7 +74,7 @@ export function EndorserDiscoverScreen() {
         // Fire the celebration immediately on commit — the user's emotional
         // payoff for choosing to endorse. Doesn't wait for the API.
         setCelebrationTrigger(Date.now());
-        referralsApi
+        void referralsApi
           .recordEndorserSwipe({
             id: card.id,
             name: card.name,
@@ -88,16 +83,7 @@ export function EndorserDiscoverScreen() {
             skills: card.skills,
             targetRole: card.targetRole,
           })
-          .then(({ mutual }) => {
-            setLastAction(
-              mutual
-                ? `Mutual match with ${card.name} — chat opened in Active`
-                : `${card.name} added to your Active list`,
-            );
-          })
           .catch(() => {});
-      } else {
-        setLastAction(null);
       }
       setIndex((i) => i + 1);
     },
@@ -108,7 +94,6 @@ export function EndorserDiscoverScreen() {
     Phrase.tap();
     setQueueKey((k) => k + 1);
     setIndex(0);
-    setLastAction(null);
   }, []);
 
   const handleCardTap = useCallback((card: SeekerCard) => {
@@ -126,7 +111,6 @@ export function EndorserDiscoverScreen() {
   const handleUndo = useCallback(() => {
     Phrase.tap();
     setIndex((i) => Math.max(0, i - 1));
-    setLastAction(null);
     setCelebrationTrigger(null);
   }, []);
 
@@ -216,21 +200,6 @@ export function EndorserDiscoverScreen() {
           {/* Undo lives on the top card itself — see clip-on cluster. */}
         </View>
 
-        {lastAction && (
-          <Animated.View
-            style={styles.toastWrap}
-            pointerEvents="none"
-            entering={FadeIn.duration(220)}
-            exiting={FadeOut.duration(160)}
-          >
-            <View style={styles.toast}>
-              <Text style={styles.toastText} numberOfLines={2}>
-                {lastAction}
-              </Text>
-            </View>
-          </Animated.View>
-        )}
-
       </SafeAreaView>
 
       {/* Card-to-full-screen container transform when a card is tapped */}
@@ -314,27 +283,5 @@ const styles = StyleSheet.create({
     // Discovery rhythm now that this screen has its own filter strip.
     marginTop: spacing[2],
     paddingBottom: 116,
-  },
-  toastWrap: {
-    position: 'absolute',
-    bottom: 200,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  toast: {
-    backgroundColor: 'rgba(245, 241, 232, 0.94)',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.45)',
-    maxWidth: 320,
-  },
-  toastText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
-    color: '#000000',
-    textAlign: 'center',
   },
 });

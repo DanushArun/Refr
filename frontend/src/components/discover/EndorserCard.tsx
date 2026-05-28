@@ -429,11 +429,12 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
       {officeImage && <Image source={officeImage} style={styles.officeImage} resizeMode="cover" />}
       <LinearGradient
         colors={[
-          'rgba(1, 7, 17, 0.02)',
-          'rgba(1, 7, 17, 0.34)',
-          'rgba(1, 7, 17, 0.97)',
+          'rgba(1, 7, 17, 0)',
+          'rgba(1, 7, 17, 0.52)',
+          'rgba(1, 7, 17, 0.86)',
+          'rgba(1, 7, 17, 0.98)',
         ]}
-        locations={[0.34, 0.62, 1]}
+        locations={[0.44, 0.58, 0.76, 1]}
         style={styles.bottomScrim}
         pointerEvents="none"
       />
