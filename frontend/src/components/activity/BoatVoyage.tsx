@@ -12,7 +12,7 @@ import Animated, {
 const STAGE_LABELS = ['MATCHED', 'SUBMITTED', 'INTERVIEW', 'HIRED'] as const;
 const STAGE_COUNT = STAGE_LABELS.length;
 
-// ────────────────────────── matrix + wave config ──────────────────────────
+// Matrix + wave config
 // Tuned for 60-120fps across 4-7 visible cards. Coarser grid, fewer paths.
 // MATRIX_PAD is 0 — the dot grid runs the full card width. Any sub-cell
 // remainder is split evenly left/right via `matrixOffsetX` below so the grid
@@ -29,11 +29,11 @@ const WAVES_VISIBLE = 3.0;
 const WAVE_PERIOD_MS = 4200;
 const LABEL_SLOT_W = 84;
 
-// ────────────────────────── ship config ──────────────────────────
+// Ship config
 const SHIP_W = 26;
 const SHIP_H = 16;
 
-// ────────────────────────── palette ──────────────────────────
+// Palette
 const GOLD = '#D4A744';
 const GOLD_BRIGHT = '#FFE08A';
 // Future ocean — the SHADOW of the wave ahead. Lighter brass than the
@@ -41,18 +41,27 @@ const GOLD_BRIGHT = '#FFE08A';
 // with the past wake.
 const GOLD_FUTURE = '#CCA049';
 const DIM_DOT = 'rgba(15, 17, 21, 0.10)';
+const DIM_DOT_DARK = 'rgba(250, 250, 247, 0.10)';
 const NAVY = '#0A1F44';
 const BLACK = '#0F1115';
 const BLACK_38 = 'rgba(15, 17, 21, 0.38)';
 const BLACK_55 = 'rgba(15, 17, 21, 0.55)';
+const TEXT_DARK = '#FAFAF7';
+const TEXT_DARK_38 = 'rgba(250, 250, 247, 0.38)';
+const TEXT_DARK_55 = 'rgba(250, 250, 247, 0.55)';
 
 interface Props {
   /** Stage index 0..STAGE_COUNT-1, or -1 for off-track. */
   current: number;
+  /** The paper tone sits on cream cards; dark tone sits on glass cards. */
+  tone?: 'paper' | 'dark';
+  /** Pauses per-frame Skia path work while the owning screen is off-focus. */
+  active?: boolean;
 }
 
-export function BoatVoyage({ current }: Props) {
+export function BoatVoyage({ current, tone = 'paper', active = true }: Props) {
   const [size, setSize] = useState({ w: 0, h: 0 });
+  const isDark = tone === 'dark';
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -81,9 +90,14 @@ export function BoatVoyage({ current }: Props) {
   // frame regardless of withRepeat scheduling — this makes every card
   // animate reliably (some cards were stuck on withRepeat-only).
   const phase = useSharedValue(0);
-  useFrameCallback((info) => {
+  const frameCallback = useFrameCallback((info) => {
+    if (!active) return;
     phase.value = ((info.timeSinceFirstFrame ?? 0) / WAVE_PERIOD_MS) * Math.PI * 2;
-  });
+  }, active);
+
+  useEffect(() => {
+    frameCallback.setActive(active && w > 0 && h > 0);
+  }, [active, frameCallback, h, w]);
 
   const progress = useSharedValue(0);
   // litExtension: 0 normally (lit zone ends at the ship), 1 when reaching the
@@ -111,7 +125,7 @@ export function BoatVoyage({ current }: Props) {
     return p;
   }, [cols, rows, matrixOffsetX]);
 
-  // ─────────── lit-dot paths (filled ocean) ───────────
+  // Lit-dot paths (filled ocean)
   // The wave is the top boundary of a SOLID FILLED ocean. Every dot from
   // topY(x) downward is lit — like real water. The wave shape reads as the
   // irregular top edge against the empty "sky" above.
@@ -201,8 +215,12 @@ export function BoatVoyage({ current }: Props) {
                 <Text
                   style={[
                     styles.stageLabel,
-                    active && styles.stageLabelActive,
-                    !active && !done && styles.stageLabelPending,
+                    isDark && styles.stageLabelDark,
+                    active &&
+                      (isDark ? styles.stageLabelActiveDark : styles.stageLabelActive),
+                    !active &&
+                      !done &&
+                      (isDark ? styles.stageLabelPendingDark : styles.stageLabelPending),
                   ]}
                   numberOfLines={1}
                 >
@@ -217,7 +235,7 @@ export function BoatVoyage({ current }: Props) {
         {w > 0 && cols > 0 && (
           <Canvas style={StyleSheet.absoluteFillObject}>
             {/* dim background grid (sky / above water) */}
-            <Path path={gridPath} color={DIM_DOT} />
+            <Path path={gridPath} color={isDark ? DIM_DOT_DARK : DIM_DOT} />
 
             {/* future ocean — the SHADOW of the wave ahead. Sharp brown
                 dots, no glow, low opacity so the un-traversed leg reads as
@@ -233,7 +251,7 @@ export function BoatVoyage({ current }: Props) {
 
         {showShip && (
           <Animated.View style={[styles.shipBox, shipStyle]} pointerEvents="none">
-            <Yacht />
+            <Yacht tone={tone} />
           </Animated.View>
         )}
       </View>
@@ -241,7 +259,8 @@ export function BoatVoyage({ current }: Props) {
   );
 }
 
-function Yacht() {
+function Yacht({ tone }: { tone: NonNullable<Props['tone']> }) {
+  const hullColor = tone === 'dark' ? TEXT_DARK : NAVY;
   const hullCabin = useMemo(() => {
     const p = Skia.Path.Make();
     // Iconic yacht silhouette in 26 × 16, hull bottom at y=16.
@@ -272,8 +291,8 @@ function Yacht() {
 
   return (
     <Canvas style={styles.yachtCanvas}>
-      <Path path={hullCabin} color={NAVY} />
-      <Path path={mast} color={NAVY} style="stroke" strokeWidth={1} strokeCap="round" />
+      <Path path={hullCabin} color={hullColor} />
+      <Path path={mast} color={hullColor} style="stroke" strokeWidth={1} strokeCap="round" />
     </Canvas>
   );
 }
@@ -304,6 +323,16 @@ const styles = StyleSheet.create({
   },
   stageLabelPending: {
     color: BLACK_38,
+  },
+  stageLabelDark: {
+    color: TEXT_DARK_55,
+  },
+  stageLabelActiveDark: {
+    fontFamily: 'Outfit-Bold',
+    color: TEXT_DARK,
+  },
+  stageLabelPendingDark: {
+    color: TEXT_DARK_38,
   },
   trackZone: {
     flex: 1,

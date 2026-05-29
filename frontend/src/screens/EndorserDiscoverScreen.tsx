@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { SwipeDeck, type SwipeDeckHandle, type SwipeDirection } from '../components/discover/SwipeDeck';
+import {
+  SwipeDeck,
+  type SwipeDeckHandle,
+  type SwipeDirection,
+} from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import { ExpandedSeekerCard } from '../components/discover/ExpandedSeekerCard';
 import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
@@ -31,6 +36,7 @@ import { FilterBar, type FilterOption } from '../components/common/FilterBar';
  * stake my reputation on?".
  */
 export function EndorserDiscoverScreen() {
+  const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildSeekerCards('2'), [queueKey]);
   const [index, setIndex] = useState(0);
@@ -130,7 +136,7 @@ export function EndorserDiscoverScreen() {
   return (
     <View style={styles.container}>
       {/* Constellation reveals only when the candidate queue is exhausted. */}
-      <ConstellationBackdrop visible={remaining === 0} />
+      <ConstellationBackdrop visible={remaining === 0} active={isFocused} />
 
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
@@ -143,6 +149,7 @@ export function EndorserDiscoverScreen() {
           options={filterOptions}
           current={expFilter}
           onChange={onPickExp}
+          showCounts={false}
           ariaLabel="Candidate experience filter"
         />
 

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
@@ -20,6 +21,8 @@ import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 type CompanyFilter = 'all' | string;
 
 export function DiscoverScreen() {
+  console.log('[route-debug] DiscoverScreen render');
+  const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildEndorserCards('1'), [queueKey]);
 
@@ -84,6 +87,9 @@ export function DiscoverScreen() {
   const handleSwipeCommitStart = useCallback(
     (card: EndorserCard, direction: 'request' | 'pass') => {
       if (direction !== 'request') return;
+      const requestNote =
+        `Hi ${card.name.split(' ')[0]}, saw your profile — ` +
+        `would love an endorsement for ${card.companyName}.`;
       referralsApi
         .recordSeekerSwipe(
           {
@@ -93,7 +99,7 @@ export function DiscoverScreen() {
             companyName: card.companyName,
             jobTitle: card.jobTitle,
           },
-          `Hi ${card.name.split(' ')[0]}, saw your profile — would love an endorsement for ${card.companyName}.`,
+          requestNote,
         )
         .catch(() => {});
       // Fire the full Skia celebration. Phrase.match() runs from inside it.
@@ -152,10 +158,11 @@ export function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.debugText}>DISCOVER</Text>
       {/* Constellation reveals only when the deck is exhausted — the
           "you're caught up" reward beat. Hidden during normal swiping so
           the deck holds the user's full attention. */}
-      <ConstellationBackdrop visible={remainingSwipes === 0} />
+      <ConstellationBackdrop visible={remainingSwipes === 0} active={isFocused} />
 
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
@@ -166,6 +173,7 @@ export function DiscoverScreen() {
           options={filterOptions}
           current={activeFilter}
           onChange={handleFilterPress}
+          showCounts={false}
           ariaLabel="Endorser company filter"
         />
 
@@ -182,7 +190,10 @@ export function DiscoverScreen() {
             onUndo={handleUndo}
             onCanUndoChange={setCanUndo}
             emptyTitle="You're caught up"
-            emptyBody="No more Endorsers in today's queue. Check back later, or broaden your target companies."
+            emptyBody={
+              "No more Endorsers in today's queue. Check back later, or broaden " +
+              'your target companies.'
+            }
             renderCard={({
               item,
               isTop,
@@ -257,5 +268,13 @@ const styles = StyleSheet.create({
     // Reserve space below the deck for the action bar + remaining badge +
     // floating tab bar (84pt). Keeps cards from bleeding into the chrome.
     paddingBottom: 116,
+  },
+  debugText: {
+    position: 'absolute',
+    top: 140,
+    left: 24,
+    color: '#ffffff',
+    fontSize: 28,
+    zIndex: 1000,
   },
 });

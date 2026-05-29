@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { GlassContainer, GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  InteractionManager,
   Platform,
   StyleSheet,
   Text,
@@ -77,6 +78,15 @@ export function LiquidGlassTabBar({
     if (draggingJS) return;
     indicatorX.value = withSpring(indicatorXForIndex(state.index, tabWidth), SPRING_CONFIG);
   }, [state.index, tabWidth, draggingJS, indicatorX]);
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      state.routes.forEach((route, index) => {
+        if (index !== state.index) navigation.preload(route.name, route.params);
+      });
+    });
+    return () => task.cancel();
+  }, [navigation, state.index, state.routes]);
 
   const navigateToIndex = useCallback(
     (index: number) => {

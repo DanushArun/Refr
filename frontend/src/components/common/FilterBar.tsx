@@ -71,7 +71,7 @@ export function FilterBar<T extends string>({
           return (
             <PressableScale
               key={opt.key}
-              hitSlop={6}
+              hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }}
               onPress={() => handlePress(opt.key)}
               style={[
                 styles.chip,
@@ -91,7 +91,7 @@ export function FilterBar<T extends string>({
                   dim && styles.labelDim,
                 ]}
               >
-                {opt.label.toUpperCase()}
+                {opt.label}
               </Text>
               {hasCount && count! > 0 && (
                 <View
@@ -120,24 +120,24 @@ export function FilterBar<T extends string>({
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingBottom: spacing[3],
+    paddingBottom: spacing[2],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(212, 167, 68, 0.18)',
-    marginBottom: spacing[3],
+    marginBottom: spacing[2],
   },
   content: {
     paddingHorizontal: layout.screenPaddingH,
-    gap: spacing[2],
+    gap: 6,
     alignItems: 'center',
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    height: 32,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    borderWidth: 1,
+    gap: 6,
+    height: 26,
+    paddingHorizontal: 10,
+    borderRadius: 13,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   chipActive: {
     backgroundColor: colors.gold,
@@ -151,18 +151,18 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212, 167, 68, 0.18)',
   },
   label: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10.5,
-    letterSpacing: 1.4,
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 11,
+    letterSpacing: 0.2,
   },
   labelActive: { color: '#0A1F44' },
   labelInactive: { color: colors.gold },
   labelDim: { color: 'rgba(212, 167, 68, 0.45)' },
   countBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    paddingHorizontal: 5,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   countBadgeInactive: { backgroundColor: 'rgba(212, 167, 68, 0.14)' },
   countText: {
     fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10,
+    fontSize: 9,
     letterSpacing: 0,
   },
   countTextActive: { color: '#0A1F44' },

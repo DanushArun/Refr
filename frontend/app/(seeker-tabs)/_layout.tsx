@@ -1,13 +1,16 @@
 import { Tabs } from 'expo-router';
 import { LiquidGlassTabBar } from '../../src/components/navigation/LiquidGlassTabBar';
+import {
+  SMOOTH_TAB_SCREEN_OPTIONS,
+  TAB_DETACH_INACTIVE_SCREENS,
+} from '../../src/components/navigation/tabTransition';
 
 export default function SeekerTabsLayout() {
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        sceneStyle: { backgroundColor: 'transparent' },
-      }}
+      initialRouteName="discover"
+      detachInactiveScreens={TAB_DETACH_INACTIVE_SCREENS}
+      screenOptions={SMOOTH_TAB_SCREEN_OPTIONS}
       tabBar={(props) => <LiquidGlassTabBar {...props} />}
     >
       <Tabs.Screen name="discover" options={{ title: 'Discover' }} />

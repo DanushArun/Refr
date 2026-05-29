@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { router } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +18,7 @@ import { latestStageTimestamp } from '../components/activity/referralCardShared'
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { playSensoryEvent } from '../utils/haptics';
+import { useWarmTabData } from '../hooks/useWarmTabData';
 import { DEMO_PAYOUT_PER_HIRE, getCurrentDemoCompanyName } from '../config/demoWorld';
 import { activeStyles as styles } from './active/activeStyles';
 import { NoticePill } from './active/ActiveSummary';
@@ -29,6 +31,8 @@ import {
 } from '../lib/activity/activeFilters';
 
 export function ActiveScreen() {
+  const isFocused = useIsFocused();
+  const hasLoadedRef = useRef(false);
   const [items, setItems] = useState<ReferrerInboxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,9 +42,9 @@ export function ActiveScreen() {
   const [stageFilter, setStageFilter] = useState<ActiveStageFilter>('all');
   const [companyName, setCompanyName] = useState(getCurrentDemoCompanyName());
 
-  const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
+  const load = useCallback(async (mode: 'focus' | 'refresh' | 'retry' = 'focus') => {
     if (mode === 'refresh') setRefreshing(true);
-    if (mode === 'initial') setLoading(true);
+    if (mode === 'retry' || !hasLoadedRef.current) setLoading(true);
     setError(null);
     try {
       const [inbox, reputation] = await Promise.all([
@@ -49,6 +53,7 @@ export function ActiveScreen() {
       ]);
       setItems(filterActiveItems(inbox, 'all'));
       setCompanyName(reputation.company?.name ?? getCurrentDemoCompanyName());
+      hasLoadedRef.current = true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load activity');
     } finally {
@@ -57,7 +62,7 @@ export function ActiveScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useWarmTabData(load);
 
   const sortedItems = useMemo(() => {
     return sortActiveItems(filterActiveItems(items, stageFilter));
@@ -174,6 +179,7 @@ export function ActiveScreen() {
         onChat={handleChat}
         onDiscover={openDiscover}
         onRefresh={() => load('refresh')}
+        active={isFocused}
       />
     </SafeAreaView>
   );
@@ -192,6 +198,7 @@ interface ActiveListProps {
   onChat: (item: ReferrerInboxItem) => void;
   onDiscover: () => void;
   onRefresh: () => void;
+  active: boolean;
 }
 
 function ActiveList({
@@ -207,7 +214,22 @@ function ActiveList({
   onChat,
   onDiscover,
   onRefresh,
+  active,
 }: ActiveListProps) {
+  const renderItem = useCallback(
+    ({ item }: { item: ReferrerInboxItem }) => (
+      <ActiveItem
+        item={item}
+        companyName={companyName}
+        pending={pendingId === item.referral.id}
+        onAction={onAction}
+        onChat={onChat}
+        active={active}
+      />
+    ),
+    [active, companyName, onAction, onChat, pendingId],
+  );
+
   if (items.length === 0) {
     return (
       <EmptyState title={emptyTitle} body={emptyBody}>
@@ -236,15 +258,11 @@ function ActiveList({
         />
       }
       ListHeaderComponent={notice ? <NoticePill message={notice} /> : null}
-      renderItem={({ item }) => (
-        <ActiveItem
-          item={item}
-          companyName={companyName}
-          pending={pendingId === item.referral.id}
-          onAction={onAction}
-          onChat={onChat}
-        />
-      )}
+      renderItem={renderItem}
+      removeClippedSubviews={true}
+      initialNumToRender={3}
+      maxToRenderPerBatch={3}
+      windowSize={5}
     />
   );
 }
@@ -255,12 +273,14 @@ const ActiveItem = React.memo(function ActiveItem({
   pending,
   onAction,
   onChat,
+  active,
 }: {
   item: ReferrerInboxItem;
   companyName: string;
   pending: boolean;
   onAction: ActiveListProps['onAction'];
   onChat: ActiveListProps['onChat'];
+  active: boolean;
 }) {
   return (
     <EndorserVoyageCard
@@ -276,6 +296,7 @@ const ActiveItem = React.memo(function ActiveItem({
         payoutAmount: DEMO_PAYOUT_PER_HIRE,
       }}
       pending={pending}
+      active={active}
       onAction={(kind) => onAction(item, kind)}
       onChat={() => onChat(item)}
     />

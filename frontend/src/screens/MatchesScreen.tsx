@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { latestStageTimestamp } from '../components/activity/referralCardShared';
@@ -22,6 +22,7 @@ import {
   relativeLabel,
 } from '../components/matches/matchTiering';
 import { referralsApi } from '../services/api';
+import { useWarmTabData } from '../hooks/useWarmTabData';
 import type { SeekerPipelineItem } from '@refr/shared';
 import { matchesStyles as styles } from './matches/matchesStyles';
 import {
@@ -73,7 +74,7 @@ export function MatchesScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useWarmTabData(load);
 
   const onRefresh = useCallback(() => {
     Phrase.pullRefresh();

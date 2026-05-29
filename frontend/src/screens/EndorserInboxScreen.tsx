@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -20,6 +20,7 @@ import { MatchInboxRow } from '../components/matches/MatchInboxRow';
 import { NewMatchesCarousel } from '../components/matches/NewMatchesCarousel';
 import { RestingSection } from '../components/matches/RestingSection';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
+import { useWarmTabData } from '../hooks/useWarmTabData';
 import {
   partitionMatches,
   relativeLabel,
@@ -148,15 +149,18 @@ function adapt(item: ReferrerInboxItem): SeekerPipelineItem {
 }
 
 export function EndorserInboxScreen() {
+  const hasLoadedRef = useRef(false);
   const [items, setItems] = useState<ReferrerInboxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stageFilter, setStageFilter] = useState<StageFilter>('all');
 
   const load = useCallback(async () => {
+    if (!hasLoadedRef.current) setLoading(true);
     try {
       const data = await referralsApi.getInbox();
       setItems(data.filter((i) => ACTIVE_FOR_INBOX.has(i.referral.status)));
+      hasLoadedRef.current = true;
     } catch {
       Alert.alert('Error', 'Failed to load inbox');
     } finally {
@@ -165,7 +169,7 @@ export function EndorserInboxScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useWarmTabData(load);
 
   const onRefresh = useCallback(() => {
     Phrase.pullRefresh();

@@ -97,7 +97,7 @@ export function ProfileScreen() {
       await saveDemoRole(nextRole);
       notifyAuthChange(nextRole === 'seeker' ? MOCK_SEEKER_SESSION : MOCK_REFERRER_SESSION);
       router.replace(
-        nextRole === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/inbox',
+        nextRole === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/discover',
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Please try again.';

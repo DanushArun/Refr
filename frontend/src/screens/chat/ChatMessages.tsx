@@ -53,6 +53,7 @@ export function MessageList(props: MessageListProps): React.ReactElement {
       ref={listRef}
       data={props.groups}
       keyExtractor={keyExtractor}
+      style={styles.messageViewport}
       contentContainerStyle={styles.messageList}
       showsVerticalScrollIndicator={false}
       onLayout={() => listRef.current?.scrollToEnd({ animated: false })}

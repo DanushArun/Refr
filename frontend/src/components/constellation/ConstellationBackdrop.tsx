@@ -36,6 +36,7 @@ interface Props {
    * Defaults to true so existing callers keep their always-on behavior.
    */
   visible?: boolean;
+  active?: boolean;
 }
 
 /**
@@ -51,6 +52,7 @@ export function ConstellationBackdrop({
   alive = true,
   parallaxStrength = 24,
   visible = true,
+  active = true,
 }: Props) {
   const data = useMemo(() => galaxy ?? getDemoGalaxy(), [galaxy]);
 
@@ -58,7 +60,6 @@ export function ConstellationBackdrop({
   // Initial opacity matches the initial visible value so the very first paint
   // doesn't flash the backdrop in/out before the effect runs.
   const opacity = useSharedValue(visible ? 1 : 0);
-  const { tiltX, tiltY } = useDeviceTilt();
 
   // We KEEP THE CANVAS UNMOUNTED whenever the backdrop is invisible. Without
   // this, the heavy Skia tree (5+ blurred circles + parallax) was painting
@@ -67,6 +68,7 @@ export function ConstellationBackdrop({
   // short tail to let the fade-out complete cleanly.
   const [shouldRender, setShouldRender] = useState(visible);
   const fadeOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { tiltX, tiltY } = useDeviceTilt(active && shouldRender);
 
   useEffect(() => {
     if (visible) {
@@ -90,7 +92,7 @@ export function ConstellationBackdrop({
   // Pulse animation only runs while the backdrop is rendered — saves UI-thread
   // work during normal swiping when the Canvas is unmounted anyway.
   useEffect(() => {
-    if (!alive || !shouldRender) {
+    if (!alive || !shouldRender || !active) {
       pulse.value = 1;
       return;
     }
@@ -101,7 +103,7 @@ export function ConstellationBackdrop({
       ),
       -1,
     );
-  }, [alive, pulse, shouldRender]);
+  }, [active, alive, pulse, shouldRender]);
 
   // Drive the wrapper opacity from the `visible` prop. Fade in is slower
   // (1200ms) so the empty state reveal feels deliberate; fade out is faster

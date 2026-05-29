@@ -7,9 +7,6 @@ import { layout } from '../../theme/spacing';
 import { officeImageFor } from './companyOffices';
 import { BoatVoyage } from './BoatVoyage';
 import {
-  BLACK,
-  BLACK_70,
-  BLACK_55,
   formatEndorserName,
   StatusPill,
   statusMeta,
@@ -42,9 +39,10 @@ export interface PaperVoyageCardData {
 
 interface Props {
   data: PaperVoyageCardData;
+  active?: boolean;
 }
 
-export function PaperVoyageCard({ data }: Props) {
+export function PaperVoyageCard({ data, active = true }: Props) {
   const meta = statusMeta(data.status, data.stageTimestamp);
   const current = stageIndex(data.status);
   const isHired = data.status === 'hired';
@@ -69,6 +67,18 @@ export function PaperVoyageCard({ data }: Props) {
         ) : (
           <View style={[StyleSheet.absoluteFillObject, styles.heroFallback]} />
         )}
+        <LinearGradient
+          colors={[
+            'rgba(3, 7, 18, 0.12)',
+            'rgba(3, 7, 18, 0.42)',
+            'rgba(3, 7, 18, 0.68)',
+          ]}
+          locations={[0, 0.55, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.imageDim}
+          pointerEvents="none"
+        />
         {isHired && (
           <>
             <LinearGradient
@@ -97,7 +107,7 @@ export function PaperVoyageCard({ data }: Props) {
                 both right-aligned. Frees the row beneath so the body reads
                 cleaner. */}
             <View style={styles.headerRight}>
-              <StatusPill meta={meta} />
+              <StatusPill meta={meta} tone="dark" />
               {!!endorserDisplay && (
                 <Text style={styles.endorserRight} numberOfLines={1}>
                   <Text style={styles.endorserLabel}>by </Text>
@@ -109,7 +119,7 @@ export function PaperVoyageCard({ data }: Props) {
         </View>
 
         <View style={styles.bodyBottom}>
-          <BoatVoyage current={current} />
+          <BoatVoyage current={current} active={active} tone="dark" />
         </View>
       </View>
     </View>
@@ -123,7 +133,9 @@ const BODY_FLEX = 0.65;
 const styles = StyleSheet.create({
   card: {
     height: CARD_HEIGHT,
-    backgroundColor: colors.cardSurface,
+    backgroundColor: colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.16)',
     borderRadius: layout.cardBorderRadiusLarge,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -152,6 +164,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0A1F44',
   },
   imageHiredSheen: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  imageDim: {
     ...StyleSheet.absoluteFillObject,
   },
   hiredRibbon: {
@@ -201,22 +216,22 @@ const styles = StyleSheet.create({
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 26,
     lineHeight: 30,
-    color: BLACK,
+    color: colors.text,
     letterSpacing: -0.4,
   },
   role: {
     fontFamily: 'Outfit-Medium',
     fontSize: 14,
-    color: BLACK_70,
+    color: colors.textSecondary,
   },
   endorserRight: {
     fontFamily: 'Outfit-Medium',
     fontSize: 12,
-    color: BLACK,
+    color: colors.text,
     textAlign: 'right',
   },
   endorserLabel: {
     fontFamily: 'Outfit-Regular',
-    color: BLACK_55,
+    color: colors.textTertiary,
   },
 });

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
   Extrapolation,
@@ -25,6 +26,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
 import type { SeekerCard as SeekerCardData } from './seekerCardData';
+import {
+  ExpandedCardActions,
+  expandedActionStyles,
+} from './ExpandedCardActions';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
@@ -32,6 +37,10 @@ const CARD_LEFT = 20;
 const CARD_WIDTH = SCREEN_W - 40;
 const CARD_HEIGHT = Math.min(580, Math.round(SCREEN_H * 0.62));
 const CARD_TOP_FROM_SCREEN = 60 + 8;
+const EXPANDED_LEFT = 14;
+const EXPANDED_MIN_EDGE = 34;
+const EXPANDED_SAFE_GAP = 10;
+const EXPANDED_WIDTH = SCREEN_W - EXPANDED_LEFT * 2;
 
 const BLACK = '#000000';
 const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
@@ -47,7 +56,7 @@ interface ExpandedSeekerCardProps {
 }
 
 /**
- * Card-to-full-screen container transform — referrer side.
+ * Card-to-expanded container transform — referrer side.
  * Mirrors ExpandedEndorserCard but renders seeker info as the cream content.
  */
 export function ExpandedSeekerCard({
@@ -59,6 +68,10 @@ export function ExpandedSeekerCard({
   const progress = useSharedValue(0);
   const dragY = useSharedValue(0);
   const safe = useMemo(() => card, [card]);
+  const insets = useSafeAreaInsets();
+  const expandedTop = Math.max(EXPANDED_MIN_EDGE, insets.top + EXPANDED_SAFE_GAP);
+  const expandedBottom = Math.max(EXPANDED_MIN_EDGE, insets.bottom + EXPANDED_SAFE_GAP);
+  const expandedHeight = SCREEN_H - expandedTop - expandedBottom;
 
   useEffect(() => {
     if (!card) return;
@@ -80,6 +93,16 @@ export function ExpandedSeekerCard({
         if (finished) runOnJS(onClose)();
       },
     );
+  };
+
+  const handlePass = () => {
+    Phrase.swipePass();
+    onPass();
+  };
+
+  const handleCommit = () => {
+    Phrase.swipeRequest();
+    onCommit();
   };
 
   // Live ScrollView offset so the dismiss Pan only takes touches when the
@@ -142,11 +165,11 @@ export function ExpandedSeekerCard({
     const dragScale = 1 - Math.min(0.06, Math.max(0, dragY.value) / 1400);
     return {
       position: 'absolute',
-      left: interpolate(t, [0, 1], [CARD_LEFT, 0], Extrapolation.CLAMP),
-      top: interpolate(t, [0, 1], [CARD_TOP_FROM_SCREEN, 0], Extrapolation.CLAMP),
-      width: interpolate(t, [0, 1], [CARD_WIDTH, SCREEN_W], Extrapolation.CLAMP),
-      height: interpolate(t, [0, 1], [CARD_HEIGHT, SCREEN_H], Extrapolation.CLAMP),
-      borderRadius: interpolate(t, [0, 1], [32, 0], Extrapolation.CLAMP),
+      left: interpolate(t, [0, 1], [CARD_LEFT, EXPANDED_LEFT], Extrapolation.CLAMP),
+      top: interpolate(t, [0, 1], [CARD_TOP_FROM_SCREEN, expandedTop], Extrapolation.CLAMP),
+      width: interpolate(t, [0, 1], [CARD_WIDTH, EXPANDED_WIDTH], Extrapolation.CLAMP),
+      height: interpolate(t, [0, 1], [CARD_HEIGHT, expandedHeight], Extrapolation.CLAMP),
+      borderRadius: interpolate(t, [0, 1], [32, 34], Extrapolation.CLAMP),
       transform: [
         { translateY: dragY.value },
         { scale: dragScale },
@@ -230,30 +253,32 @@ export function ExpandedSeekerCard({
               style={styles.identityHeroShade}
               pointerEvents="none"
             />
-            <View style={styles.identityHeroContent}>
-              <View style={styles.heroTitleRow}>
-                <Text
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.84}
-                  numberOfLines={2}
-                  style={styles.heroName}
-                >
-                  {safe.name}
-                </Text>
-                <View style={styles.expChip}>
-                  <Text style={styles.expChipText}>{safe.yearsOfExperience}Y EXP</Text>
-                </View>
-              </View>
+          </View>
+
+          <View style={styles.summaryPanel}>
+            <View style={styles.heroTitleRow}>
               <Text
                 adjustsFontSizeToFit
-                minimumFontScale={0.86}
-                style={styles.heroRole}
-                numberOfLines={1}
+                minimumFontScale={0.84}
+                numberOfLines={2}
+                style={styles.heroName}
               >
-                {roleLine}
+                {safe.name}
               </Text>
-              <Text numberOfLines={2} style={styles.heroProof}>{proofLine}</Text>
+              <View style={styles.expChip}>
+                <Text style={styles.expChipText}>{safe.yearsOfExperience}Y EXP</Text>
+              </View>
             </View>
+
+            <Text
+              adjustsFontSizeToFit
+              minimumFontScale={0.86}
+              style={styles.heroRole}
+              numberOfLines={1}
+            >
+              {roleLine}
+            </Text>
+            <Text numberOfLines={2} style={styles.heroProof}>{proofLine}</Text>
           </View>
 
           <View style={styles.creamZone}>
@@ -313,7 +338,7 @@ export function ExpandedSeekerCard({
               </View>
             </Animated.View>
 
-            <View style={{ height: 96 }} />
+            <View style={expandedActionStyles.contentSpacer} />
           </View>
         </Animated.ScrollView>
 
@@ -323,31 +348,12 @@ export function ExpandedSeekerCard({
           </Pressable>
         </Animated.View>
 
-        <Animated.View style={[styles.actionBar, extrasStyle]}>
-          <Pressable
-            onPress={() => {
-              // Mirror the gesture haptic so tap-in-modal pass feels identical
-              // to swipe-pass — the "soft sigh" cadence is the dismissal beat.
-              Phrase.swipePass();
-              onPass();
-            }}
-            style={styles.passBtn}
-          >
-            <Ionicons name="close" size={20} color={colors.error} />
-            <Text style={styles.passBtnText}>Skip</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              // Heartbeat phrase — confirms the press; the parent fires the
-              // full match cadence + Skia burst on commit.
-              Phrase.swipeRequest();
-              onCommit();
-            }}
-            style={styles.commitBtn}
-          >
-            <Ionicons name="checkmark" size={20} color="#0A1F44" />
-            <Text style={styles.commitBtnText}>Endorse candidate</Text>
-          </Pressable>
+        <Animated.View style={[expandedActionStyles.actionBar, extrasStyle]}>
+          <ExpandedCardActions
+            commitLabel="Endorse candidate"
+            onPass={handlePass}
+            onCommit={handleCommit}
+          />
         </Animated.View>
       </Animated.View>
       </GestureDetector>
@@ -409,7 +415,7 @@ const styles = StyleSheet.create({
 
   identityHero: {
     width: '100%',
-    aspectRatio: 4 / 3,
+    aspectRatio: 1.12,
     overflow: 'hidden',
     backgroundColor: '#0A1F44',
   },
@@ -420,14 +426,18 @@ const styles = StyleSheet.create({
   identityHeroShade: {
     ...StyleSheet.absoluteFillObject,
   },
-  identityHeroContent: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+  summaryPanel: {
+    marginTop: -42,
+    marginHorizontal: 14,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    backgroundColor: colors.navyDeep,
     paddingHorizontal: 28,
-    paddingBottom: 28,
+    paddingTop: 26,
+    paddingBottom: 22,
     gap: 9,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 241, 232, 0.08)',
   },
   heroTitleRow: {
     flexDirection: 'row',
@@ -491,9 +501,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2.4,
     textTransform: 'uppercase',
   },
-
-  // candidateBlock / candidateMeta / candidateName / candidateSignal removed
-  // — the avatar + name + signal now live in the identity hero zone above.
 
   divider: {
     height: 1,
@@ -576,57 +583,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  /* Slim action bar — same dimensions as the seeker-side ExpandedEndorserCard
-     so both expanded sheets feel identical in their commit UX. */
-  actionBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 26,
-    flexDirection: 'row',
-    gap: 10,
-    backgroundColor: colors.cardSurface,
-    borderTopWidth: 1,
-    borderTopColor: BLACK_08,
-  },
-  passBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: colors.error,
-    backgroundColor: 'rgba(248, 113, 113, 0.08)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  passBtnText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
-    color: colors.error,
-  },
-  commitBtn: {
-    flex: 2,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  commitBtnText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 14,
-    color: '#0A1F44',
-    letterSpacing: 0.2,
-  },
 });

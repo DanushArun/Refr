@@ -25,11 +25,16 @@ const SAMPLE_INTERVAL_MS = 60; // ~16fps for sensor; smoothing fills the gaps
  *
  * Gracefully no-ops on web or when permissions are denied — values stay 0.
  */
-export function useDeviceTilt(): DeviceTilt {
+export function useDeviceTilt(enabled = true): DeviceTilt {
   const tiltX = useSharedValue(0);
   const tiltY = useSharedValue(0);
 
   useEffect(() => {
+    if (!enabled) {
+      tiltX.value = withTiming(0, { duration: SMOOTH_DURATION });
+      tiltY.value = withTiming(0, { duration: SMOOTH_DURATION });
+      return;
+    }
     if (Platform.OS === 'web') return;
 
     let mounted = true;
@@ -52,8 +57,12 @@ export function useDeviceTilt(): DeviceTilt {
         // Both ~ -π/2..π/2; normalize to -1..1 then clamp to a small comfort range
         const rawX = clamp(rotation.gamma / (Math.PI / 4), -1, 1);
         const rawY = clamp(rotation.beta / (Math.PI / 4), -1, 1);
-        tiltX.value = withTiming(rawX, { duration: SMOOTH_DURATION, easing: Easing.out(Easing.quad) });
-        tiltY.value = withTiming(rawY, { duration: SMOOTH_DURATION, easing: Easing.out(Easing.quad) });
+        const config = {
+          duration: SMOOTH_DURATION,
+          easing: Easing.out(Easing.quad),
+        };
+        tiltX.value = withTiming(rawX, config);
+        tiltY.value = withTiming(rawY, config);
       });
     })();
 
@@ -61,7 +70,7 @@ export function useDeviceTilt(): DeviceTilt {
       mounted = false;
       subscription?.remove();
     };
-  }, [tiltX, tiltY]);
+  }, [enabled, tiltX, tiltY]);
 
   return { tiltX, tiltY };
 }

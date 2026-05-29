@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
   Extrapolation,
@@ -28,6 +29,10 @@ import { officeImageFor } from '../activity/companyOffices';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
 import type { EndorserCard as EndorserCardData } from './endorserCardData';
+import {
+  ExpandedCardActions,
+  expandedActionStyles,
+} from './ExpandedCardActions';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
@@ -39,6 +44,10 @@ const CARD_HEIGHT = Math.min(580, Math.round(SCREEN_H * 0.62));
 // The deck starts roughly below the header (60) + filter row (54) + a 8px
 // breathing gap. Adjust if those header heights change in DiscoverScreen.
 const CARD_TOP_FROM_SCREEN = 60 + 54 + 8;
+const EXPANDED_LEFT = 14;
+const EXPANDED_MIN_EDGE = 34;
+const EXPANDED_SAFE_GAP = 10;
+const EXPANDED_WIDTH = SCREEN_W - EXPANDED_LEFT * 2;
 
 const BLACK = '#000000';
 const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
@@ -53,12 +62,11 @@ interface ExpandedEndorserCardProps {
 }
 
 /**
- * Card-to-full-screen container transform.
+ * Card-to-expanded container transform.
  *
- * On mount the card animates from its swipe-deck rect into a full-screen
- * detail sheet. The brand-zone hero stays in place visually (same colors,
- * same typography, same role title) while extra detail sections fade in
- * underneath as the surface grows.
+ * On mount the card animates from its swipe-deck rect into an inset detail
+ * card. The brand-zone hero stays in place visually while extra detail
+ * sections fade in underneath as the surface grows.
  *
  * Close reverses the animation, then calls onClose so the parent unmounts us.
  *
@@ -84,6 +92,10 @@ export function ExpandedEndorserCard({
   // keep responding even if the user momentarily flicks the scroll.
   const dismissActive = useSharedValue(false);
   const safe = useMemo(() => card, [card]);
+  const insets = useSafeAreaInsets();
+  const expandedTop = Math.max(EXPANDED_MIN_EDGE, insets.top + EXPANDED_SAFE_GAP);
+  const expandedBottom = Math.max(EXPANDED_MIN_EDGE, insets.bottom + EXPANDED_SAFE_GAP);
+  const expandedHeight = SCREEN_H - expandedTop - expandedBottom;
 
   useEffect(() => {
     if (!card) return;
@@ -191,11 +203,11 @@ export function ExpandedEndorserCard({
     const dragScale = 1 - Math.min(0.06, Math.max(0, dragY.value) / 1400);
     return {
       position: 'absolute',
-      left: interpolate(t, [0, 1], [CARD_LEFT, 0], Extrapolation.CLAMP),
-      top: interpolate(t, [0, 1], [CARD_TOP_FROM_SCREEN, 0], Extrapolation.CLAMP),
-      width: interpolate(t, [0, 1], [CARD_WIDTH, SCREEN_W], Extrapolation.CLAMP),
-      height: interpolate(t, [0, 1], [CARD_HEIGHT, SCREEN_H], Extrapolation.CLAMP),
-      borderRadius: interpolate(t, [0, 1], [32, 0], Extrapolation.CLAMP),
+      left: interpolate(t, [0, 1], [CARD_LEFT, EXPANDED_LEFT], Extrapolation.CLAMP),
+      top: interpolate(t, [0, 1], [CARD_TOP_FROM_SCREEN, expandedTop], Extrapolation.CLAMP),
+      width: interpolate(t, [0, 1], [CARD_WIDTH, EXPANDED_WIDTH], Extrapolation.CLAMP),
+      height: interpolate(t, [0, 1], [CARD_HEIGHT, expandedHeight], Extrapolation.CLAMP),
+      borderRadius: interpolate(t, [0, 1], [32, 34], Extrapolation.CLAMP),
       transform: [
         { translateY: dragY.value },
         { scale: dragScale },
@@ -290,46 +302,47 @@ export function ExpandedEndorserCard({
               style={styles.heroImageShade}
               pointerEvents="none"
             />
-            <View style={styles.heroOverlay}>
-              <View style={styles.heroTitleRow}>
-                <Text
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.84}
-                  numberOfLines={1}
-                  style={styles.companyTitle}
-                >
-                  {safe.companyName}
-                </Text>
-                <View style={styles.verifiedChip}>
-                  <Text style={styles.verifiedChipText}>VERIFIED</Text>
-                </View>
-              </View>
+          </View>
 
+          <View style={styles.summaryPanel}>
+            <View style={styles.heroTitleRow}>
               <Text
                 adjustsFontSizeToFit
-                minimumFontScale={0.82}
-                numberOfLines={2}
-                style={styles.companyRole}
+                minimumFontScale={0.84}
+                numberOfLines={1}
+                style={styles.companyTitle}
               >
-                {safe.jobTitle}
+                {safe.companyName}
               </Text>
-
-              <View style={styles.endorserProofRow}>
-                <Avatar
-                  displayName={safe.name}
-                  size="sm"
-                  uri={safe.avatarUrl}
-                  verificationRing
-                />
-                <Text style={styles.endorserProofText} numberOfLines={2}>
-                  {safe.name} can endorse this role.
-                </Text>
+              <View style={styles.verifiedChip}>
+                <Text style={styles.verifiedChipText}>VERIFIED</Text>
               </View>
+            </View>
 
-              <Text style={styles.endorserMetaLine} numberOfLines={1}>
-                {metaLine}
+            <Text
+              adjustsFontSizeToFit
+              minimumFontScale={0.82}
+              numberOfLines={2}
+              style={styles.companyRole}
+            >
+              {safe.jobTitle}
+            </Text>
+
+            <View style={styles.endorserProofRow}>
+              <Avatar
+                displayName={safe.name}
+                size="sm"
+                uri={safe.avatarUrl}
+                verificationRing
+              />
+              <Text style={styles.endorserProofText} numberOfLines={2}>
+                {safe.name} can endorse this role.
               </Text>
             </View>
+
+            <Text style={styles.endorserMetaLine} numberOfLines={1}>
+              {metaLine}
+            </Text>
           </View>
 
           <View style={styles.creamZone}>
@@ -368,8 +381,7 @@ export function ExpandedEndorserCard({
               </View>
             </Animated.View>
 
-            {/* Bottom spacer so action bar doesn't cover content */}
-            <View style={{ height: 110 }} />
+            <View style={expandedActionStyles.contentSpacer} />
           </View>
         </Animated.ScrollView>
 
@@ -382,15 +394,12 @@ export function ExpandedEndorserCard({
 
         {/* Action bar pinned to bottom; extras-style opacity ties it to the
             full-expansion state so it doesn't appear during morph */}
-        <Animated.View style={[styles.actionBar, extrasStyle]}>
-          <Pressable onPress={handlePass} style={styles.passBtn}>
-            <Ionicons name="close" size={20} color={colors.error} />
-            <Text style={styles.passBtnText}>Skip</Text>
-          </Pressable>
-          <Pressable onPress={handleCommit} style={styles.commitBtn}>
-            <Ionicons name="checkmark" size={20} color="#0A1F44" />
-            <Text style={styles.commitBtnText}>Request endorsement</Text>
-          </Pressable>
+        <Animated.View style={[expandedActionStyles.actionBar, extrasStyle]}>
+          <ExpandedCardActions
+            commitLabel="Request endorsement"
+            onPass={handlePass}
+            onCommit={handleCommit}
+          />
         </Animated.View>
       </Animated.View>
       </GestureDetector>
@@ -423,7 +432,7 @@ const styles = StyleSheet.create({
      weight as the swipe-card image; the rest of the screen is for content. */
   heroImageZone: {
     width: '100%',
-    aspectRatio: 4 / 3,
+    aspectRatio: 1.12,
     backgroundColor: '#0A1F44',
     overflow: 'hidden',
   },
@@ -437,14 +446,18 @@ const styles = StyleSheet.create({
   heroImageShade: {
     ...StyleSheet.absoluteFillObject,
   },
-  heroOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+  summaryPanel: {
+    marginTop: -42,
+    marginHorizontal: 14,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    backgroundColor: colors.navyDeep,
     paddingHorizontal: 28,
-    paddingBottom: 30,
+    paddingTop: 26,
+    paddingBottom: 22,
     gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 241, 232, 0.08)',
   },
   heroTitleRow: {
     flexDirection: 'row',
@@ -589,57 +602,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  /* Action bar — sits flush at the bottom, slim profile so it doesn't
-     dominate the sheet. */
-  actionBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 26,
-    flexDirection: 'row',
-    gap: 10,
-    backgroundColor: colors.cardSurface,
-    borderTopWidth: 1,
-    borderTopColor: BLACK_08,
-  },
-  passBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: colors.error,
-    backgroundColor: 'rgba(248, 113, 113, 0.08)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  passBtnText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
-    color: colors.error,
-  },
-  commitBtn: {
-    flex: 2,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  commitBtnText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 14,
-    color: '#0A1F44',
-    letterSpacing: 0.2,
-  },
 });

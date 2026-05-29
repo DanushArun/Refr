@@ -1,3 +1,4 @@
+import { LaunchRouteSettler } from '../../src/components/navigation/LaunchRouteGate';
 import { EndorserDiscoverScreen } from '../../src/screens/EndorserDiscoverScreen';
 
 /**
@@ -8,5 +9,9 @@ import { EndorserDiscoverScreen } from '../../src/screens/EndorserDiscoverScreen
  * now belongs to the actual chat inbox at `inbox.tsx`.)
  */
 export default function EndorserDiscoverRoute() {
-  return <EndorserDiscoverScreen />;
+  return (
+    <LaunchRouteSettler>
+      <EndorserDiscoverScreen />
+    </LaunchRouteSettler>
+  );
 }

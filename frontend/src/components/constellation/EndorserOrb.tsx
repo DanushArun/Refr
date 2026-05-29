@@ -18,6 +18,7 @@ interface EndorserOrbProps {
   active: number;
   size?: number;
   showLabel?: boolean;
+  animated?: boolean;
 }
 
 interface Node {
@@ -55,6 +56,7 @@ export function EndorserOrb({
   active,
   size = 220,
   showLabel = true,
+  animated = true,
 }: EndorserOrbProps) {
   const haloPad = Math.ceil(size * 0.10);
   const canvasSize = size + haloPad * 2;
@@ -85,9 +87,11 @@ export function EndorserOrb({
   // primitives per frame is well within budget on any modern device.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
+    if (!animated) return undefined;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), FRAME_MS);
     return () => clearInterval(id);
-  }, []);
+  }, [animated]);
 
   const t = (now % CYCLE_MS) / CYCLE_MS; // 0..1
 

@@ -1,3 +1,4 @@
+import { LaunchRouteGate } from '../../src/components/navigation/LaunchRouteGate';
 import { EndorserInboxScreen } from '../../src/screens/EndorserInboxScreen';
 
 /**
@@ -9,5 +10,9 @@ import { EndorserInboxScreen } from '../../src/screens/EndorserInboxScreen';
  * a list of conversations.
  */
 export default function EndorserInboxRoute() {
-  return <EndorserInboxScreen />;
+  return (
+    <LaunchRouteGate fallbackHref="/(referrer-tabs)/discover">
+      <EndorserInboxScreen />
+    </LaunchRouteGate>
+  );
 }

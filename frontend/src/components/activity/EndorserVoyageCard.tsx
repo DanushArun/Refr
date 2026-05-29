@@ -7,9 +7,6 @@ import { colors } from '../../theme/colors';
 import { layout } from '../../theme/spacing';
 import { BoatVoyage } from './BoatVoyage';
 import {
-  BLACK,
-  BLACK_55,
-  BLACK_70,
   formatEndorserName,
   StatusPill,
   statusMeta,
@@ -24,25 +21,8 @@ import {
  * 95pt of vertical) look like a placeholder. The candidate's avatar
  * lives where it naturally belongs: inline next to the name.
  *
- * Layout (CARD_HEIGHT = 240):
- *
- *   ┌───────────────────────────────────────────┐
- *   │ Body (cream, padded) — identity + actions │
- *   │   [56 av]  Karthik Ramesh    [PAYOUT 22K]│
- *   │           Sr Backend · Razorpay           │
- *   │           [INTERVIEWING]                  │
- *   │                                           │
- *   │   [▶ Record outcome   ] [💬]             │
- *   ├───────────────────────────────────────────┤
- *   │ BoatVoyage — flush full-width, at bottom  │
- *   └───────────────────────────────────────────┘
- *
- * Bespoke vs PaperVoyageCard:
- *   • Action footer above the voyage — captain's wheel above the water.
- *   • Payout chip — gold pending → green PAID on hire.
- *   • Avatar inline (not a hero zone) — keeps the proportions tight.
- *   • Hired card lifts on a gold shadow + the primary button flips to
- *     gold-bright. The card "earns" the colour shift across surfaces.
+ * Layout: dark identity/action body above a flush full-width BoatVoyage.
+ * Bespoke vs PaperVoyageCard: inline avatar, payout chip, and action row.
  */
 
 type ActionKind = 'submit' | 'interviewing' | 'outcome' | 'view';
@@ -69,6 +49,7 @@ interface Props {
   onChat: () => void;
   /** Disables the primary action while a transition is in flight. */
   pending?: boolean;
+  active?: boolean;
 }
 
 function stageIndex(status: ReferralStatus): number {
@@ -111,7 +92,13 @@ function formatINR(amount: number): string {
   return `₹${amount}`;
 }
 
-export function EndorserVoyageCard({ data, onAction, onChat, pending }: Props) {
+export function EndorserVoyageCard({
+  data,
+  onAction,
+  onChat,
+  pending,
+  active = true,
+}: Props) {
   const meta = statusMeta(data.status, data.stageTimestamp);
   const action = actionForStage(data.status);
   const current = stageIndex(data.status);
@@ -121,7 +108,7 @@ export function EndorserVoyageCard({ data, onAction, onChat, pending }: Props) {
 
   return (
     <View style={[styles.card, isHired && styles.cardHired]}>
-      {/* ── Body ────────────────────────────────────────────── */}
+      {/* Body */}
       <View style={styles.body}>
         <View style={styles.identityRow}>
           <Avatar
@@ -138,7 +125,7 @@ export function EndorserVoyageCard({ data, onAction, onChat, pending }: Props) {
               {data.targetRole} · {data.companyName}
             </Text>
             <View style={styles.pillRow}>
-              <StatusPill meta={meta} />
+              <StatusPill meta={meta} tone="dark" />
             </View>
           </View>
           <View
@@ -199,14 +186,18 @@ export function EndorserVoyageCard({ data, onAction, onChat, pending }: Props) {
             ]}
             hitSlop={6}
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={15} color={BLACK} />
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={15}
+              color={colors.text}
+            />
           </Pressable>
         </View>
       </View>
 
       {/* ── Voyage zone — flush full-width at the bottom ────── */}
       <View style={styles.voyageZone}>
-        <BoatVoyage current={current} />
+        <BoatVoyage current={current} tone="dark" active={active} />
       </View>
     </View>
   );
@@ -218,7 +209,9 @@ const VOYAGE_HEIGHT = 92;
 const styles = StyleSheet.create({
   card: {
     height: CARD_HEIGHT,
-    backgroundColor: colors.cardSurface,
+    backgroundColor: colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.16)',
     borderRadius: layout.cardBorderRadiusLarge,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -257,13 +250,13 @@ const styles = StyleSheet.create({
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 22,
     lineHeight: 26,
-    color: BLACK,
+    color: colors.text,
     letterSpacing: -0.3,
   },
   subline: {
     fontFamily: 'Outfit-Medium',
     fontSize: 12.5,
-    color: BLACK_70,
+    color: colors.textSecondary,
   },
   pillRow: {
     marginTop: 3,
@@ -279,8 +272,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   payoutChipPending: {
-    backgroundColor: 'rgba(212, 167, 68, 0.16)',
-    borderColor: 'rgba(212, 167, 68, 0.50)',
+    backgroundColor: 'rgba(212, 167, 68, 0.12)',
+    borderColor: 'rgba(212, 167, 68, 0.34)',
   },
   payoutChipPaid: {
     backgroundColor: 'rgba(34, 197, 94, 0.18)',
@@ -291,15 +284,15 @@ const styles = StyleSheet.create({
     fontSize: 8,
     letterSpacing: 1.3,
   },
-  payoutLabelPending: { color: BLACK_55 },
-  payoutLabelPaid: { color: '#15803D' },
+  payoutLabelPending: { color: colors.gold },
+  payoutLabelPaid: { color: colors.success },
   payoutValue: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 12,
     letterSpacing: 0.2,
   },
-  payoutValuePending: { color: BLACK },
-  payoutValuePaid: { color: '#14532D' },
+  payoutValuePending: { color: colors.goldBright },
+  payoutValuePaid: { color: '#BBF7D0' },
 
   /* Action row — tightened proportions:
      - Button height 36 instead of 42 — feels like a pill embedded in the
@@ -350,13 +343,13 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 1.2,
-    borderColor: 'rgba(15, 17, 21, 0.18)',
+    borderColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(15, 17, 21, 0.04)',
+    backgroundColor: colors.surfaceLevel2,
   },
   chatBtnPressed: {
-    backgroundColor: 'rgba(15, 17, 21, 0.10)',
+    backgroundColor: colors.surfaceActive,
     transform: [{ scale: 0.96 }],
   },
 

@@ -9,6 +9,7 @@ import { colors } from '../src/theme/colors';
 
 export default function Index() {
   const { session, user, loading } = useAuth();
+  console.log('[route-debug] Index render', { loading, role: user?.role, hasSession: !!session });
 
   if (loading) {
     return (
@@ -30,5 +31,5 @@ export default function Index() {
   if (user.role === 'seeker') {
     return <Redirect href="/(seeker-tabs)/discover" />;
   }
-  return <Redirect href="/(referrer-tabs)/inbox" />;
+  return <Redirect href="/(referrer-tabs)/discover" />;
 }

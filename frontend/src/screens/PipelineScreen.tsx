@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
 import {
@@ -20,6 +20,7 @@ import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
 import { Skeleton } from '../components/common/Skeleton';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 import { Phrase } from '../utils/haptics';
+import { useWarmTabData } from '../hooks/useWarmTabData';
 
 type FilterKey = 'all' | 'matched' | 'submitted' | 'interview' | 'hired' | 'closed';
 
@@ -118,6 +119,7 @@ const DEMO_PIPELINE: SeekerPipelineItem[] = [
 ];
 
 export function PipelineScreen() {
+  const isFocused = useIsFocused();
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -135,7 +137,7 @@ export function PipelineScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { loadPipeline(); }, [loadPipeline]));
+  useWarmTabData(loadPipeline);
 
   const counts = useMemo<Record<FilterKey, number>>(() => {
     const all = [...DEMO_PIPELINE, ...items];
@@ -175,8 +177,10 @@ export function PipelineScreen() {
   // — avoids resetting the windowed mount/unmount tracking that
   // removeClippedSubviews relies on.
   const renderItem = useCallback(
-    ({ item }: { item: SeekerPipelineItem }) => <PipelineItem item={item} />,
-    [],
+    ({ item }: { item: SeekerPipelineItem }) => (
+      <PipelineItem item={item} active={isFocused} />
+    ),
+    [isFocused],
   );
   const keyExtractor = useCallback(
     (item: SeekerPipelineItem) => item.referral.id,
@@ -272,9 +276,16 @@ export function PipelineScreen() {
  * spurious renders is a real perf win.
  */
 const PipelineItem = React.memo(
-  function PipelineItem({ item }: { item: SeekerPipelineItem }) {
+  function PipelineItem({
+    item,
+    active,
+  }: {
+    item: SeekerPipelineItem;
+    active: boolean;
+  }) {
     return (
       <PaperVoyageCard
+        active={active}
         data={{
           companyName: item.companyName,
           role: item.referral.targetRole,
@@ -286,6 +297,7 @@ const PipelineItem = React.memo(
     );
   },
   (prev, next) =>
+    prev.active === next.active &&
     prev.item.referral.id === next.item.referral.id &&
     prev.item.referral.status === next.item.referral.status &&
     prev.item.companyName === next.item.companyName &&
@@ -332,7 +344,9 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: layout.cardBorderRadiusLarge,
     overflow: 'hidden',
-    backgroundColor: colors.cardSurface,
+    backgroundColor: colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.16)',
   },
   skeletonBody: {
     padding: 18,
