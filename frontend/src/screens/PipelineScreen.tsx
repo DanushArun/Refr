@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { officeImageUrlFor } from '../components/activity/companyOffices';
+import { prefetchImages } from '../utils/prefetchImages';
 import {
   View,
   Text,
@@ -12,36 +15,115 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
 import { referralsApi } from '../services/api';
-import type { SeekerPipelineItem } from '@refr/shared';
-import type { ReferralStatus } from '@refr/shared';
-import { PipelineStepper as SharedStepper, type PipelineStage } from '../components/activity/PipelineStepper';
+import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
+import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
+import { Skeleton } from '../components/common/Skeleton';
+import { FilterBar, type FilterOption } from '../components/common/FilterBar';
+import { Phrase } from '../utils/haptics';
+import { useWarmTabData } from '../hooks/useWarmTabData';
 
-const STATUS_LABELS: Record<string, string> = {
-  requested: 'Waiting',
-  accepted: 'Accepted',
-  submitted: 'Submitted',
-  interviewing: 'Interviewing',
-  hired: 'Hired',
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-  expired: 'Expired',
+type FilterKey = 'all' | 'matched' | 'submitted' | 'interview' | 'hired' | 'closed';
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'matched', label: 'Matched' },
+  { key: 'submitted', label: 'Submitted' },
+  { key: 'interview', label: 'Interview' },
+  { key: 'hired', label: 'Hired' },
+  { key: 'closed', label: 'Closed' },
+];
+
+const STATUSES_FOR: Record<FilterKey, Set<ReferralStatus> | null> = {
+  all: null,
+  matched: new Set(['requested', 'accepted']),
+  submitted: new Set(['submitted']),
+  interview: new Set(['interviewing']),
+  hired: new Set(['hired']),
+  closed: new Set(['rejected', 'withdrawn', 'expired']),
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  requested: colors.pipelineRequested,
-  accepted: colors.pipelineAccepted,
-  submitted: colors.pipelineSubmitted,
-  interviewing: colors.pipelineInterviewing,
-  hired: colors.pipelineHired,
-  rejected: colors.pipelineRejected,
-  withdrawn: colors.pipelineWithdrawn,
-  expired: colors.pipelineExpired,
-};
+function latestStageTimestamp(item: SeekerPipelineItem): string | null | undefined {
+  const r = item.referral;
+  if (r.status === 'hired') return r.outcomeAt ?? r.submittedAt ?? r.acceptedAt ?? r.requestedAt;
+  if (r.status === 'interviewing') return r.submittedAt ?? r.acceptedAt ?? r.requestedAt;
+  if (r.status === 'submitted') return r.submittedAt ?? r.acceptedAt ?? r.requestedAt;
+  return r.acceptedAt ?? r.requestedAt;
+}
+
+// Demo cards — one per voyage stage so all 4 progress states are visible.
+const DEMO_PIPELINE: SeekerPipelineItem[] = [
+  {
+    referral: {
+      id: 'demo-matched',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'cred',
+      targetRole: 'Staff Engineer',
+      status: 'accepted',
+      matchScore: 88,
+      requestedAt: new Date(Date.now() - 4 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Aarav Verma',
+    companyName: 'CRED',
+  },
+  {
+    referral: {
+      id: 'demo-submitted',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'razorpay',
+      targetRole: 'Senior Backend Engineer',
+      status: 'submitted',
+      matchScore: 91,
+      requestedAt: new Date(Date.now() - 9 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 7 * 86_400_000).toISOString(),
+      submittedAt: new Date(Date.now() - 5 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Priya Iyer',
+    companyName: 'Razorpay',
+  },
+  {
+    referral: {
+      id: 'demo-interview',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'zepto',
+      targetRole: 'Product Designer',
+      status: 'interviewing',
+      matchScore: 84,
+      requestedAt: new Date(Date.now() - 14 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 12 * 86_400_000).toISOString(),
+      submittedAt: new Date(Date.now() - 10 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Rohan Mehta',
+    companyName: 'Zepto',
+  },
+  {
+    referral: {
+      id: 'demo-hired',
+      seekerId: 'demo',
+      referrerId: 'demo-r',
+      companyId: 'swiggy',
+      targetRole: 'Engineering Manager',
+      status: 'hired',
+      matchScore: 96,
+      requestedAt: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+      acceptedAt: new Date(Date.now() - 28 * 86_400_000).toISOString(),
+      submittedAt: new Date(Date.now() - 25 * 86_400_000).toISOString(),
+      outcomeAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+    },
+    referrerName: 'Anita Desai',
+    companyName: 'Swiggy',
+  },
+];
 
 export function PipelineScreen() {
+  const isFocused = useIsFocused();
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<FilterKey>('all');
 
   const loadPipeline = useCallback(async () => {
     try {
@@ -55,121 +137,221 @@ export function PipelineScreen() {
     }
   }, []);
 
-  useEffect(() => { loadPipeline(); }, [loadPipeline]);
+  useWarmTabData(loadPipeline);
+
+  const counts = useMemo<Record<FilterKey, number>>(() => {
+    const all = [...DEMO_PIPELINE, ...items];
+    const c: Record<FilterKey, number> = {
+      all: all.length,
+      matched: 0,
+      submitted: 0,
+      interview: 0,
+      hired: 0,
+      closed: 0,
+    };
+    for (const it of all) {
+      const s = it.referral.status;
+      if (STATUSES_FOR.matched!.has(s)) c.matched += 1;
+      else if (STATUSES_FOR.submitted!.has(s)) c.submitted += 1;
+      else if (STATUSES_FOR.interview!.has(s)) c.interview += 1;
+      else if (STATUSES_FOR.hired!.has(s)) c.hired += 1;
+      else if (STATUSES_FOR.closed!.has(s)) c.closed += 1;
+    }
+    return c;
+  }, [items]);
+
+  const visibleItems = useMemo(() => {
+    const merged = [...DEMO_PIPELINE, ...items];
+    const allowed = STATUSES_FOR[filter];
+    if (!allowed) return merged;
+    return merged.filter((it) => allowed.has(it.referral.status));
+  }, [items, filter]);
+
+  // Warm the office-image cache for the full visible list so cards don't
+  // flash navy before resolving on first scroll.
+  useEffect(() => {
+    prefetchImages(visibleItems.map((it) => officeImageUrlFor(it.companyName)));
+  }, [visibleItems]);
+
+  // Stable refs so FlatList doesn't re-evaluate them on every parent render
+  // — avoids resetting the windowed mount/unmount tracking that
+  // removeClippedSubviews relies on.
+  const renderItem = useCallback(
+    ({ item }: { item: SeekerPipelineItem }) => (
+      <PipelineItem item={item} active={isFocused} />
+    ),
+    [isFocused],
+  );
+  const keyExtractor = useCallback(
+    (item: SeekerPipelineItem) => item.referral.id,
+    [],
+  );
+
+  const handleFilterChange = useCallback((next: FilterKey) => {
+    setFilter(next);
+  }, []);
+
+  const filterOptions = useMemo<readonly FilterOption<FilterKey>[]>(
+    () => FILTERS.map((f) => ({ ...f, count: counts[f.key] })),
+    [counts],
+  );
 
   if (loading) {
+    // Skeleton placeholder cards — same overall rhythm as the real list so
+    // the layout doesn't jump when the API resolves.
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Activity</Text>
+            <Skeleton width={140} height={14} style={{ marginTop: 6 }} />
+          </View>
+          <View style={styles.list}>
+            <PipelineSkeletonCard />
+            <PipelineSkeletonCard />
+            <PipelineSkeletonCard />
+          </View>
+        </SafeAreaView>
       </View>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Activity</Text>
-        <Text style={styles.subtitle}>{items.length} endorsement{items.length !== 1 ? 's' : ''} in flight</Text>
-      </View>
+  const inFlight = counts.matched + counts.submitted + counts.interview;
 
-      {items.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No activity yet</Text>
-          <Text style={styles.emptyBody}>
-            Swipe right on an Endorser in Discover to request your first endorsement.
+  return (
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Activity</Text>
+          <Text style={styles.subtitle}>
+            {inFlight} in flight · {counts.hired} berthed
           </Text>
         </View>
-      ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => item.referral.id}
-          contentContainerStyle={styles.list}
-          onRefresh={() => {
-            setRefreshing(true);
-            loadPipeline();
-          }}
-          refreshing={refreshing}
-          renderItem={({ item }) => (
-            <PipelineItem item={item} />
-          )}
-          showsVerticalScrollIndicator={false}
+
+        <FilterBar
+          options={filterOptions}
+          current={filter}
+          onChange={handleFilterChange}
+          ariaLabel="Pipeline stage filter"
         />
-      )}
-    </SafeAreaView>
-  );
-}
 
-function PipelineItem({ item }: { item: SeekerPipelineItem }) {
-  const statusColor = STATUS_COLORS[item.referral.status] ?? colors.textTertiary;
-  const statusLabel = STATUS_LABELS[item.referral.status] ?? item.referral.status;
-
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View style={styles.companyRow}>
-          <Text style={styles.companyName}>{item.companyName}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
+        {visibleItems.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>Nothing in this lane</Text>
+            <Text style={styles.emptyBody}>
+              No endorsements match this filter yet.
+            </Text>
           </View>
-        </View>
-        <Text style={styles.role}>{item.referral.targetRole}</Text>
-      </View>
-
-      <View style={styles.referrerRow}>
-        <Text style={styles.referrerLabel}>Referrer</Text>
-        <Text style={styles.referrerName}>{item.referrerName}</Text>
-        <Text style={styles.referrerTitle}>{item.referrerName} at {item.companyName}</Text>
-      </View>
-
-      <SharedStepper stage={item.referral.status as PipelineStage} />
+        ) : (
+          <FlatList
+            data={visibleItems}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.list}
+            onRefresh={() => {
+              Phrase.pullRefresh();
+              setRefreshing(true);
+              loadPipeline();
+            }}
+            refreshing={refreshing}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            // Each card runs a useFrameCallback + per-frame Skia path rebuilds
+            // for the BoatVoyage. Off-screen cards must be unmounted, not just
+            // hidden — otherwise every animation runs continuously.
+            removeClippedSubviews={true}
+            initialNumToRender={3}
+            maxToRenderPerBatch={3}
+            windowSize={5}
+          />
+        )}
+      </SafeAreaView>
     </View>
   );
 }
 
-const PIPELINE_STEPS: Array<ReferralStatus> = [
-  'requested', 'accepted', 'submitted', 'interviewing', 'hired',
-];
+/**
+ * Memoized so each card only re-renders when its own data actually changes.
+ * Without this, scrolling the FlatList re-renders every visible card on each
+ * pass — and each card runs a per-frame BoatVoyage worklet, so dropping the
+ * spurious renders is a real perf win.
+ */
+const PipelineItem = React.memo(
+  function PipelineItem({
+    item,
+    active,
+  }: {
+    item: SeekerPipelineItem;
+    active: boolean;
+  }) {
+    return (
+      <PaperVoyageCard
+        active={active}
+        data={{
+          companyName: item.companyName,
+          role: item.referral.targetRole,
+          endorserName: item.referrerName,
+          status: item.referral.status,
+          stageTimestamp: latestStageTimestamp(item),
+        }}
+      />
+    );
+  },
+  (prev, next) =>
+    prev.active === next.active &&
+    prev.item.referral.id === next.item.referral.id &&
+    prev.item.referral.status === next.item.referral.status &&
+    prev.item.companyName === next.item.companyName &&
+    prev.item.referrerName === next.item.referrerName,
+);
 
-function PipelineStepper({ status }: { status: ReferralStatus }) {
-  const isTerminal = status === 'rejected' || status === 'withdrawn' || status === 'expired';
-  const currentIdx = PIPELINE_STEPS.indexOf(status);
-
+/**
+ * Skeleton card mirroring the real PaperVoyageCard's silhouette — image hero
+ * up top, title + role bars, endorser line, and a wave/label strip — so the
+ * loading state matches the layout of the resolved content.
+ */
+function PipelineSkeletonCard() {
   return (
-    <View style={styles.stepper}>
-      {PIPELINE_STEPS.map((step, idx) => {
-        const done = currentIdx > idx;
-        const active = currentIdx === idx && !isTerminal;
-        const stepColor = done || active
-          ? STATUS_COLORS[step]
-          : colors.border;
-
-        return (
-          <React.Fragment key={step}>
-            <View style={[styles.stepDot, { backgroundColor: done || active ? stepColor : 'transparent', borderColor: stepColor }]}>
-              {done && <Text style={styles.stepCheck}>✓</Text>}
-            </View>
-            {idx < PIPELINE_STEPS.length - 1 && (
-              <View style={[styles.stepLine, { backgroundColor: done ? stepColor : colors.border }]} />
-            )}
-          </React.Fragment>
-        );
-      })}
+    <View style={styles.skeletonCard}>
+      <Skeleton width="100%" height={112} radius={0} />
+      <View style={styles.skeletonBody}>
+        <Skeleton width={160} height={20} />
+        <Skeleton width={120} height={14} />
+        <Skeleton width={200} height={12} style={{ marginTop: 4 }} />
+        <Skeleton width="100%" height={28} style={{ marginTop: 14 }} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: 'transparent' },
+  safe: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[6],
-    paddingBottom: spacing[4],
+    paddingBottom: spacing[3],
     gap: spacing[1],
   },
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.body, color: colors.textSecondary },
-  list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: spacing[20] },
+  list: {
+    padding: layout.screenPaddingH,
+    gap: spacing[4],
+    paddingBottom: spacing[20],
+  },
+  skeletonCard: {
+    height: 280,
+    borderRadius: layout.cardBorderRadiusLarge,
+    overflow: 'hidden',
+    backgroundColor: colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 167, 68, 0.16)',
+  },
+  skeletonBody: {
+    padding: 18,
+    gap: 8,
+  },
   empty: {
     flex: 1,
     alignItems: 'center',
@@ -178,40 +360,11 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   emptyTitle: { ...typography.h4, color: colors.textSecondary },
-  emptyBody: { ...typography.body, color: colors.textTertiary, textAlign: 'center', lineHeight: 24 },
-  card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: layout.cardBorderRadius,
-    padding: layout.cardPadding,
-    gap: spacing[4],
+  emptyBody: {
+    ...typography.body,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
-  cardTop: { gap: spacing[1] },
-  companyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  companyName: { ...typography.h4, color: colors.text },
-  statusBadge: {
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[0.5],
-    borderRadius: 100,
-  },
-  statusText: { ...typography.caption, fontFamily: 'Outfit-SemiBold' },
-  role: { ...typography.body, color: colors.textSecondary },
-  referrerRow: { gap: spacing[0.5] },
-  referrerLabel: { ...typography.caption, color: colors.textTertiary },
-  referrerName: { ...typography.bodySmall, color: colors.text, fontFamily: 'Outfit-SemiBold' },
-  referrerTitle: { ...typography.caption, color: colors.textSecondary },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing[2],
-  },
-  stepDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepCheck: { fontSize: 10, color: colors.background, fontFamily: 'Outfit-Bold' },
-  stepLine: { flex: 1, height: 1.5 },
+
 });

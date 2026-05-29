@@ -1,153 +1,280 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { SwipeDeck } from '../components/discover/SwipeDeck';
+import { officeImageUrlFor } from '../components/activity/companyOffices';
+import { prefetchImages } from '../utils/prefetchImages';
+import { Phrase } from '../utils/haptics';
+import { SwipeDeck, type SwipeDeckHandle } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
+import { ExpandedEndorserCard } from '../components/discover/ExpandedEndorserCard';
+import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
+import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
   buildEndorserCards,
   type EndorserCard,
 } from '../components/discover/endorserCardData';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
+import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
-/**
- * Seeker Discover — Tinder-style swipe stack of Endorsers.
- * Right swipe records an endorsement request; left swipe is a private pass.
- */
+type CompanyFilter = 'all' | string;
+
 export function DiscoverScreen() {
+  console.log('[route-debug] DiscoverScreen render');
+  const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
-  const cards = useMemo(() => buildEndorserCards('1'), [queueKey]);
-  const [remaining, setRemaining] = useState<number>(cards.length);
-  const [lastAction, setLastAction] = useState<string | null>(null);
+  const allCards = useMemo(() => buildEndorserCards('1'), [queueKey]);
 
-  const handleSwipe = useCallback(
+  // Warm the image cache for ALL upcoming office photos in the unfiltered
+  // queue so the first paint of each card already has its hero image.
+  // Refetched only when the queue itself rotates (queueKey change).
+  useEffect(() => {
+    prefetchImages(allCards.map((c) => officeImageUrlFor(c.companyName)));
+  }, [allCards]);
+
+  const [index, setIndex] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<CompanyFilter>('all');
+
+  // Apply the company filter to the queue, and reset index whenever the
+  // active set changes so the user always lands at the top of the new list.
+  const cards = useMemo(
+    () =>
+      activeFilter === 'all'
+        ? allCards
+        : allCards.filter((c) => c.companyName === activeFilter),
+    [allCards, activeFilter],
+  );
+  useEffect(() => {
+    setIndex(0);
+  }, [activeFilter, queueKey]);
+
+  // Build filter options from companies actually present in the queue, with
+  // a per-company count so the user can see at a glance which lanes have
+  // candidates. Stable until the underlying queue rebuilds.
+  const filterOptions = useMemo<readonly FilterOption<CompanyFilter>[]>(() => {
+    const counts = new Map<string, number>();
+    for (const c of allCards) {
+      counts.set(c.companyName, (counts.get(c.companyName) ?? 0) + 1);
+    }
+    const companyOpts: FilterOption<CompanyFilter>[] = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ key: name, label: name, count }));
+    return [
+      { key: 'all', label: 'All', count: allCards.length },
+      ...companyOpts,
+    ];
+  }, [allCards]);
+  // Tapped card animates from its deck position into a full-screen detail sheet
+  const [expandedCard, setExpandedCard] = useState<EndorserCard | null>(null);
+  // Token-based trigger so the celebration fires once per right-swipe
+  const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
+  // Tracks whether undo is available so we can show/hide the rewind affordance.
+  const [canUndo, setCanUndo] = useState(false);
+
+  const remainingSwipes = Math.max(0, cards.length - index);
+
+  // Imperative deck handle — only used for the undo affordance now that
+  // tap-to-act buttons are gone (swipe is the only commit path).
+  const deckRef = useRef<SwipeDeckHandle>(null);
+
+  /**
+   * Fires the moment a swipe commits (start of the 220ms fly-off) — kept tight
+   * to the gesture so the celebration burst overlaps with the card's exit
+   * instead of landing after it. Records the swipe API call here too; deck
+   * advance happens separately when the fly-off completes.
+   */
+  const handleSwipeCommitStart = useCallback(
     (card: EndorserCard, direction: 'request' | 'pass') => {
-      setRemaining((r) => Math.max(0, r - 1));
-      if (direction === 'request') {
-        setLastAction(`Request sent to ${card.name}`);
-        // Fire-and-forget: the demo-mode createRequest resolves locally.
-        referralsApi
-          .createRequest({
-            feedCardId: `endorser-${card.id}`,
-            targetRole: card.jobTitle,
-            seekerNote: `Hi ${card.name.split(' ')[0]}, saw your profile and would love an endorsement for ${card.companyName}.`,
-          })
-          .catch(() => {});
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => {},
-        );
-      } else {
-        setLastAction(null);
-      }
+      if (direction !== 'request') return;
+      const requestNote =
+        `Hi ${card.name.split(' ')[0]}, saw your profile — ` +
+        `would love an endorsement for ${card.companyName}.`;
+      referralsApi
+        .recordSeekerSwipe(
+          {
+            id: card.id,
+            name: card.name,
+            companyId: card.companyId,
+            companyName: card.companyName,
+            jobTitle: card.jobTitle,
+          },
+          requestNote,
+        )
+        .catch(() => {});
+      // Fire the full Skia celebration. Phrase.match() runs from inside it.
+      setCelebrationTrigger(Date.now());
+    },
+    [],
+  );
+
+  const commitSwipe = useCallback(
+    (_card: EndorserCard, _direction: 'request' | 'pass') => {
+      // Deck-pointer advance only — the user-facing reaction (celebration +
+      // API call) already fired in handleSwipeCommitStart at gesture commit.
+      setIndex((i) => i + 1);
     },
     [],
   );
 
   const handleRefresh = useCallback(() => {
+    Phrase.tap();
     setQueueKey((k) => k + 1);
-    setRemaining(cards.length);
-    setLastAction(null);
-  }, [cards.length]);
+    setIndex(0);
+  }, []);
+
+  const handleCardTap = useCallback((card: EndorserCard) => {
+    setExpandedCard(card);
+  }, []);
+
+  const handleExpandedCommit = useCallback(
+    (direction: 'request' | 'pass') => {
+      if (expandedCard) {
+        // Same two-phase shape as the gesture path: commit-start fires the
+        // celebration + API call, then commitSwipe advances the deck.
+        handleSwipeCommitStart(expandedCard, direction);
+        commitSwipe(expandedCard, direction);
+      }
+      setExpandedCard(null);
+    },
+    [expandedCard, commitSwipe, handleSwipeCommitStart],
+  );
+
+  /**
+   * Undo retreats the deck pointer and lets the SwipeDeck animate the
+   * restored card back into view from the side it left from. Also drops the
+   * pending celebration token so an undone right-swipe doesn't leave the
+   * burst lingering.
+   */
+  const handleUndo = useCallback(() => {
+    Phrase.tap();
+    setIndex((i) => Math.max(0, i - 1));
+    setCelebrationTrigger(null);
+  }, []);
+
+  const handleFilterPress = useCallback((company: CompanyFilter) => {
+    setActiveFilter(company);
+  }, []);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.wordmark}>ENDORSLY</Text>
-          <Text style={styles.subtitle}>
-            Swipe right to request · left to pass
-          </Text>
-        </View>
-        <View style={styles.counter}>
-          <Text style={styles.counterLabel}>LEFT</Text>
-          <Text style={styles.counterValue}>{remaining}</Text>
-        </View>
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.debugText}>DISCOVER</Text>
+      {/* Constellation reveals only when the deck is exhausted — the
+          "you're caught up" reward beat. Hidden during normal swiping so
+          the deck holds the user's full attention. */}
+      <ConstellationBackdrop visible={remainingSwipes === 0} active={isFocused} />
 
-      <View style={styles.deckFrame}>
-        <SwipeDeck<EndorserCard>
-          items={cards}
-          keyOf={(c) => c.id}
-          onSwipe={handleSwipe}
-          onRefresh={handleRefresh}
-          emptyTitle="You're caught up"
-          emptyBody="No more Endorsers in today's queue. Check back later, or broaden your target companies."
-          renderCard={({ item, isTop, stackIndex, onSwiped }) => (
-            <EndorserCardView
-              card={item}
-              isTop={isTop}
-              stackIndex={stackIndex}
-              onSwiped={onSwiped}
-            />
-          )}
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <Text style={styles.wordmark}>Endorsly</Text>
+        </View>
+
+        <FilterBar
+          options={filterOptions}
+          current={activeFilter}
+          onChange={handleFilterPress}
+          showCounts={false}
+          ariaLabel="Endorser company filter"
         />
-      </View>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerHint}>
-          {lastAction ?? 'Double opt-in: chat opens only when they swipe right too.'}
-        </Text>
-      </View>
-    </SafeAreaView>
+        <View style={styles.deckFrame}>
+          <SwipeDeck<EndorserCard>
+            ref={deckRef}
+            items={cards}
+            index={index}
+            keyOf={(c) => c.id}
+            onSwipeCommitStart={handleSwipeCommitStart}
+            onSwipe={commitSwipe}
+            onCardTap={handleCardTap}
+            onRefresh={handleRefresh}
+            onUndo={handleUndo}
+            onCanUndoChange={setCanUndo}
+            emptyTitle="You're caught up"
+            emptyBody={
+              "No more Endorsers in today's queue. Check back later, or broaden " +
+              'your target companies.'
+            }
+            renderCard={({
+              item,
+              isTop,
+              stackIndex,
+              headProgress,
+              entryFrom,
+              onCommitStart,
+              onSwiped,
+              onTap,
+              registerSwipe,
+            }) => (
+              <EndorserCardView
+                card={item}
+                isTop={isTop}
+                stackIndex={stackIndex}
+                headProgress={headProgress}
+                entryFrom={entryFrom}
+                // Each card owns its own count: the swipes-remaining value
+                // for the moment when this card becomes top. Stable per card
+                // identity (cards.length minus its absolute queue position).
+                swipesRemaining={cards.length - (index + stackIndex)}
+                canUndo={canUndo}
+                onUndo={() => deckRef.current?.undo()}
+                onCommitStart={onCommitStart}
+                onSwiped={onSwiped}
+                onTap={onTap}
+                registerSwipe={registerSwipe}
+              />
+            )}
+          />
+
+          {/* Undo lives on the top card itself — attached to the left of
+              the swipes-left pill — so the floating action bar is gone. */}
+        </View>
+
+      </SafeAreaView>
+
+      {/* Card-to-full-screen container transform when a card is tapped */}
+      <ExpandedEndorserCard
+        card={expandedCard}
+        onClose={() => setExpandedCard(null)}
+        onPass={() => handleExpandedCommit('pass')}
+        onCommit={() => handleExpandedCommit('request')}
+      />
+
+      {/* Full-screen overlay celebration — fires on right-swipe commit */}
+      <MatchCelebration trigger={celebrationTrigger} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: 'transparent' },
+  safe: { flex: 1 },
   header: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[4],
-    paddingBottom: spacing[3],
+    height: 60,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 8,
   },
   wordmark: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 22,
+    fontFamily: 'InstrumentSerif-Regular',
+    fontSize: 26,
     color: colors.text,
-    letterSpacing: 3,
-  },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    marginTop: spacing[0.5],
-  },
-  counter: {
-    backgroundColor: colors.surfaceLevel1,
-    borderRadius: 12,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1.5],
-    alignItems: 'center',
-    gap: 2,
-  },
-  counterLabel: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    fontSize: 9,
-    letterSpacing: 0.5,
-  },
-  counterValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 18,
-    color: colors.text,
+    letterSpacing: 0.3,
   },
   deckFrame: {
     flex: 1,
-    paddingTop: spacing[4],
-    paddingBottom: spacing[6],
+    marginTop: spacing[2],
+    // Reserve space below the deck for the action bar + remaining badge +
+    // floating tab bar (84pt). Keeps cards from bleeding into the chrome.
+    paddingBottom: 116,
   },
-  footer: {
-    paddingHorizontal: layout.screenPaddingH,
-    paddingBottom: spacing[6],
-    alignItems: 'center',
-  },
-  footerHint: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    maxWidth: 320,
+  debugText: {
+    position: 'absolute',
+    top: 140,
+    left: 24,
+    color: '#ffffff',
+    fontSize: 28,
+    zIndex: 1000,
   },
 });

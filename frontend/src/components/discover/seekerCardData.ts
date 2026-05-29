@@ -4,13 +4,17 @@ export interface SeekerCard {
   id: string;
   name: string;
   headline: string;          // emotional one-liner
-  story: string;             // truncated body copy
-  skills: string[];          // top 3
+  story: string;             // TRUNCATED preview for swipe cards (≤180 chars)
+  fullStory: string;         // FULL untruncated story for profile sheet
+  skills: string[];          // top 3 for card preview
+  fullSkills: string[];      // complete skill list for profile sheet
   yearsOfExperience: number;
   targetRole: string;         // first from targetRoles
+  targetRoles: string[];      // all target roles for profile sheet
   targetCompanies: string[];  // shown as chips
   matchPercent: number;       // 0-100 against viewer's company
   currentSignal: string;      // e.g. "Ex-Amazon Pay · 6y" — derived from story+YOE
+  photoUrl: string;           // curated portrait for the identity hero
 }
 
 function hash(s: string): number {
@@ -45,12 +49,16 @@ export function buildSeekerCards(viewerEndorserId = '2'): SeekerCard[] {
         name: s.name,
         headline: s.headline,
         story: s.story.length > 180 ? `${s.story.slice(0, 177)}...` : s.story,
+        fullStory: s.story,
         skills: s.skills.slice(0, 3),
+        fullSkills: s.skills,
         yearsOfExperience: s.yearsOfExperience,
         targetRole: s.targetRoles[0] ?? 'Software Engineer',
+        targetRoles: s.targetRoles,
         targetCompanies: s.targetCompanies.slice(0, 3),
         matchPercent,
         currentSignal: currentSignalFrom(s.story, s.yearsOfExperience),
+        photoUrl: s.photoUrl,
       };
     })
     .sort((a: SeekerCard, b: SeekerCard) => b.matchPercent - a.matchPercent);

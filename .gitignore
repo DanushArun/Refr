@@ -46,6 +46,8 @@ India-Job-Referral-Market-Research/
 # Claude Code config
 CLAUDE.md
 .claude/
+.codex/
+.agents/
 
 # Expo
 *.jks

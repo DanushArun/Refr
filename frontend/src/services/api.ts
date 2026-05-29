@@ -23,11 +23,24 @@ import {
   appendChatMessage,
   referrerByCompany,
   referrerById,
+  DEMO_SEEKERS,
 } from '../config/demo';
+import { getCurrentDemoCompanyName } from '../config/demoWorld';
+
+const POINTS_PER_REFERRAL = 2;
+const POINTS_PER_HIRE = 10;
+
+/** Monotonic counter to guarantee unique IDs even when multiple items are
+ *  created in the same millisecond (rapid sends, auto-reply colliding). */
+let _uidCounter = 0;
+function uid(prefix: string): string {
+  _uidCounter += 1;
+  return `${prefix}-${Date.now()}-${_uidCounter}`;
+}
 import type { FeedCard } from '@refr/shared';
 
 export interface ReputationData {
-  kingmakerScore: number;
+  endorsementScore: number;
   totalReferrals: number;
   successfulHires: number;
   department: string;
@@ -38,14 +51,14 @@ export interface ReputationData {
 }
 
 export interface LeaderboardEntry {
-  kingmakerScore: number;
+  endorsementScore: number;
   totalReferrals: number;
   successfulHires: number;
   user: { id: string; displayName: string };
   company: { id: string; name: string };
 }
 
-// ─── HTTP helpers ───────────────────────────────────────────────────────
+// HTTP helpers
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const session = await getSession();
   const token = session?.access_token;
@@ -146,7 +159,7 @@ async function request<T>(
   return response.json() as Promise<T>;
 }
 
-// ─── Demo helpers ───────────────────────────────────────────────────────
+// Demo helpers
 // Demo mode mutates the mock arrays so the demo feels stateful across
 // screens (accept in Inbox -> visible in Active Referrals, etc.).
 
@@ -164,7 +177,7 @@ function buildMockReferral(
 ): Referral {
   const target = targetReferrerForCard(opts.card);
   return {
-    id: `ref-demo-${Date.now()}`,
+    id: uid('ref-demo'),
     seekerId: DEMO.demoRole === 'seeker' ? '1' : '1',
     referrerId: target.id,
     companyId: target.companyId,
@@ -185,7 +198,8 @@ function findReferralInStores(id: string): Referral | undefined {
   return undefined;
 }
 
-/** Apply a status transition to the in-memory demo stores (mutates). */
+/** Apply a status transition to the in-memory demo stores (mutates).
+ *  Also keeps MOCK_REPUTATION in sync so the Earnings dashboard reads true. */
 function applyDemoTransition(
   id: string,
   newStatus: Referral['status'],
@@ -208,11 +222,30 @@ function applyDemoTransition(
         : base.outcomeAt,
   };
 
-  // Mutate pipeline + inbox so other screens see the change.
   const pIdx = MOCK_PIPELINE.findIndex((i) => i.referral.id === id);
   if (pIdx >= 0) MOCK_PIPELINE[pIdx] = { ...MOCK_PIPELINE[pIdx], referral: updated };
   const iIdx = MOCK_INBOX.findIndex((i) => i.referral.id === id);
   if (iIdx >= 0) MOCK_INBOX[iIdx] = { ...MOCK_INBOX[iIdx], referral: updated };
+
+  // Reputation side-effects — only fire on FIRST transition into the state,
+  // so repeated taps don't inflate the score. Mutates MOCK_REPUTATION in place.
+  const wasHired = base.status === 'hired';
+  const isHired = newStatus === 'hired';
+  if (isHired && !wasHired) {
+    MOCK_REPUTATION.successfulHires += 1;
+    MOCK_REPUTATION.endorsementScore += POINTS_PER_HIRE;
+  }
+  if (!isHired && wasHired) {
+    // Reversal (e.g. undo or manual fix) — decrement
+    MOCK_REPUTATION.successfulHires = Math.max(
+      0,
+      MOCK_REPUTATION.successfulHires - 1,
+    );
+    MOCK_REPUTATION.endorsementScore = Math.max(
+      0,
+      MOCK_REPUTATION.endorsementScore - POINTS_PER_HIRE,
+    );
+  }
 
   return updated;
 }
@@ -222,7 +255,7 @@ function buildMockChatMessage(body: string): ChatMessage {
     ? { id: '1', displayName: 'Danush Arun' }
     : { id: '2', displayName: 'Nivrant Goswami' };
   return {
-    id: `msg-demo-${Date.now()}`,
+    id: uid('msg-demo'),
     body,
     createdAt: new Date().toISOString(),
     sender,
@@ -264,7 +297,7 @@ function pollForMessages(
   return { unsubscribe: () => clearInterval(interval) };
 }
 
-// ─── Feed ───────────────────────────────────────────────────────────────
+// Feed
 export const feedApi = {
   getFeed: (params: FeedRequest = {}): Promise<FeedResponse> => {
     if (isDemoScreen('feed')) {
@@ -293,13 +326,32 @@ export const feedApi = {
   },
 };
 
-// ─── Referrals ──────────────────────────────────────────────────────────
+// Referrals
+
+/** Information about the endorser the seeker is swiping on. */
+export interface EndorserSwipeInput {
+  id: string;
+  name: string;
+  companyId: string;
+  companyName: string;
+  jobTitle: string;
+}
+
+/** Information about the seeker the endorser is swiping on. */
+export interface SeekerSwipeInput {
+  id: string;
+  name: string;
+  headline: string;           // one-liner from career story
+  yearsOfExperience: number;
+  skills: string[];
+  targetRole: string;
+}
+
 export const referralsApi = {
   createRequest: (payload: {
     feedCardId?: string;
     targetRole: string;
     seekerNote?: string;
-    /** Demo-only: the feed card that triggered the request. */
     card?: FeedCard;
   }): Promise<Referral> => {
     if (DEMO.enabled) {
@@ -312,7 +364,7 @@ export const referralsApi = {
       MOCK_PIPELINE.unshift({
         referral,
         referrerName: referrer?.name ?? 'Endorsly Endorser',
-        companyName: referrer?.company.name ?? 'Razorpay',
+        companyName: referrer?.company.name ?? getCurrentDemoCompanyName(),
       });
       return Promise.resolve(referral);
     }
@@ -324,6 +376,110 @@ export const referralsApi = {
         seekerNote: payload.seekerNote,
       }),
     }).then((r) => r.data);
+  },
+
+  /**
+   * Seeker viewer swiped right on an endorser's card.
+   * Creates a pending referral (status='requested') and pushes to MOCK_PIPELINE.
+   * The seeker sees this in Activity; in a real system, the endorser would
+   * see this in their incoming queue. Demo simplification.
+   */
+  recordSeekerSwipe: (endorser: EndorserSwipeInput, seekerNote?: string): Promise<Referral> => {
+    if (DEMO.enabled) {
+      const now = new Date().toISOString();
+      const referral: Referral = {
+        id: uid('ref-seeker'),
+        seekerId: '1',
+        referrerId: endorser.id,
+        companyId: endorser.companyId,
+        targetRole: endorser.jobTitle,
+        status: 'requested',
+        matchScore: 85,
+        requestedAt: now,
+        seekerNote,
+      };
+      MOCK_PIPELINE.unshift({
+        referral,
+        referrerName: endorser.name,
+        companyName: endorser.companyName,
+      });
+      return Promise.resolve(referral);
+    }
+    return request<{ data: Referral }>('/api/v1/referrals/', {
+      method: 'POST',
+      body: JSON.stringify({
+        targetRole: endorser.jobTitle,
+        referrerId: endorser.id,
+        seekerNote,
+      }),
+    }).then((r) => r.data);
+  },
+
+  /**
+   * Endorser viewer swiped right on a seeker's card.
+   * If the seeker had a pending 'requested' entry in MOCK_INBOX — MUTUAL MATCH,
+   * promote to 'accepted'. Otherwise create a fresh 'accepted' entry.
+   * Either way, Active sees it and the chat opens.
+   */
+  recordEndorserSwipe: (
+    seeker: SeekerSwipeInput,
+  ): Promise<{ referral: Referral; mutual: boolean }> => {
+    if (DEMO.enabled) {
+      const endorser = referrerById('2');
+      const now = new Date().toISOString();
+
+      // Check for mutual match
+      const pendingIdx = MOCK_INBOX.findIndex(
+        (i) => i.referral.seekerId === seeker.id && i.referral.status === 'requested',
+      );
+      if (pendingIdx >= 0) {
+        const existing = MOCK_INBOX[pendingIdx];
+        const updated: Referral = {
+          ...existing.referral,
+          status: 'accepted',
+          acceptedAt: now,
+        };
+        MOCK_INBOX[pendingIdx] = { ...existing, referral: updated };
+        // Reputation side-effect: mutual match also counts as a new endorsement
+        MOCK_REPUTATION.totalReferrals += 1;
+        MOCK_REPUTATION.endorsementScore += POINTS_PER_REFERRAL;
+        return Promise.resolve({ referral: updated, mutual: true });
+      }
+
+      // New direct match
+      const referral: Referral = {
+        id: uid('ref-endorser'),
+        seekerId: seeker.id,
+        referrerId: '2',
+        companyId: endorser?.company.id ?? 'c-1',
+        targetRole: seeker.targetRole,
+        status: 'accepted',
+        matchScore: 85,
+        requestedAt: now,
+        acceptedAt: now,
+      };
+      const demoSeeker = DEMO_SEEKERS.find((item) => item.id === seeker.id);
+      const headline = demoSeeker?.headline
+        ?? `${seeker.yearsOfExperience}y · ${seeker.skills.slice(0, 2).join(', ')}`;
+      MOCK_INBOX.unshift({
+        referral,
+        seekerName: seeker.name,
+        seekerAvatar: demoSeeker?.photoUrl,
+        seekerHeadline: headline,
+        matchScore: 85,
+      });
+      // Reputation side-effect: a new endorsement bumps totalReferrals + score
+      MOCK_REPUTATION.totalReferrals += 1;
+      MOCK_REPUTATION.endorsementScore += POINTS_PER_REFERRAL;
+      return Promise.resolve({ referral, mutual: false });
+    }
+    return request<{ data: Referral }>('/api/v1/referrals/', {
+      method: 'POST',
+      body: JSON.stringify({
+        seekerId: seeker.id,
+        targetRole: seeker.targetRole,
+      }),
+    }).then((r) => ({ referral: r.data, mutual: false }));
   },
 
   getInbox: (): Promise<ReferrerInboxItem[]> => {
@@ -386,7 +542,7 @@ export const referralsApi = {
 };
 
 export const referralApi = referralsApi;
-// ─── Chat ───────────────────────────────────────────────────────────────
+// Chat
 export interface ChatMessage {
   id: string;
   body: string;
@@ -439,7 +595,7 @@ export const chatApi = {
   },
 };
 
-// ─── Profile ────────────────────────────────────────────────────────────
+// Profile
 export const profileApi = {
   getMe: (): Promise<unknown> => {
     if (isDemoScreen('profile')) {

@@ -88,6 +88,9 @@ class UserRegistrationSerializer(serializers.Serializer):
                     'domain': f'{company_name.lower().replace(" ", "")}.com',
                 },
             )
+            verification_status = _verification_status_for_email(
+                validated_data['email'], company_obj.domain,
+            )
             ReferrerProfile.objects.create(
                 user=user,
                 company=company_obj,
@@ -95,9 +98,25 @@ class UserRegistrationSerializer(serializers.Serializer):
                 job_title=validated_data.get('job_title', ''),
                 years_at_company=validated_data.get('years_at_company', 0),
                 can_refer_to=validated_data.get('can_refer_to', []),
+                verification_status=verification_status,
             )
 
         return user
+
+
+def _verification_status_for_email(email: str, company_domain: str | None) -> str:
+    """Auto-verify endorsers whose email domain matches their company domain.
+
+    Returns ReferrerProfile.VerificationStatus.VERIFIED on match, else PENDING.
+    """
+    if not email or not company_domain:
+        return ReferrerProfile.VerificationStatus.PENDING
+    if '@' not in email:
+        return ReferrerProfile.VerificationStatus.PENDING
+    email_domain = email.rsplit('@', 1)[1].strip().lower()
+    if email_domain and email_domain == company_domain.strip().lower():
+        return ReferrerProfile.VerificationStatus.VERIFIED
+    return ReferrerProfile.VerificationStatus.PENDING
 
 
 class SeekerProfileSerializer(serializers.ModelSerializer):

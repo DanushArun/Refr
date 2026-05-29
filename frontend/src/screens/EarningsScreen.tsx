@@ -1,24 +1,29 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../components/common/Avatar';
+import { PressableScale } from '../components/common/PressableScale';
+import { EndorserOrb } from '../components/constellation/EndorserOrb';
+import { Phrase } from '../utils/haptics';
 import { TierBadge } from '../components/tier/TierBadge';
-import { TierProgress } from '../components/tier/TierProgress';
+import { ReputationRail } from '../components/tier/ReputationRail';
+import { LinearGradient } from 'expo-linear-gradient';
+import { earningsScreenStyles as styles } from './earnings/earningsScreenStyles';
 import {
   referralsApi,
   type LeaderboardEntry,
   type ReputationData,
 } from '../services/api';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
+import { useWarmTabData } from '../hooks/useWarmTabData';
 
 const PAYOUT_PER_HIRE = 22000;
 
@@ -27,19 +32,23 @@ const PAYOUT_PER_HIRE = 22000;
  *
  * Information architecture (top to bottom, density descending):
  *   1. HERO       — lifetime earnings, this month, pending (the ₹ story)
- *   2. PAYOUTS    — list of recent successful hires with amounts + dates
- *   3. SCORE      — Endorsement Score as a secondary card (was the hero before)
- *   4. LEADERBOARD — top 10 Bangalore, viewer's row highlighted
+ *   2. SCORE      — compact reputation panel in the app's dark glass language
+ *   3. PAYOUTS    — list of recent successful hires with amounts + dates
+ *   4. LEADERBOARD — top 10 endorsers, viewer's row highlighted
  *
  * The Endorsement Score is NOT the star here; money is. The Score is a
  * reputation multiplier that appears secondary to the ₹ story.
  */
 export function EarningsScreen() {
+  const isFocused = useIsFocused();
+  const hasLoadedRef = useRef(false);
   const [reputation, setReputation] = useState<ReputationData | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [payoutsExpanded, setPayoutsExpanded] = useState(true);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    if (!hasLoadedRef.current) setLoading(true);
     Promise.all([
       referralsApi.getReputation(),
       referralsApi.getLeaderboard(),
@@ -47,12 +56,15 @@ export function EarningsScreen() {
       .then(([rep, lb]) => {
         setReputation(rep);
         setLeaderboard(lb);
+        hasLoadedRef.current = true;
       })
       .catch(() => {
         Alert.alert('Error', 'Failed to load earnings data');
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useWarmTabData(load);
 
   const payouts = useMemo(() => buildMockPayouts(reputation?.successfulHires ?? 0), [reputation]);
 
@@ -65,11 +77,8 @@ export function EarningsScreen() {
   }
 
   const lifetime = reputation.successfulHires * PAYOUT_PER_HIRE;
-  const thisMonth = payouts
-    .filter((p) => isThisMonth(p.dateISO))
-    .reduce((sum, p) => sum + p.amount, 0);
-  // In-flight count: referrals still pending. For the mock we estimate based on
-  // totalReferrals – successfulHires clamped to a sensible display range.
+  // In-flight count: referrals still pending. For the mock we estimate based
+  // on totalReferrals – successfulHires clamped to a sensible display range.
   const inFlight = Math.max(
     0,
     reputation.totalReferrals - reputation.successfulHires,
@@ -86,84 +95,136 @@ export function EarningsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1 · HERO — earnings */}
+        {/* 1 · HERO — gold "money" card */}
         <View style={styles.earningsHero}>
-          <Text style={styles.heroLabel}>LIFETIME EARNINGS</Text>
-          <Text style={styles.heroValue}>{formatINR(lifetime)}</Text>
-          <Text style={styles.heroSub}>
-            {reputation.user.displayName} · {reputation.company.name}
+          {/* Gold metallic gradient — bright top-left to deeper gold bottom-right */}
+          <LinearGradient
+            colors={['#E8BD58', '#D4A744', '#B7892A']}
+            locations={[0, 0.55, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroGoldFill}
+            pointerEvents="none"
+          />
+          {/* Top sheen + bottom shade for material depth */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.10)']}
+            locations={[0, 0.5, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.materialSheen}
+            pointerEvents="none"
+          />
+          <View style={styles.bevelTop} pointerEvents="none" />
+          <View style={styles.bevelBottom} pointerEvents="none" />
+
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroTopInfo}>
+              <Text style={styles.heroLabel}>LIFETIME EARNINGS</Text>
+              <Text style={styles.heroSub} numberOfLines={1}>
+                {reputation.user.displayName} · {reputation.company.name}
+              </Text>
+            </View>
+            <View style={styles.heroOrbWrap}>
+              <EndorserOrb
+                score={reputation.endorsementScore}
+                hires={reputation.successfulHires ?? 0}
+                active={inFlight}
+                size={56}
+                showLabel={false}
+                animated={isFocused}
+              />
+            </View>
+          </View>
+
+          <Text style={styles.heroValue} numberOfLines={1} adjustsFontSizeToFit>
+            {formatINRFull(lifetime)}
           </Text>
 
           <View style={styles.heroSplits}>
-            <HeroTile label="This month" value={formatINR(thisMonth)} accent={thisMonth > 0} />
-            <HeroTile label="Pending" value={formatINR(pending)} muted />
-            <HeroTile label="Per hire" value={formatINR(PAYOUT_PER_HIRE)} muted />
+            <HeroTile label="Pending" value={formatINR(pending)} accent={pending > 0} />
+            <HeroTile label="Earned" value={formatINR(lifetime)} muted />
+            <HeroTile label="In flight" value={String(inFlight)} muted />
           </View>
         </View>
 
-        {/* 2 · PAYOUTS */}
+        {/* 2 · SCORE — dark glass reputation rail */}
+        <ReputationRail score={reputation.endorsementScore} rank={rankPosition} />
+
+        {/* 3 · PAYOUTS — collapsible dark glass list */}
         <View style={styles.section}>
-          <View style={styles.sectionHead}>
+          <PressableScale
+            onPress={() => {
+              if (payouts.length === 0) return;
+              Phrase.tick();
+              setPayoutsExpanded((v) => !v);
+            }}
+            style={styles.sectionHead}
+            pressedScale={0.99}
+            accessibilityRole="button"
+            accessibilityLabel={
+              payoutsExpanded ? 'Collapse recent payouts' : 'Expand recent payouts'
+            }
+          >
             <Text style={styles.sectionTitle}>Recent payouts</Text>
-            <Text style={styles.sectionCount}>{payouts.length}</Text>
-          </View>
+            <View style={styles.sectionRight}>
+              <Text style={styles.sectionCount}>{payouts.length}</Text>
+              {payouts.length > 0 ? (
+                <Ionicons
+                  name={payoutsExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.textTertiary}
+                />
+              ) : null}
+            </View>
+          </PressableScale>
           {payouts.length === 0 ? (
-            <View style={styles.emptyBlock}>
+            <DarkCard>
               <Text style={styles.emptyText}>
                 No hires yet. Submit matched candidates from Activity to start earning.
               </Text>
-            </View>
-          ) : (
-            payouts.map((p) => <PayoutRow key={p.id} payout={p} />)
-          )}
+            </DarkCard>
+          ) : payoutsExpanded ? (
+            <DarkCard padded={false}>
+              {payouts.map((p, i) => (
+                <PayoutRow
+                  key={p.id}
+                  payout={p}
+                  isLast={i === payouts.length - 1}
+                />
+              ))}
+            </DarkCard>
+          ) : null}
         </View>
 
-        {/* 3 · TIER — gamified progression, not just a score */}
-        <View style={styles.scoreCard}>
-          <View style={styles.scoreCardTop}>
-            <View style={{ gap: spacing[1] }}>
-              <Text style={styles.scoreCardLabel}>TIER</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}>
-                <TierBadge score={reputation.kingmakerScore} size="lg" />
-                {rankPosition > 0 && (
-                  <View style={styles.rankChip}>
-                    <Text style={styles.rankChipText}>#{rankPosition} Bangalore</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-
-          <TierProgress score={reputation.kingmakerScore} variant="full" />
-
-          <View style={styles.scoreRules}>
-            <ScoreRule label="Per match" delta="+2" />
-            <ScoreRule label="Per hire" delta="+10" />
-            <ScoreRule label="2wks inactive" delta="−1/wk" negative />
-          </View>
-        </View>
-
-        {/* 4 · LEADERBOARD */}
+        {/* 4 · LEADERBOARD — dark glass list */}
         <View style={styles.section}>
           <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Bangalore Endorser Board</Text>
+            <Text style={styles.sectionTitle}>Endorser Leaderboard</Text>
             <Text style={styles.sectionCount}>top 10</Text>
           </View>
-          {leaderboard.slice(0, 10).map((entry, idx) => (
-            <LeaderboardRow
-              key={entry.user.id}
-              rank={idx + 1}
-              entry={entry}
-              isViewer={entry.user.displayName === reputation.user.displayName}
-            />
-          ))}
+          <DarkCard padded={false}>
+            {leaderboard.length === 0 ? (
+              <Text style={styles.leaderboardEmpty}>
+                Leaderboard opens after the first Endorser ranks.
+              </Text>
+            ) : (
+              leaderboard.slice(0, 10).map((entry, idx) => (
+                <LeaderboardRow
+                  key={entry.user.id}
+                  rank={idx + 1}
+                  entry={entry}
+                  isViewer={entry.user.displayName === reputation.user.displayName}
+                  isLast={idx === 9 || idx === leaderboard.length - 1}
+                />
+              ))
+            )}
+          </DarkCard>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-/* ── helpers ───────────────────────────────────────────────── */
 
 function formatINR(n: number): string {
   if (n === 0) return '₹0';
@@ -173,10 +234,10 @@ function formatINR(n: number): string {
   return `₹${n}`;
 }
 
-function isThisMonth(iso: string): boolean {
-  const d = new Date(iso);
-  const now = new Date();
-  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+// Full Indian-locale grouping (e.g. ₹66,000, ₹2,20,000) — used for the hero
+// lifetime number where there's room for the actual amount.
+function formatINRFull(n: number): string {
+  return `₹${n.toLocaleString('en-IN')}`;
 }
 
 interface Payout {
@@ -211,8 +272,6 @@ function shortDate(iso: string): string {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-/* ── subcomponents ─────────────────────────────────────────── */
-
 function HeroTile({
   label,
   value,
@@ -224,7 +283,8 @@ function HeroTile({
   accent?: boolean;
   muted?: boolean;
 }) {
-  const color = accent ? colors.accent : muted ? colors.textSecondary : colors.text;
+  // Hero card is gold — text is dark; accent (positive money) goes deeper bronze
+  const color = accent ? '#5D3F0E' : muted ? 'rgba(0, 0, 0, 0.55)' : '#000000';
   return (
     <View style={styles.heroTile}>
       <Text style={styles.heroTileLabel}>{label.toUpperCase()}</Text>
@@ -233,9 +293,9 @@ function HeroTile({
   );
 }
 
-function PayoutRow({ payout }: { payout: Payout }) {
+function PayoutRow({ payout, isLast }: { payout: Payout; isLast?: boolean }) {
   return (
-    <View style={styles.payoutRow}>
+    <View style={[styles.payoutRow, isLast && styles.payoutRowLast]}>
       <Avatar displayName={payout.candidateName} size="sm" />
       <View style={styles.payoutMeta}>
         <Text style={styles.payoutName} numberOfLines={1}>{payout.candidateName}</Text>
@@ -251,13 +311,17 @@ function PayoutRow({ payout }: { payout: Payout }) {
   );
 }
 
-function ScoreRule({ label, delta, negative }: { label: string; delta: string; negative?: boolean }) {
+/** Dark glass section surface — used for the payouts list. */
+function DarkCard({
+  children,
+  padded = true,
+}: {
+  children: React.ReactNode;
+  padded?: boolean;
+}) {
   return (
-    <View style={styles.scoreRule}>
-      <Text style={styles.scoreRuleLabel}>{label}</Text>
-      <Text style={[styles.scoreRuleDelta, { color: negative ? colors.error : colors.success }]}>
-        {delta}
-      </Text>
+    <View style={styles.glassCard}>
+      <View style={padded ? styles.glassCardBody : undefined}>{children}</View>
     </View>
   );
 }
@@ -266,16 +330,22 @@ function LeaderboardRow({
   rank,
   entry,
   isViewer,
+  isLast,
 }: {
   rank: number;
   entry: LeaderboardEntry;
   isViewer: boolean;
+  isLast?: boolean;
 }) {
-  const medals = ['', '★', '✦', '◆'];
-  const isMedal = rank <= 3;
   return (
-    <View style={[styles.lbRow, isViewer && styles.lbRowYou]}>
-      <Text style={styles.lbRank}>{isMedal ? medals[rank] : `#${rank}`}</Text>
+    <View
+      style={[
+        styles.lbRow,
+        isViewer && styles.lbRowYou,
+        isLast && styles.lbRowLast,
+      ]}
+    >
+      <Text style={styles.lbRank}>{`#${rank}`}</Text>
       <Avatar displayName={entry.user.displayName} size="sm" />
       <View style={styles.lbMeta}>
         <Text style={styles.lbName}>
@@ -285,238 +355,9 @@ function LeaderboardRow({
         <Text style={styles.lbCompany}>{entry.company.name}</Text>
       </View>
       <View style={styles.lbRight}>
-        <TierBadge score={entry.kingmakerScore} size="sm" />
-        <Text style={styles.lbScore}>{entry.kingmakerScore}</Text>
+        <TierBadge score={entry.endorsementScore} size="sm" />
+        <Text style={styles.lbScore}>{entry.endorsementScore}</Text>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  center: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: spacing[20],
-    gap: spacing[6],
-  },
-
-  /* Hero */
-  earningsHero: {
-    backgroundColor: 'rgba(124,58,237,0.10)',
-    borderRadius: layout.cardBorderRadiusLarge,
-    padding: spacing[6],
-    alignItems: 'center',
-    gap: spacing[1],
-  },
-  heroLabel: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 11,
-    color: colors.accent,
-    letterSpacing: 2,
-  },
-  heroValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 56,
-    lineHeight: 62,
-    letterSpacing: -2,
-    color: colors.text,
-  },
-  heroSub: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing[4],
-  },
-  heroSplits: {
-    flexDirection: 'row',
-    alignSelf: 'stretch',
-    gap: spacing[3],
-  },
-  heroTile: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 12,
-    paddingVertical: spacing[3],
-    alignItems: 'center',
-    gap: 2,
-  },
-  heroTileLabel: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 9,
-    color: colors.textTertiary,
-    letterSpacing: 0.5,
-  },
-  heroTileValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 16,
-    letterSpacing: -0.3,
-  },
-
-  /* Section */
-  section: { gap: spacing[2] },
-  sectionHead: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 22,
-    color: colors.text,
-    letterSpacing: -0.3,
-  },
-  sectionCount: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-
-  /* Payouts */
-  payoutRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingVertical: spacing[3],
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
-  },
-  payoutMeta: { flex: 1, gap: 2 },
-  payoutName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
-    color: colors.text,
-  },
-  payoutSub: { ...typography.caption, color: colors.textSecondary },
-  payoutRight: { alignItems: 'flex-end', gap: 2 },
-  payoutAmount: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: colors.success,
-  },
-  payoutDate: {
-    fontFamily: 'JetBrainsMono-Regular',
-    fontSize: 11,
-    color: colors.textTertiary,
-  },
-
-  /* Empty state */
-  emptyBlock: {
-    backgroundColor: colors.surfaceLevel1,
-    borderRadius: 12,
-    padding: spacing[4],
-  },
-  emptyText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-
-  /* Score card */
-  scoreCard: {
-    backgroundColor: colors.surfaceLevel1,
-    borderRadius: layout.cardBorderRadius,
-    padding: spacing[5],
-    gap: spacing[4],
-  },
-  scoreCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  scoreCardLabel: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 10,
-    color: colors.textTertiary,
-    letterSpacing: 0.6,
-  },
-  scoreCardValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 36,
-    lineHeight: 40,
-    color: colors.text,
-    letterSpacing: -1,
-  },
-  scoreRankRow: { alignItems: 'flex-end', gap: spacing[1] },
-  rankChip: {
-    backgroundColor: colors.accentLight,
-    borderRadius: 100,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-  },
-  rankChipText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 11,
-    color: colors.accent,
-  },
-  scoreRules: {
-    flexDirection: 'row',
-    gap: spacing[2],
-  },
-  scoreRule: {
-    flex: 1,
-    backgroundColor: colors.surfaceInset,
-    borderRadius: 10,
-    paddingVertical: spacing[2],
-    paddingHorizontal: spacing[2],
-    alignItems: 'center',
-    gap: 2,
-  },
-  scoreRuleLabel: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 10,
-    color: colors.textTertiary,
-    letterSpacing: 0.3,
-  },
-  scoreRuleDelta: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 13,
-  },
-
-  /* Leaderboard */
-  lbRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingVertical: spacing[3],
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
-  },
-  lbRowYou: {
-    backgroundColor: 'rgba(124,58,237,0.08)',
-    borderRadius: 10,
-    paddingHorizontal: spacing[3],
-    borderBottomWidth: 0,
-  },
-  lbRank: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: colors.accent,
-    width: 28,
-    textAlign: 'center',
-  },
-  lbMeta: { flex: 1, gap: 2 },
-  lbName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
-    color: colors.text,
-  },
-  lbCompany: { ...typography.caption, color: colors.textTertiary },
-  lbRight: { alignItems: 'flex-end', gap: 2 },
-  lbScore: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: colors.text,
-  },
-  lbHires: {
-    fontFamily: 'JetBrainsMono-Regular',
-    fontSize: 11,
-    color: colors.textTertiary,
-  },
-});

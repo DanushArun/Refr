@@ -8,7 +8,7 @@ interface AvatarProps {
   uri?: string;
   displayName: string;
   size?: AvatarSize;
-  /** Show a violet verification ring around the avatar */
+  /** Show a gold verification ring around the avatar */
   verificationRing?: boolean;
   /** Show a green online indicator dot */
   online?: boolean;
@@ -37,17 +37,24 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+/** Explicit avatar colors for primary demo personas. Falls through to hash otherwise. */
+const NAME_COLOR_OVERRIDES: Record<string, string> = {
+  'Danush Arun': '#ef4444', // red — primary seeker
+};
+
 /** Generate a deterministic background color from name string */
 function getAvatarColor(name: string): string {
+  const override = NAME_COLOR_OVERRIDES[name.trim()];
+  if (override) return override;
   const palette = [
-    '#6366f1', // indigo
-    '#8b5cf6', // violet
-    '#ec4899', // pink
-    '#f43f5e', // rose
-    '#14b8a6', // teal
-    '#06b6d4', // cyan
-    '#f97316', // orange
-    '#84cc16', // lime
+    '#355070',
+    '#6D597A',
+    '#B56576',
+    '#7F5539',
+    '#52796F',
+    '#8D99AE',
+    '#A47148',
+    '#87986A',
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -59,7 +66,7 @@ function getAvatarColor(name: string): string {
 /**
  * Avatar — user avatar with graceful fallback to initials monogram.
  *
- * verificationRing — adds a 2px violet ring for verified referrers.
+ * verificationRing — adds a 2px gold ring for verified endorsers.
  * online           — adds a green dot indicator in the bottom-right corner.
  */
 export function Avatar({
@@ -141,7 +148,7 @@ const styles = StyleSheet.create({
   initials: {
     fontFamily: 'Outfit-SemiBold',
     color: '#ffffff',
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
   onlineDot: {
     position: 'absolute',

@@ -1,0 +1,12 @@
+{
+  "Version": 1.0,
+  "Metadata": { "Project": "Endorsly", "Description": "Pipeline advance - rail tick and settle" },
+  "Pattern": [
+    { "Event": { "Time": 0.00, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 0.42 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.58 }]}},
+    { "Event": { "Time": 0.07, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 0.58 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.52 }]}}
+  ]
+}

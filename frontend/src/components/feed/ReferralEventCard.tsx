@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import type { ReferralEventCard as ReferralEventCardType } from '@refr/shared';
 import { GlassCard } from '../common/GlassCard';
 import { colors } from '../../theme/colors';
@@ -19,6 +20,7 @@ interface ReferralEventCardProps {
  */
 export function ReferralEventCard({ card }: ReferralEventCardProps) {
   return (
+    <Animated.View entering={FadeIn.duration(260).reduceMotion(ReduceMotion.System)}>
     <GlassCard style={styles.card}>
       <View style={styles.inner}>
         <View style={styles.iconContainer}>
@@ -26,7 +28,7 @@ export function ReferralEventCard({ card }: ReferralEventCardProps) {
         </View>
         <View style={styles.content}>
           <Text style={styles.headline}>
-            {card.referrerDisplayName} referred {card.seekerDisplayName} to {card.companyName}
+            {card.referrerDisplayName} endorsed {card.seekerDisplayName} for {card.companyName}
           </Text>
           <Text style={styles.meta}>
             {card.eventDescription} · {formatTimeAgo(card.createdAt)}
@@ -34,6 +36,7 @@ export function ReferralEventCard({ card }: ReferralEventCardProps) {
         </View>
       </View>
     </GlassCard>
+    </Animated.View>
   );
 }
 

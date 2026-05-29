@@ -9,8 +9,7 @@ function resolveBaseUrl(): string {
   if (__DEV__) {
     const debuggerHost =
       Constants.expoConfig?.hostUri
-      ?? Constants.manifest2?.extra?.expoGo?.debuggerHost
-      ?? Constants.manifest?.debuggerHost;
+      ?? (Constants.expoConfig as any)?.extra?.expoGo?.debuggerHost;
     if (debuggerHost) {
       const lanIp = debuggerHost.split(':')[0];
       return `http://${lanIp}:8000`;

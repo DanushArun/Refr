@@ -49,7 +49,7 @@ export function GlassCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: colors.surfaceLevel1,
     borderWidth: 0,
     borderRadius: layout.cardBorderRadius,
     overflow: 'hidden',

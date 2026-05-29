@@ -139,7 +139,7 @@ export default function ProfileSetupScreen() {
           </Text>
           <Text style={styles.subheading}>
             {isSeeker
-              ? 'Help referrers understand who you are. Be specific — generic profiles get fewer referrals.'
+              ? 'Help endorsers understand who you are. Be specific — generic profiles get fewer endorsements.'
               : 'Tell potential seekers what you can champion. Verified profiles get more requests.'}
           </Text>
 
@@ -290,7 +290,7 @@ export default function ProfileSetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   kav: { flex: 1 },
   scroll: { flex: 1 },
   content: {

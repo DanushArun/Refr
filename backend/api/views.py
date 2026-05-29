@@ -3,7 +3,7 @@ import math
 import random
 from datetime import timedelta
 
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
@@ -274,11 +274,23 @@ VALID_TRANSITIONS = {
 }
 
 
+REFERRAL_DAILY_CAP = 5
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def referral_create(request):
-    """Create a referral request from a feed card.
+    """Create an endorsement request from a feed card.
+
     Body: { feedCardId, targetRole, seekerNote? }
+
+    Rules:
+    - feedCardId is required and must resolve to a card whose author has a
+      referrer profile. We never assign a random endorser.
+    - A seeker cannot request more than REFERRAL_DAILY_CAP referrals per
+      rolling 24h window.
+    - (seeker, referrer, company) is unique per the model — a duplicate
+      attempt returns 409.
     """
     user = request.user
 
@@ -294,47 +306,75 @@ def referral_create(request):
     target_role = request.data.get('targetRole', 'Software Engineer')
     seeker_note = request.data.get('seekerNote', '')
 
-    # Find a referrer to assign (from the feed card or random)
-    referrer_profile = None
-    company = None
-
-    if feed_card_id:
-        try:
-            card = ContentCard.objects.get(id=feed_card_id)
-            if card.author and hasattr(card.author, 'referrer_profile'):
-                referrer_profile = card.author.referrer_profile
-                company = referrer_profile.company
-        except ContentCard.DoesNotExist:
-            pass
-
-    # Fallback: pick a random referrer
-    if not referrer_profile:
-        referrer_profile = ReferrerProfile.objects.order_by('?').first()
-        if not referrer_profile:
-            return Response(
-                {'error': 'No referrers available'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    if not company:
-        company = referrer_profile.company
-
-    # Calculate match score (placeholder: 60-90)
-    match_score = random.randint(60, 90)
-
-    with transaction.atomic():
-        referral = Referral.objects.create(
-            seeker=seeker_profile,
-            referrer=referrer_profile,
-            company=company,
-            target_role=target_role,
-            match_score=match_score,
-            seeker_note=seeker_note,
-            feed_card_id=feed_card_id,
+    if not feed_card_id:
+        return Response(
+            {'error': 'feedCardId is required'},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
-        # Auto-create conversation
-        Conversation.objects.create(referral=referral)
+    try:
+        card = ContentCard.objects.select_related('author').get(id=feed_card_id)
+    except ContentCard.DoesNotExist:
+        return Response(
+            {'error': 'Feed card not found'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if not card.author or not hasattr(card.author, 'referrer_profile'):
+        return Response(
+            {'error': 'This card has no endorser attached; cannot request an endorsement from it.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    referrer_profile = card.author.referrer_profile
+
+    if referrer_profile.user_id == user.id:
+        return Response(
+            {'error': 'You cannot request an endorsement from yourself.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    company = referrer_profile.company
+
+    # Rolling 24h cap on referral creation per seeker
+    one_day_ago = timezone.now() - timedelta(hours=24)
+    recent_count = Referral.objects.filter(
+        seeker=seeker_profile,
+        requested_at__gte=one_day_ago,
+    ).count()
+    if recent_count >= REFERRAL_DAILY_CAP:
+        return Response(
+            {
+                'error': (
+                    f'Daily endorsement-request cap reached '
+                    f'({REFERRAL_DAILY_CAP} per 24h). Try again later.'
+                ),
+                'retryAfterSeconds': 24 * 60 * 60,
+            },
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    # TODO(scoring): replace placeholder with real Jaccard match score.
+    # Per founder direction, scoring refactor is the last task in the queue.
+    match_score = random.randint(60, 90)
+
+    try:
+        with transaction.atomic():
+            referral = Referral.objects.create(
+                seeker=seeker_profile,
+                referrer=referrer_profile,
+                company=company,
+                target_role=target_role,
+                match_score=match_score,
+                seeker_note=seeker_note,
+                feed_card_id=feed_card_id,
+            )
+            Conversation.objects.create(referral=referral)
+    except IntegrityError:
+        return Response(
+            {'error': 'You already have an endorsement request with this endorser at this company.'},
+            status=status.HTTP_409_CONFLICT,
+        )
 
     return Response(
         {'data': ReferralBaseSerializer(referral).data},
@@ -565,7 +605,7 @@ def chat_send_message(request, conversation_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def reputation_me(request):
-    """Authenticated referrer's own Kingmaker profile."""
+    """Authenticated endorser's own Endorsement Score profile."""
     user = request.user
     try:
         referrer = user.referrer_profile
@@ -591,7 +631,7 @@ def reputation_me(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def reputation_leaderboard(request):
-    """Global or company-scoped Kingmaker leaderboard."""
+    """Global or company-scoped Endorser leaderboard (ranked by Endorsement Score)."""
     company_id = request.query_params.get('companyId')
 
     queryset = ReferrerProfile.objects.select_related('user', 'company').order_by(

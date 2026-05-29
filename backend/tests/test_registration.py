@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIClient
 
-from api.models import User
+from api.models import ReferrerProfile, User
 
 REGISTER_URL = "/api/users/register/"
 
@@ -136,3 +136,41 @@ class TestRegistrationValidation:
         )
         assert response.status_code == 400
         assert "years_of_experience" in response.data
+
+
+class TestReferrerEmailDomainAutoVerify:
+    """Endorsers whose email domain matches the company domain are auto-verified."""
+
+    @pytest.mark.django_db
+    def test_matching_email_domain_auto_verifies(self) -> None:
+        client = APIClient()
+        response = client.post(
+            REGISTER_URL,
+            _referrer_payload(
+                username="nivrant@razorpay.com",
+                email="nivrant@razorpay.com",
+                company="Razorpay",
+            ),
+            format="json",
+        )
+        assert response.status_code == 201
+        user = User.objects.get(email="nivrant@razorpay.com")
+        profile = ReferrerProfile.objects.get(user=user)
+        assert profile.verification_status == ReferrerProfile.VerificationStatus.VERIFIED
+
+    @pytest.mark.django_db
+    def test_personal_email_stays_pending(self) -> None:
+        client = APIClient()
+        response = client.post(
+            REGISTER_URL,
+            _referrer_payload(
+                username="random@gmail.com",
+                email="random@gmail.com",
+                company="Razorpay",
+            ),
+            format="json",
+        )
+        assert response.status_code == 201
+        user = User.objects.get(email="random@gmail.com")
+        profile = ReferrerProfile.objects.get(user=user)
+        assert profile.verification_status == ReferrerProfile.VerificationStatus.PENDING

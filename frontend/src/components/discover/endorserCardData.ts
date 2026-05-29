@@ -8,9 +8,12 @@ export interface EndorserCard {
   id: string;
   name: string;
   jobTitle: string;
+  companyId: string;
   companyName: string;
+  location: string;
   trustScore: number;        // 0 – 100 integer, same scale as Endorsement Score
   acceptanceRate: number;    // 0 – 100%, derived from hires / referrals
+  avatarUrl?: string;         // optional demo portrait for compact proof rows
   responseTime: string;      // e.g. "~2hr"
   hires: number;             // raw successful hires
   skills: string[];           // 3 skills inferred from job title
@@ -29,7 +32,9 @@ function skillsFor(jobTitle: string): string[] {
   if (title.includes('frontend')) return ['React', 'TypeScript', 'CSS'];
   if (title.includes('data science') || title.includes('ml')) return ['Python', 'PyTorch', 'MLOps'];
   if (title.includes('data')) return ['Python', 'Spark', 'SQL'];
-  if (title.includes('platform') || title.includes('principal')) return ['Kubernetes', 'Terraform', 'Go'];
+  if (title.includes('platform') || title.includes('principal')) {
+    return ['Kubernetes', 'Terraform', 'Go'];
+  }
   if (title.includes('devops') || title.includes('sre')) return ['AWS', 'Terraform', 'Docker'];
   if (title.includes('product')) return ['Product', 'SQL', 'Mixpanel'];
   if (title.includes('manager') || title.includes('director') || title.includes('vp')) {
@@ -41,6 +46,26 @@ function skillsFor(jobTitle: string): string[] {
 function responseBucket(seed: number): string {
   const buckets = ['~1hr', '~2hr', '~4hr', '~6hr', '~1d'];
   return buckets[seed % buckets.length];
+}
+
+function avatarUrlFor(id: string): string | undefined {
+  const avatarIds: Record<string, string> = {
+    '2': 'photo-1500648767791-00dcc994a43e',
+    '3': 'photo-1506794778202-cad84cf45f1d',
+    '4': 'photo-1494790108377-be9c29b29330',
+    '20': 'photo-1573496359142-b8d87734a5a2',
+    '21': 'photo-1519085360753-af0119f7cbe7',
+    '22': 'photo-1438761681033-6461ffad8d80',
+    '23': 'photo-1507003211169-0a1dd7228f2d',
+    '24': 'photo-1560250097-0b93528c311a',
+    '25': 'photo-1544005313-94ddf0286df2',
+    '26': 'photo-1534528741775-53994a69daeb',
+    '27': 'photo-1519345182560-3f2917c472ef',
+    '28': 'photo-1507591064344-4c6ce005b128',
+  };
+  const avatarId = avatarIds[id];
+  if (!avatarId) return undefined;
+  return `https://images.unsplash.com/${avatarId}?w=160&q=80&auto=format&fit=crop&crop=faces`;
 }
 
 /**
@@ -56,8 +81,11 @@ export function buildEndorserCard(
     id: referrer.id,
     name: referrer.name,
     jobTitle: referrer.jobTitle,
+    avatarUrl: avatarUrlFor(referrer.id),
+    companyId: referrer.company.id,
     companyName: referrer.company.name,
-    trustScore: Math.min(100, Math.max(0, Math.round(referrer.kingmakerScore))),
+    location: referrer.location,
+    trustScore: Math.min(100, Math.max(0, Math.round(referrer.endorsementScore))),
     acceptanceRate: referrer.totalReferrals > 0
       ? Math.round((referrer.successfulHires / referrer.totalReferrals) * 100)
       : 0,

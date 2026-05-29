@@ -1,9 +1,9 @@
 /**
- * Mock data for REFR demo mode. Bangalore tech narrative.
+ * Mock data for REFR demo mode. India tech narrative.
  *
  * Primary personas:
  *   - Seeker  Danush Arun  (id '1')  -- ex-Amazon Pay, targeting fintech
- *   - Referrer Nivrant Goswami  (id '2')  -- Sr Backend @ Razorpay, Kingmaker 47
+ *   - Referrer Nivrant Goswami  (id '2')  -- Sr Backend @ Razorpay, Endorsement 47
  *
  * Everything in this file is mutable by design. The demo-mode helpers in
  * api.ts write to these arrays so that demos feel stateful across screens
@@ -39,37 +39,38 @@ const COMPANY = {
   cred: { id: 'c-6', name: 'CRED' },
   meesho: { id: 'c-7', name: 'Meesho' },
   groww: { id: 'c-8', name: 'Groww' },
-  google: { id: 'c-9', name: 'Google Bangalore' },
-  microsoft: { id: 'c-10', name: 'Microsoft IDC' },
-  atlassian: { id: 'c-11', name: 'Atlassian India' },
-  coinbase: { id: 'c-12', name: 'Coinbase India' },
+  google: { id: 'c-9', name: 'Google' },
+  microsoft: { id: 'c-10', name: 'Microsoft' },
+  atlassian: { id: 'c-11', name: 'Atlassian' },
+  coinbase: { id: 'c-12', name: 'Coinbase' },
 } as const;
 
 // ── Referrers (12) ────────────────────────────────────────────────────
-// Primary demo referrer is Nivrant (id '2', rank 3, Kingmaker 47).
+// Primary demo referrer is Nivrant (id '2', rank 3, Endorsement 47).
 export interface DemoReferrer {
   id: string;
   name: string;
   jobTitle: string;
   company: { id: string; name: string };
-  kingmakerScore: number;
+  location: string;
+  endorsementScore: number;
   totalReferrals: number;
   successfulHires: number;
 }
 
 export const DEMO_REFERRERS: DemoReferrer[] = [
-  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, kingmakerScore: 86, totalReferrals: 28, successfulHires: 9 },
-  { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, kingmakerScore: 63, totalReferrals: 19, successfulHires: 6 },
-  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, kingmakerScore: 47, totalReferrals: 12, successfulHires: 3 },
-  { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, kingmakerScore: 41, totalReferrals: 15, successfulHires: 3 },
-  { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, kingmakerScore: 38, totalReferrals: 10, successfulHires: 3 },
-  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, kingmakerScore: 34, totalReferrals: 10, successfulHires: 2 },
-  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, kingmakerScore: 29, totalReferrals: 8, successfulHires: 2 },
-  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, kingmakerScore: 28, totalReferrals: 9, successfulHires: 2 },
-  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, kingmakerScore: 22, totalReferrals: 7, successfulHires: 1 },
-  { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, kingmakerScore: 19, totalReferrals: 6, successfulHires: 1 },
-  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, kingmakerScore: 17, totalReferrals: 5, successfulHires: 1 },
-  { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, kingmakerScore: 14, totalReferrals: 4, successfulHires: 1 },
+  { id: '20', name: 'Priya Sharma', jobTitle: 'Sr Engineering Manager', company: COMPANY.flipkart, location: 'Bengaluru', endorsementScore: 86, totalReferrals: 28, successfulHires: 9 },
+  { id: '21', name: 'Vikram Rao', jobTitle: 'Engineering Director', company: COMPANY.google, location: 'Hyderabad', endorsementScore: 63, totalReferrals: 19, successfulHires: 6 },
+  { id: '2', name: 'Nivrant Goswami', jobTitle: 'Senior Backend Engineer', company: COMPANY.razorpay, location: 'Hyderabad', endorsementScore: 47, totalReferrals: 12, successfulHires: 3 },
+  { id: '22', name: 'Sneha Patel', jobTitle: 'Product Manager', company: COMPANY.phonepe, location: 'Pune', endorsementScore: 41, totalReferrals: 15, successfulHires: 3 },
+  { id: '3', name: 'Deepak Nair', jobTitle: 'Staff Engineer', company: COMPANY.zepto, location: 'Mumbai', endorsementScore: 38, totalReferrals: 10, successfulHires: 3 },
+  { id: '23', name: 'Amit Verma', jobTitle: 'Staff Engineer', company: COMPANY.cred, location: 'Pune', endorsementScore: 34, totalReferrals: 10, successfulHires: 2 },
+  { id: '4', name: 'Anita Desai', jobTitle: 'Tech Lead', company: COMPANY.swiggy, location: 'NCR', endorsementScore: 29, totalReferrals: 8, successfulHires: 2 },
+  { id: '24', name: 'Rajesh Iyer', jobTitle: 'VP Engineering', company: COMPANY.meesho, location: 'Mumbai', endorsementScore: 28, totalReferrals: 9, successfulHires: 2 },
+  { id: '25', name: 'Nandini Krishnan', jobTitle: 'Data Science Lead', company: COMPANY.groww, location: 'Chennai', endorsementScore: 22, totalReferrals: 7, successfulHires: 1 },
+  { id: '26', name: 'Kavya Reddy', jobTitle: 'Principal Engineer', company: COMPANY.microsoft, location: 'Hyderabad', endorsementScore: 19, totalReferrals: 6, successfulHires: 1 },
+  { id: '27', name: 'Manish Gupta', jobTitle: 'Tech Lead', company: COMPANY.atlassian, location: 'Bengaluru', endorsementScore: 17, totalReferrals: 5, successfulHires: 1 },
+  { id: '28', name: 'Ishaan Thakur', jobTitle: 'Senior Developer', company: COMPANY.coinbase, location: 'Remote', endorsementScore: 14, totalReferrals: 4, successfulHires: 1 },
 ];
 
 // Lookup helpers used by the feed (to attach authoring referrer to
@@ -92,7 +93,15 @@ export interface DemoSeeker {
   yearsOfExperience: number;
   targetRoles: string[];
   targetCompanies: string[];
+  /** Curated remote portrait URL for the demo. Mix is ~80% female / 20% male
+   *  as requested. Replace with owned/licensed Indian student photography
+   *  for production — these IDs are best-effort placeholders. */
+  photoUrl: string;
 }
+
+// Helper for curated portrait URLs — same shape as the office photo helper.
+const P = (id: string): string =>
+  `https://images.unsplash.com/${id}?w=480&q=80&auto=format&fit=crop&crop=faces`;
 
 export const DEMO_SEEKERS: DemoSeeker[] = [
   {
@@ -103,11 +112,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     story:
       '4 years building payment infra at Amazon Pay. The scale was incredible '
       + 'but pace of shipping felt glacial. Quit last month to explore '
-      + 'Bangalore startups where I can own a system end-to-end.',
+      + 'fast-moving startups where I can own a system end-to-end.',
     skills: ['Go', 'PostgreSQL', 'Kafka', 'AWS', 'System Design'],
     yearsOfExperience: 6,
     targetRoles: ['Senior Backend Engineer', 'Staff Engineer'],
     targetCompanies: ['Razorpay', 'Zepto', 'Swiggy'],
+    photoUrl: P('photo-1531123897727-8f129e1688ce'),
   },
   {
     id: '5',
@@ -122,6 +132,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['Senior Backend Engineer'],
     targetCompanies: ['Razorpay', 'CRED', 'Groww'],
+    photoUrl: P('photo-1494790108377-be9c29b29330'),
   },
   {
     id: '6',
@@ -136,6 +147,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 5,
     targetRoles: ['Senior Product Engineer', 'Full-stack Engineer'],
     targetCompanies: ['Zepto', 'Meesho', 'Groww'],
+    photoUrl: P('photo-1527980965255-d3b416303d12'),
   },
   {
     id: '7',
@@ -150,11 +162,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['Senior Data Engineer', 'Analytics Engineer'],
     targetCompanies: ['Swiggy', 'PhonePe', 'Groww'],
+    photoUrl: P('photo-1573496359142-b8d87734a5a2'),
   },
   {
     id: '8',
-    name: 'Karthik Ramesh',
-    email: 'karthik.r@gmail.com',
+    name: 'Kavya Ramesh',
+    email: 'kavya.ramesh@gmail.com',
     headline: 'Ex-Walmart Labs backend. Targeting pure product startups.',
     story:
       '5 years at Walmart Labs building supply chain services in Java/Kotlin. '
@@ -164,6 +177,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 5,
     targetRoles: ['Senior Backend Engineer', 'Tech Lead'],
     targetCompanies: ['Zepto', 'Meesho', 'Razorpay'],
+    photoUrl: P('photo-1580489944761-15a19d654956'),
   },
   {
     id: '9',
@@ -178,11 +192,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 3,
     targetRoles: ['Senior Frontend Engineer', 'Design Engineer'],
     targetCompanies: ['CRED', 'Razorpay', 'Atlassian India'],
+    photoUrl: P('photo-1546961342-c7c8ecb1a4d4'),
   },
   {
     id: '10',
-    name: 'Rohan Bhat',
-    email: 'rohan.bhat@gmail.com',
+    name: 'Riya Bhat',
+    email: 'riya.bhat@gmail.com',
     headline: 'SRE at Uber India. Exploring platform engineering roles.',
     story:
       '4 years on-call at Uber. Shipped the multi-region failover playbook. '
@@ -191,7 +206,8 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     skills: ['Kubernetes', 'Terraform', 'Go', 'Prometheus', 'ArgoCD'],
     yearsOfExperience: 6,
     targetRoles: ['Platform Engineer', 'Staff Engineer'],
-    targetCompanies: ['Razorpay', 'Atlassian India', 'Google Bangalore'],
+    targetCompanies: ['Razorpay', 'Atlassian India', 'Google India'],
+    photoUrl: P('photo-1531746020798-e6953c6e8e04'),
   },
   {
     id: '11',
@@ -206,11 +222,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['Senior Product Manager', 'Product Lead'],
     targetCompanies: ['CRED', 'PhonePe', 'Zepto'],
+    photoUrl: P('photo-1517841905240-472988babdf9'),
   },
   {
     id: '12',
-    name: 'Nikhil Rao',
-    email: 'nikhil.rao@gmail.com',
+    name: 'Nidhi Rao',
+    email: 'nidhi.rao@gmail.com',
     headline: 'ML engineer. Ranking systems at scale. Want bigger data.',
     story:
       '3 years at InMobi building ad ranking models. Moved 5% of the global '
@@ -219,7 +236,8 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     skills: ['Python', 'PyTorch', 'Spark', 'SQL', 'MLOps'],
     yearsOfExperience: 4,
     targetRoles: ['ML Engineer', 'Applied Scientist'],
-    targetCompanies: ['Flipkart', 'Swiggy', 'Google Bangalore'],
+    targetCompanies: ['Flipkart', 'Swiggy', 'Google India'],
+    photoUrl: P('photo-1438761681033-6461ffad8d80'),
   },
   {
     id: '13',
@@ -234,11 +252,12 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 5,
     targetRoles: ['Senior Product Designer', 'Design Lead'],
     targetCompanies: ['CRED', 'Razorpay', 'Meesho'],
+    photoUrl: P('photo-1592595896616-c37162298647'),
   },
   {
     id: '14',
-    name: 'Harsh Agarwal',
-    email: 'harsh.agarwal@gmail.com',
+    name: 'Harshita Agarwal',
+    email: 'harshita.agarwal@gmail.com',
     headline: 'DevOps + security. Left consulting, want product company.',
     story:
       '4 years at Deloitte doing DevSecOps for banks. Miserable. Want to '
@@ -248,6 +267,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 4,
     targetRoles: ['DevOps Engineer', 'Security Engineer'],
     targetCompanies: ['Razorpay', 'PhonePe', 'CRED'],
+    photoUrl: P('photo-1607746882042-944635dfe10e'),
   },
   {
     id: '15',
@@ -262,6 +282,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
     yearsOfExperience: 3,
     targetRoles: ['Senior Full-stack Engineer', 'Product Engineer'],
     targetCompanies: ['Razorpay', 'Groww', 'CRED'],
+    photoUrl: P('photo-1607990281513-2c110a25bd8c'),
   },
 ];
 
@@ -305,9 +326,9 @@ const FEED_CARDS: FeedCard[] = [
     reactionCount: 8,
     isBookmarked: false,
     referrerDisplayName: 'Priya Sharma',
-    seekerDisplayName: 'Karthik R.',
+    seekerDisplayName: 'Kavya R.',
     companyName: 'Flipkart',
-    eventDescription: 'referred Karthik to the Flipkart platform engineering team',
+    eventDescription: 'referred Kavya to the Flipkart platform engineering team',
   },
   {
     id: 'fc-cs-danush',
@@ -437,7 +458,7 @@ const FEED_CARDS: FeedCard[] = [
     score: 0.80,
     reactionCount: 312,
     isBookmarked: false,
-    title: 'Bangalore Backend Salaries Q1 2026: The Real Numbers',
+    title: 'India Backend Salaries Q1 2026: The Real Numbers',
     body:
       'We aggregated 340 verified offer letters. Median TC for 4-6 YOE '
       + 'backend engineers: 38L. Top quartile at Razorpay, Flipkart, and '
@@ -485,7 +506,7 @@ const FEED_CARDS: FeedCard[] = [
     companyId: COMPANY.cred.id,
     companyName: COMPANY.cred.name,
     authorLabel: 'Verified employee at CRED',
-    title: 'CRED hires differently from the rest of Bangalore',
+    title: 'CRED hires differently from the rest of the industry',
     body:
       'Your portfolio matters more than your DSA. They review your GitHub '
       + 'and Dribbble live during the interview. Mobile team is under 30 '
@@ -502,7 +523,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     referrerDisplayName: 'Vikram Rao',
     seekerDisplayName: 'Rohan B.',
-    companyName: 'Google Bangalore',
+    companyName: 'Google India',
     eventDescription: 'referred Rohan to the SRE team',
   },
   {
@@ -543,7 +564,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     title: 'Priya Sharma crossed 8 successful hires',
     description:
-      'She is now the #1 Endorser in Bangalore. Flipkart platform is '
+      'She is now the #1 Endorser on Endorsly. Flipkart platform is '
       + 'quietly being built by Priya\'s referrals.',
     relatedUserId: '20',
   },
@@ -567,7 +588,7 @@ const FEED_CARDS: FeedCard[] = [
     isBookmarked: false,
     companyId: COMPANY.google.id,
     companyName: COMPANY.google.name,
-    authorLabel: 'Verified employee at Google Bangalore',
+    authorLabel: 'Verified employee at Google India',
     title: 'L4 to L5 promo: what the committee actually looks for',
     body:
       'You need one project with cross-team impact, documented. A GUM '
@@ -658,7 +679,7 @@ const FEED_CARDS: FeedCard[] = [
     body:
       'Flat structure, direct line to the CTO. If you are strong in '
       + 'ranking models and comfortable owning production inference, this '
-      + 'is the most high-leverage ML team I have seen in Bangalore.',
+      + 'is the most high-leverage ML team I have seen in the market.',
     tags: ['ml', 'team', 'hiring'],
   },
   {
@@ -669,7 +690,7 @@ const FEED_CARDS: FeedCard[] = [
     score: 0.44,
     reactionCount: 256,
     isBookmarked: false,
-    title: 'State of Bangalore Hiring: Q2 2026',
+    title: 'State of India Hiring: Q2 2026',
     body:
       'Backend/platform up 40% QoQ. ML hiring cooled after the initial '
       + 'hype. Fintech is the most aggressive - Razorpay, PhonePe, Groww '
@@ -699,7 +720,7 @@ const FEED_CARDS: FeedCard[] = [
     companyId: COMPANY.microsoft.id,
     companyName: COMPANY.microsoft.name,
     authorLabel: 'Verified employee at Microsoft IDC',
-    title: 'L62 compensation in Bangalore: what is actually on offer',
+    title: 'L62 compensation in India: what is actually on offer',
     body:
       'Base 55-65L, stock vesting 40-80L over 4 years, annual bonus '
       + '10-20%. Lower than US but absolute top of Indian market. '
@@ -717,7 +738,7 @@ const FEED_CARDS: FeedCard[] = [
     title: '100 endorsements submitted this week on Endorsly',
     description:
       'New high-water mark. 27 of them converted to first-round interviews '
-      + 'within 5 days. Bangalore is moving fast.',
+      + 'within 5 days. The market is moving fast.',
   },
 ];
 
@@ -869,10 +890,13 @@ const baseReferrerReferral = {
   companyId: COMPANY.razorpay.id,
 } as const;
 
+// Stable demo headshots are now stored as `photoUrl` on each DemoSeeker
+// entry — curated to be ~80% female / 20% male per the visual brief.
+
 function inboxFromSeeker(seekerId: string, overrides: {
   id: string;
   targetRole: string;
-  status: 'requested' | 'accepted' | 'submitted' | 'interviewing';
+  status: 'requested' | 'accepted' | 'submitted' | 'interviewing' | 'hired';
   matchScore: number;
   requestedHoursAgo: number;
   acceptedHoursAgo?: number;
@@ -898,6 +922,10 @@ function inboxFromSeeker(seekerId: string, overrides: {
       seekerNote: overrides.seekerNote ?? `Hi Nivrant, I am ${s.name.split(' ')[0]}. ${s.story.slice(0, 100)}...`,
     },
     seekerName: s.name,
+    // Use the curated portrait from DEMO_SEEKERS so the endorser's Inbox /
+    // Active / chat all show the SAME face for a given seeker — instead of
+    // the previous RandomUser hash which sometimes mismatched gender.
+    seekerAvatar: s.photoUrl,
     seekerHeadline: seekerHeadline(s),
     matchScore: overrides.matchScore,
   };
@@ -950,25 +978,38 @@ export const MOCK_INBOX: ReferrerInboxItem[] = [
   inboxFromSeeker('7', {
     id: 'ref-i5',
     targetRole: 'Senior Data Engineer',
-    status: 'accepted',
+    status: 'submitted',
     matchScore: 83,
-    requestedHoursAgo: 72,
-    acceptedHoursAgo: 60,
+    requestedHoursAgo: 96,
+    acceptedHoursAgo: 84,
+    submittedHoursAgo: 48,
     seekerNote:
-      'Hi! Flipkart data engineer looking at Razorpay\'s analytics team. '
+      'Hi! Flipkart data engineer looking at Razorpay analytics team. '
       + 'Spark/Airflow background.',
   }),
   inboxFromSeeker('8', {
     id: 'ref-i6',
     targetRole: 'Senior Backend Engineer',
-    status: 'submitted',
+    status: 'interviewing',
     matchScore: 86,
-    requestedHoursAgo: 96,
-    acceptedHoursAgo: 84,
-    submittedHoursAgo: 36,
+    requestedHoursAgo: 168,
+    acceptedHoursAgo: 156,
+    submittedHoursAgo: 120,
     seekerNote:
       'Hey, ex-Walmart Labs, 5y JVM backend. Looking at Razorpay for '
       + 'the payments platform team.',
+  }),
+  inboxFromSeeker('11', {
+    id: 'ref-i7',
+    targetRole: 'Senior Product Manager',
+    status: 'hired',
+    matchScore: 91,
+    requestedHoursAgo: 720,
+    acceptedHoursAgo: 712,
+    submittedHoursAgo: 696,
+    seekerNote:
+      'Hey, Swiggy Instamart PM with 4y. Looking at Razorpay for a '
+      + 'consumer-payments product role.',
   }),
 ];
 
@@ -1020,9 +1061,9 @@ const CHAT_HISTORIES: Record<string, ChatMessage[]> = {
     { id: 'm-neha-4', body: 'Exactly the scale we operate at. I\'ll connect you with the team lead this week.', createdAt: hoursAgo(58), sender: nivrantSender },
   ],
   'ref-i6': [
-    { id: 'm-karthik-1', body: 'Hi Nivrant, Karthik here. Thanks for accepting - super excited about Razorpay payments platform.', createdAt: hoursAgo(82), sender: { id: '8', displayName: 'Karthik Ramesh' } },
+    { id: 'm-karthik-1', body: 'Hi Nivrant, Kavya here. Thanks for accepting - super excited about Razorpay payments platform.', createdAt: hoursAgo(82), sender: { id: '8', displayName: 'Kavya Ramesh' } },
     { id: 'm-karthik-2', body: 'Walmart Labs JVM background will translate well. I\'ve submitted your referral to the hiring team.', createdAt: hoursAgo(78), sender: nivrantSender },
-    { id: 'm-karthik-3', body: 'Recruiter reached out - first round is Tuesday. Any advice?', createdAt: hoursAgo(40), sender: { id: '8', displayName: 'Karthik Ramesh' } },
+    { id: 'm-karthik-3', body: 'Recruiter reached out - first round is Tuesday. Any advice?', createdAt: hoursAgo(40), sender: { id: '8', displayName: 'Kavya Ramesh' } },
     { id: 'm-karthik-4', body: 'They\'ll ask about concurrency and idempotency in payment flows. Think about what happens on duplicate webhooks.', createdAt: hoursAgo(38), sender: nivrantSender },
   ],
 };
@@ -1065,7 +1106,7 @@ export function appendChatMessage(referralId: string, message: ChatMessage) {
 // ── Reputation + Leaderboard ──────────────────────────────────────────
 function leaderboardFromReferrer(r: DemoReferrer): LeaderboardEntry {
   return {
-    kingmakerScore: r.kingmakerScore,
+    endorsementScore: r.endorsementScore,
     totalReferrals: r.totalReferrals,
     successfulHires: r.successfulHires,
     user: { id: r.id, displayName: r.name },
@@ -1074,11 +1115,11 @@ function leaderboardFromReferrer(r: DemoReferrer): LeaderboardEntry {
 }
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [...DEMO_REFERRERS]
-  .sort((a, b) => b.kingmakerScore - a.kingmakerScore)
+  .sort((a, b) => b.endorsementScore - a.endorsementScore)
   .map(leaderboardFromReferrer);
 
 export const MOCK_REPUTATION: ReputationData = {
-  kingmakerScore: nivrant.kingmakerScore,
+  endorsementScore: nivrant.endorsementScore,
   totalReferrals: nivrant.totalReferrals,
   successfulHires: nivrant.successfulHires,
   department: 'Engineering',
@@ -1113,12 +1154,12 @@ export const MOCK_REFERRER_PROFILE = {
   role: 'referrer' as const,
   jobTitle: nivrant.jobTitle,
   companyName: nivrant.company.name,
-  kingmakerScore: nivrant.kingmakerScore,
+  endorsementScore: nivrant.endorsementScore,
   referrerProfile: {
     company: { id: Number(nivrant.company.id.replace('c-', '')), name: nivrant.company.name },
     department: 'Engineering',
     job_title: nivrant.jobTitle,
-    kingmaker_score: nivrant.kingmakerScore,
+    endorsement_score: nivrant.endorsementScore,
     total_referrals: nivrant.totalReferrals,
     successful_hires: nivrant.successfulHires,
     verification_status: 'verified',

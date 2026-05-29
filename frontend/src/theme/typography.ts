@@ -1,9 +1,12 @@
 /**
- * REFR Design System — Typography
+ * Endorsly Design System - Typography
  *
- * Instrument Serif  — headings, narrative content, emotional beats
- * Outfit            — body text, UI labels, navigation
- * JetBrains Mono    — numbers, stats, earnings, scores
+ * IBM Plex Serif - career-story hooks, company-intel headlines, brand moments
+ * IBM Plex Sans  - body text, UI labels, navigation, chat, forms
+ * IBM Plex Mono  - numbers, stats, payouts, ranks, Endorsement Score
+ *
+ * Font keys kept as legacy "Outfit-*" / "InstrumentSerif-*" so 30+ existing
+ * components render without edits; see app/_layout.tsx for the alias table.
  */
 
 export const fontFamilies = {
@@ -55,11 +58,11 @@ export const lineHeights = {
 } as const;
 
 export const letterSpacings = {
-  tight: -0.5,
+  tight: 0,
   normal: 0,
-  wide: 0.3,
-  wider: 0.6,
-  mono: 0.5,
+  wide: 0,
+  wider: 0,
+  mono: 0,
 } as const;
 
 export const typography = {

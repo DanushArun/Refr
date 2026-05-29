@@ -116,7 +116,7 @@ export function FeedList({
       <View style={styles.empty}>
         <Text style={styles.emptyTitle}>Feed loading...</Text>
         <Text style={styles.emptySubtitle}>
-          Bangalore tech intel is on its way.
+          Tech intel is on its way.
         </Text>
       </View>
     );
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   footerText: {
     ...typography.caption,
     color: colors.textTertiary,
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
   empty: {
     flex: 1,

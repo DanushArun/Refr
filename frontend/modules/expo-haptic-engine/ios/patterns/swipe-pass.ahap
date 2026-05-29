@@ -1,0 +1,9 @@
+{
+  "Version": 1.0,
+  "Metadata": { "Project": "Endorsly", "Description": "Swipe left — soft pass" },
+  "Pattern": [
+    { "Event": { "Time": 0.00, "EventType": "HapticTransient", "EventParameters": [
+      { "ParameterID": "HapticIntensity", "ParameterValue": 0.35 },
+      { "ParameterID": "HapticSharpness", "ParameterValue": 0.30 }]}}
+  ]
+}

@@ -15,7 +15,7 @@ const colorMap: Record<TagColor, { bg: string; text: string; border: string }> =
   blue: {
     bg: colors.tagBlue,
     text: colors.tagBlueText,
-    border: 'rgba(59, 130, 246, 0.3)',
+    border: colors.border,
   },
   green: {
     bg: colors.tagGreen,
@@ -25,12 +25,12 @@ const colorMap: Record<TagColor, { bg: string; text: string; border: string }> =
   orange: {
     bg: colors.tagOrange,
     text: colors.tagOrangeText,
-    border: 'rgba(249, 115, 22, 0.3)',
+    border: colors.goldDim,
   },
   purple: {
     bg: colors.tagPurple,
     text: colors.tagPurpleText,
-    border: 'rgba(124, 58, 237, 0.3)',
+    border: colors.goldGlow,
   },
   default: {
     bg: colors.surface,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Outfit-Medium',
     fontSize: 12,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
   },
   row: {
     flexDirection: 'row',
