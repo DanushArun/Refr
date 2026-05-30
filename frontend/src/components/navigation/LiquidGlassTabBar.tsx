@@ -11,6 +11,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PressableScale } from '../common/PressableScale';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -43,7 +44,6 @@ const TAB_ICONS = {
 type IconName = keyof typeof TAB_ICONS;
 
 const HORIZONTAL_INSET = 20;
-const BOTTOM_INSET = 26;
 const HEIGHT = 70;
 const INNER_PADDING = 8;
 const PILL_VERTICAL_INSET = 6;
@@ -63,6 +63,8 @@ export function LiquidGlassTabBar({
   descriptors,
   navigation,
 }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  const BOTTOM_INSET = insets.bottom > 0 ? insets.bottom - 14 : 16;
   const { width: screenWidth } = useWindowDimensions();
   const tabCount = state.routes.length;
   const containerWidth = screenWidth - HORIZONTAL_INSET * 2;
