@@ -24,6 +24,7 @@ import {
   sendWithOptimism,
   toggleEmoji,
 } from './chatActions';
+import { subscribeChatStage } from './chatStageEvents';
 
 export interface HeaderAction {
   label: string;
@@ -40,10 +41,13 @@ export interface ChatController {
   handleSend: (overrideBody?: string) => Promise<void>;
   headerAction: HeaderAction | null;
   loading: boolean;
+  messages: Message[];
   openReactionPicker: (messageId: string) => void;
   participantAvatar?: string;
   participantName: string;
+  participantSubtitle?: string;
   quickReplies: string[];
+  referralId: string;
   reactionPickerId: string | null;
   reactions: Record<string, string[]>;
   sending: boolean;
@@ -55,6 +59,7 @@ export interface ChatController {
   targetRole?: string;
   toggleReaction: (emoji: string) => void;
   typing: boolean;
+  viewerRole: ViewerRole;
   viewerId: string;
 }
 
@@ -63,6 +68,7 @@ interface ChatParams {
   initialStage: PipelineStage;
   participantAvatar?: string;
   participantName: string;
+  participantSubtitle?: string;
   referralId: string;
   targetRole?: string;
 }
@@ -73,6 +79,7 @@ export function useChatController(): ChatController {
   const viewerRole: ViewerRole = user?.role === 'seeker' ? 'seeker' : 'endorser';
   const [stage, setStage] = useState<PipelineStage>(params.initialStage);
   const [stagePending, setStagePending] = useState(false);
+  useSyncedStage(params.referralId, setStage);
   const messageState = useMessageState(params.referralId, user?.id ?? '');
   const send = useSendMessage({ ...params, ...messageState, stage, user });
   const reactions = useReactionActions(messageState);
@@ -97,6 +104,7 @@ export function useChatController(): ChatController {
     quickReplies,
     stage,
     stagePending,
+    viewerRole,
     viewerId: user?.id ?? '',
   };
 }
@@ -107,10 +115,18 @@ function useChatParams(): ChatParams {
     referralId: params.referralId as string,
     participantName: (params.participantName as string) ?? 'Match',
     participantAvatar: params.participantAvatar as string | undefined,
+    participantSubtitle: params.participantSubtitle as string | undefined,
     targetRole: params.targetRole as string | undefined,
     companyName: (params.companyName as string | undefined) ?? 'Endorsly',
     initialStage: ((params.stage as string | undefined) ?? 'matched') as PipelineStage,
   };
+}
+
+function useSyncedStage(
+  referralId: string,
+  setStage: (stage: PipelineStage) => void,
+): void {
+  useEffect(() => subscribeChatStage(referralId, setStage), [referralId, setStage]);
 }
 
 function useMessageState(referralId: string, userId: string) {

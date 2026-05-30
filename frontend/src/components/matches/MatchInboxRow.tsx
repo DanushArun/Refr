@@ -10,17 +10,9 @@ import { StageRail } from './StageRail';
 /**
  * Active conversation row — Endorsly-specific shape.
  *
- * Each row is its own pill (NOT a row in a unified slab). Layout:
- *
- *   ┌─────────────────────────────────────────────────────────┐
- *   │ │   ┌────┐                                       3h     │
- *   │ │   │    │ Aarav Verma                                  │
- *   │ │   │ AV │ Sr Backend · Razorpay                       │
- *   │ │   └────┘                          MATCHED            │
- *   │ │                                                       │
- *   └─────────────────────────────────────────────────────────┘
- *     ↑
- *     stage rail (4-segment vertical) — visual encoding of pipeline progress
+ * Each row is its own pill, not a row in a unified slab. Layout:
+ * rail, avatar, participant metadata, then time and stage on the right.
+ * The 4-segment vertical rail is the compact pipeline-progress cue.
  *
  * Engineering choices:
  *   1. Stand-alone pill with 8px gap to neighbours — breaks the "infinite
@@ -145,21 +137,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 24,
-    borderBottomLeftRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.045)',
+    minHeight: 78,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.025)',
     borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.18)',
+    borderColor: 'rgba(255, 255, 255, 0.04)',
   },
   /* Unread state lifts the rim to full gold + adds a soft shadow halo so
      the row reads as "needs attention" before the eye even parses content. */
   pillUnread: {
     borderColor: 'rgba(212, 167, 68, 0.55)',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(212, 167, 68, 0.08)',
     shadowColor: colors.gold,
     shadowOpacity: 0.20,
     shadowRadius: 14,
@@ -178,7 +168,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
     fontSize: 15,
     color: colors.text,
-    letterSpacing: -0.1,
+    letterSpacing: 0,
   },
   sub: {
     fontFamily: 'Outfit-Regular',

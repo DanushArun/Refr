@@ -235,67 +235,67 @@ export function MatchesScreen() {
             }
           >
             {showInlineError && (
-              <View style={styles.inlineNotice}>
-                <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
-                <Text style={styles.inlineNoticeText}>
-                  Could not refresh. Showing your last loaded matches.
-                </Text>
+              <View style={styles.topContent}>
+                <View style={styles.inlineNotice}>
+                  <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
+                  <Text style={styles.inlineNoticeText}>
+                    Could not refresh. Showing your last loaded matches.
+                  </Text>
+                </View>
               </View>
             )}
 
-            {/* Tier 1 — Fresh. Hidden when filtering by a stage other than
-                'all' (the carousel is the recency surface; if you've narrowed
-                to a stage, give the conversation list the spotlight). */}
-            {!filtering && (
-              <NewMatchesCarousel items={liveTiers.fresh} onPick={openChat} />
-            )}
-
-            {/* Tier 2 — Active conversations */}
-            {liveTiers.active.length > 0 ? (
-              <View style={styles.activeWrap}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>
-                    {filtering ? STAGE_LABEL[stageFilter] : 'Conversations'}
-                  </Text>
-                  <Text style={styles.sectionCount}>{liveTiers.active.length}</Text>
-                  <Text style={styles.sectionHint}>
-                    {filtering ? 'matching' : 'live'}
-                  </Text>
-                </View>
-                <View style={styles.activeStack}>
-                  {liveTiers.active.map((item) => {
-                    const ts = latestStageTimestamp(item.referral);
-                    return (
-                      <MatchInboxRow
-                        key={item.referral.id}
-                        data={{
-                          id: item.referral.id,
-                          participantName: item.referrerName,
-                          companyName: item.companyName,
-                          role: item.referral.targetRole,
-                          status: item.referral.status,
-                          stageTimestamp: ts,
-                        }}
-                        onPress={itemPressHandlers.get(item.referral.id) ?? (() => openChat(item))}
-                        timeLabel={relativeLabel(ts)}
-                      />
-                    );
-                  })}
-                </View>
+            {!filtering && liveTiers.fresh.length > 0 && (
+              <View style={styles.topContent}>
+                <NewMatchesCarousel items={liveTiers.fresh} onPick={openChat} />
               </View>
-            ) : (
-              filtering && (
-                <View style={styles.filteredEmpty}>
-                  <Text style={styles.filteredEmptyText}>
-                    Nothing in {STAGE_LABEL[stageFilter].toLowerCase()} right now.
-                  </Text>
-                </View>
-              )
             )}
 
-            {/* Tier 3 — Resting. Always shown (when present); the ledger is
-                history regardless of which live stage you're filtering. */}
-            <RestingSection items={restingAll} onOpen={openChat} />
+            <View style={styles.contentSheet}>
+              {liveTiers.active.length > 0 ? (
+                <View style={styles.activeWrap}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>
+                      {filtering ? STAGE_LABEL[stageFilter] : 'Conversations'}
+                    </Text>
+                    <Text style={styles.sectionCount}>{liveTiers.active.length}</Text>
+                    <Text style={styles.sectionHint}>{filtering ? 'matching' : 'live'}</Text>
+                  </View>
+                  <View style={styles.activeStack}>
+                    {liveTiers.active.map((item) => {
+                      const ts = latestStageTimestamp(item.referral);
+                      return (
+                        <MatchInboxRow
+                          key={item.referral.id}
+                          data={{
+                            id: item.referral.id,
+                            participantName: item.referrerName,
+                            companyName: item.companyName,
+                            role: item.referral.targetRole,
+                            status: item.referral.status,
+                            stageTimestamp: ts,
+                          }}
+                          onPress={
+                            itemPressHandlers.get(item.referral.id) ?? (() => openChat(item))
+                          }
+                          timeLabel={relativeLabel(ts)}
+                        />
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : (
+                filtering && (
+                  <View style={styles.filteredEmpty}>
+                    <Text style={styles.filteredEmptyText}>
+                      Nothing in {STAGE_LABEL[stageFilter].toLowerCase()} right now.
+                    </Text>
+                  </View>
+                )
+              )}
+
+              <RestingSection items={restingAll} onOpen={openChat} />
+            </View>
           </ScrollView>
         )}
       </SafeAreaView>

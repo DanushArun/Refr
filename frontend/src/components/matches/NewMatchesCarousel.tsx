@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 20,
     color: '#FAFAF7',
-    letterSpacing: -0.2,
+    letterSpacing: 0,
   },
   count: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
     fontSize: 13,
     color: '#FAFAF7',
-    letterSpacing: -0.1,
+    letterSpacing: 0,
     textAlign: 'center',
     maxWidth: TILE_WIDTH,
   },

@@ -12,6 +12,7 @@ import {
   chatUid,
   pickReplyForStage,
 } from './chatLogic';
+import { emitChatStage } from './chatStageEvents';
 import type { HeaderAction } from './useChatController';
 
 export function readStatesFor(
@@ -225,6 +226,7 @@ async function transitionStage(args: {
   try {
     await referralsApi.transition(args.referralId, action.next);
     args.setStage(action.next);
+    emitChatStage(args.referralId, action.next);
     appendSystemMessage(args.setMessages, action.msg);
     void playSensoryEvent(action.next === 'hired' ? 'hire.confirmed' : 'pipeline.advance');
   } catch (err) {

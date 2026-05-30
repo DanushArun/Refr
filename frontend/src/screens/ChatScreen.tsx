@@ -12,18 +12,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { PipelineStage } from '../components/activity/PipelineStepper';
 import { Avatar } from '../components/common/Avatar';
 import { PressableScale } from '../components/common/PressableScale';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
-import {
-  useChatController,
-  type ChatController,
-  type HeaderAction,
-} from './chat/useChatController';
+import { useChatController, type ChatController } from './chat/useChatController';
 import { MessageList } from './chat/ChatMessages';
 import { chatStyles as styles } from './chat/chatStyles';
 import { REACTION_EMOJIS } from './chat/chatLogic';
@@ -37,193 +32,95 @@ export function ChatScreen(): React.ReactElement {
 
 function ChatLoading(): React.ReactElement {
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.loadingWrap}>
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 function ChatView({ controller }: { controller: ChatController }): React.ReactElement {
-  const insets = useSafeAreaInsets();
-
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ChatHeader controller={controller} topInset={insets.top} />
-      <ChatBody controller={controller} bottomInset={insets.bottom} />
+      <ChatHeader controller={controller} />
+      <ChatBody controller={controller} />
       <ReactionPicker controller={controller} />
-    </View>
+    </SafeAreaView>
   );
 }
 
-function ChatHeader({
-  controller,
-  topInset,
-}: {
-  controller: ChatController;
-  topInset: number;
-}): React.ReactElement {
+function ChatHeader({ controller }: { controller: ChatController }): React.ReactElement {
   const sub = controller.targetRole
     ? `${controller.targetRole} · ${controller.companyName}`
     : controller.companyName;
 
   return (
-    <View style={[styles.headerShell, { paddingTop: topInset + spacing[2] }]}>
-      <View style={styles.headerTopRow}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          style={({ pressed }) => [styles.backBtn, pressed && styles.controlPressed]}
-        >
-          <Ionicons name="chevron-back" size={23} color={colors.text} />
-        </Pressable>
+    <View style={styles.header}>
+      <Pressable
+        onPress={() => router.back()}
+        hitSlop={12}
+        style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.6 }]}
+      >
+        <Ionicons name="chevron-back" size={26} color={colors.text} />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Open ${controller.participantName} contact info`}
+        onPress={() => openChatProfile(controller)}
+        style={({ pressed }) => [styles.headerProfile, pressed && { opacity: 0.75 }]}
+      >
         <Avatar
           displayName={controller.participantName}
           uri={controller.participantAvatar}
           size="md"
-          verificationRing
         />
         <View style={styles.headerMeta}>
-          <View style={styles.headerNameRow}>
-            <Text style={styles.headerName} numberOfLines={1}>
-              {controller.participantName}
-            </Text>
-            <StageBadge stage={controller.stage} />
-          </View>
+          <Text style={styles.headerName} numberOfLines={1}>{controller.participantName}</Text>
           <Text style={styles.headerSub} numberOfLines={1}>
             {controller.typing ? <Text style={styles.typingInline}>typing...</Text> : sub}
           </Text>
         </View>
-      </View>
-      <ChatStagePanel controller={controller} />
+      </Pressable>
     </View>
   );
 }
 
-function ChatStagePanel({ controller }: { controller: ChatController }): React.ReactElement {
-  return (
-    <View style={styles.stagePanel}>
-      <ChatStageRail stage={controller.stage} />
-      <View style={styles.stagePanelFooter}>
-        <View style={styles.stagePanelCopy}>
-          <Text style={styles.stagePanelText} numberOfLines={1}>
-            Current: {stageLabel(controller.stage)}
-          </Text>
-          <Text style={styles.stagePanelMeta} numberOfLines={1}>
-            {controller.companyName}
-          </Text>
-        </View>
-        {controller.headerAction && (
-          <HeaderActionButton
-            action={controller.headerAction}
-            pending={controller.stagePending}
-            onPress={controller.handleHeaderAction}
-          />
-        )}
-      </View>
-    </View>
-  );
+function openChatProfile(controller: ChatController): void {
+  router.push({
+    pathname: '/chat-profile',
+    params: {
+      companyName: controller.companyName,
+      participantAvatar: controller.participantAvatar ?? '',
+      participantName: controller.participantName,
+      participantSubtitle: controller.participantSubtitle ?? '',
+      referralId: controller.referralId,
+      stage: controller.stage,
+      targetRole: controller.targetRole ?? '',
+    },
+  });
 }
 
-function StageBadge({ stage }: { stage: PipelineStage }): React.ReactElement {
-  return (
-    <View style={styles.stageBadge}>
-      <Text style={styles.stageBadgeText}>{stageLabel(stage).toUpperCase()}</Text>
-    </View>
-  );
-}
-
-function ChatStageRail({ stage }: { stage: PipelineStage }): React.ReactElement {
-  const current = stageIndex(stage);
-
-  return (
-    <View style={styles.stageRail}>
-      {CHAT_STAGES.map((step, index) => {
-        const active = index === current;
-        const complete = index < current;
-        return (
-          <View key={step.key} style={styles.stageStep}>
-            <View
-              style={[
-                styles.stageSegment,
-                complete && styles.stageSegmentComplete,
-                active && styles.stageSegmentActive,
-              ]}
-            />
-            <Text
-              style={[
-                styles.stageStepText,
-                complete && styles.stageStepTextComplete,
-                active && styles.stageStepTextActive,
-              ]}
-              numberOfLines={1}
-            >
-              {step.short}
-            </Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
-function HeaderActionButton({
-  action,
-  pending,
-  onPress,
-}: {
-  action: HeaderAction;
-  pending: boolean;
-  onPress: () => void;
-}): React.ReactElement {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={pending}
-      style={({ pressed }) => [
-        styles.actionBtn,
-        pressed && styles.controlPressed,
-        pending && { opacity: 0.5 },
-      ]}
-    >
-      <Text style={styles.actionBtnText} numberOfLines={1}>
-        {pending ? 'Updating...' : action.label}
-      </Text>
-      <Ionicons name="arrow-forward" size={14} color={colors.background} />
-    </Pressable>
-  );
-}
-
-function ChatBody({
-  controller,
-  bottomInset,
-}: {
-  controller: ChatController;
-  bottomInset: number;
-}): React.ReactElement {
+function ChatBody({ controller }: { controller: ChatController }): React.ReactElement {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.kav}
-      keyboardVerticalOffset={0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
     >
-      <MessageList
-        groups={controller.grouped}
-        viewerId={controller.viewerId}
-        deliveryStates={controller.deliveryStates}
-        reactions={controller.reactions}
-        typing={controller.typing}
-        onLongPress={controller.openReactionPicker}
-      />
-      <View
-        style={[
-          styles.composerDock,
-          { paddingBottom: Math.max(bottomInset, spacing[3]) },
-        ]}
-      >
+      <View style={styles.chatPanel}>
+        <View style={styles.messageViewport}>
+          <MessageList
+            groups={controller.grouped}
+            viewerId={controller.viewerId}
+            deliveryStates={controller.deliveryStates}
+            reactions={controller.reactions}
+            typing={controller.typing}
+            onLongPress={controller.openReactionPicker}
+          />
+        </View>
         <QuickReplies controller={controller} />
         <Composer controller={controller} />
       </View>
@@ -256,10 +153,11 @@ function QuickReplies({ controller }: { controller: ChatController }): React.Rea
 }
 
 function Composer({ controller }: { controller: ChatController }): React.ReactElement {
+  const insets = useSafeAreaInsets();
   const disabled = !controller.draft.trim() || controller.sending;
 
   return (
-    <View style={styles.inputRow}>
+    <View style={[styles.inputRow, { paddingBottom: composerBottomPadding(insets.bottom) }]}>
       <View style={styles.inputWrap}>
         <TextInput
           style={styles.input}
@@ -277,7 +175,7 @@ function Composer({ controller }: { controller: ChatController }): React.ReactEl
         style={({ pressed }) => [
           styles.sendBtn,
           disabled && styles.sendBtnDisabled,
-          pressed && !disabled && styles.controlPressed,
+          pressed && { opacity: 0.85 },
         ]}
       >
         {controller.sending ? (
@@ -290,31 +188,9 @@ function Composer({ controller }: { controller: ChatController }): React.ReactEl
   );
 }
 
-const CHAT_STAGES: { key: PipelineStage; short: string; label: string }[] = [
-  { key: 'matched', short: 'Match', label: 'Matched' },
-  { key: 'submitted', short: 'Submit', label: 'Submitted' },
-  { key: 'interviewing', short: 'Loop', label: 'Interviewing' },
-  { key: 'hired', short: 'Hire', label: 'Hired' },
-];
-
-function normalizedStage(stage: PipelineStage): PipelineStage {
-  if (stage === 'accepted' || stage === 'requested') return 'matched';
-  return stage;
-}
-
-function stageIndex(stage: PipelineStage): number {
-  const normalized = normalizedStage(stage);
-  const found = CHAT_STAGES.findIndex((step) => step.key === normalized);
-  if (found >= 0) return found;
-  return CHAT_STAGES.length - 1;
-}
-
-function stageLabel(stage: PipelineStage): string {
-  const normalized = normalizedStage(stage);
-  if (normalized === 'rejected') return 'Closed';
-  if (normalized === 'withdrawn') return 'Withdrawn';
-  if (normalized === 'expired') return 'Expired';
-  return CHAT_STAGES.find((step) => step.key === normalized)?.label ?? 'Matched';
+function composerBottomPadding(bottomInset: number): number {
+  if (Platform.OS !== 'ios') return spacing[3];
+  return Math.max(spacing[2], bottomInset - spacing[4]);
 }
 
 function ReactionPicker({ controller }: { controller: ChatController }): React.ReactElement {

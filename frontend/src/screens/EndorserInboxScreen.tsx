@@ -5,7 +5,6 @@ import {
   RefreshControl,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -13,8 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
 import { latestStageTimestamp } from '../components/activity/referralCardShared';
 import { MatchInboxRow } from '../components/matches/MatchInboxRow';
 import { NewMatchesCarousel } from '../components/matches/NewMatchesCarousel';
@@ -25,6 +22,7 @@ import {
   partitionMatches,
   relativeLabel,
 } from '../components/matches/matchTiering';
+import { inboxStyles as styles } from './inbox/inboxStyles';
 import { referralsApi } from '../services/api';
 import type {
   ReferralStatus,
@@ -280,62 +278,63 @@ export function EndorserInboxScreen() {
               />
             }
           >
-            {/* Tier 1 — Fresh (only when not filtering) */}
-            {!filtering && (
-              <NewMatchesCarousel items={liveTiers.fresh} onPick={openChat} />
-            )}
-
-            {/* Tier 2 — Active conversations */}
-            {liveTiers.active.length > 0 ? (
-              <View style={styles.activeWrap}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>
-                    {filtering ? STAGE_LABEL[stageFilter] : 'Conversations'}
-                  </Text>
-                  <Text style={styles.sectionCount}>
-                    {liveTiers.active.length}
-                  </Text>
-                  <Text style={styles.sectionHint}>
-                    {filtering ? 'matching' : 'live'}
-                  </Text>
-                </View>
-                <View style={styles.activeStack}>
-                  {liveTiers.active.map((item) => {
-                    const ts = latestStageTimestamp(item.referral);
-                    const source = items.find(
-                      (i) => i.referral.id === item.referral.id,
-                    );
-                    return (
-                      <MatchInboxRow
-                        key={item.referral.id}
-                        data={{
-                          id: item.referral.id,
-                          participantName: item.referrerName,
-                          participantAvatar: source?.seekerAvatar,
-                          companyName: item.companyName,
-                          role: item.referral.targetRole,
-                          status: item.referral.status,
-                          stageTimestamp: ts,
-                        }}
-                        onPress={() => openChat(item)}
-                        timeLabel={relativeLabel(ts)}
-                      />
-                    );
-                  })}
-                </View>
+            {!filtering && liveTiers.fresh.length > 0 && (
+              <View style={styles.topContent}>
+                <NewMatchesCarousel items={liveTiers.fresh} onPick={openChat} />
               </View>
-            ) : (
-              filtering && (
-                <View style={styles.filteredEmpty}>
-                  <Text style={styles.filteredEmptyText}>
-                    Nothing in {STAGE_LABEL[stageFilter].toLowerCase()} right now.
-                  </Text>
-                </View>
-              )
             )}
 
-            {/* Tier 3 — Resting */}
-            <RestingSection items={restingAll} onOpen={openChat} />
+            <View style={styles.contentSheet}>
+              {liveTiers.active.length > 0 ? (
+                <View style={styles.activeWrap}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>
+                      {filtering ? STAGE_LABEL[stageFilter] : 'Conversations'}
+                    </Text>
+                    <Text style={styles.sectionCount}>
+                      {liveTiers.active.length}
+                    </Text>
+                    <Text style={styles.sectionHint}>
+                      {filtering ? 'matching' : 'live'}
+                    </Text>
+                  </View>
+                  <View style={styles.activeStack}>
+                    {liveTiers.active.map((item) => {
+                      const ts = latestStageTimestamp(item.referral);
+                      const source = items.find(
+                        (i) => i.referral.id === item.referral.id,
+                      );
+                      return (
+                        <MatchInboxRow
+                          key={item.referral.id}
+                          data={{
+                            id: item.referral.id,
+                            participantName: item.referrerName,
+                            participantAvatar: source?.seekerAvatar,
+                            companyName: item.companyName,
+                            role: item.referral.targetRole,
+                            status: item.referral.status,
+                            stageTimestamp: ts,
+                          }}
+                          onPress={() => openChat(item)}
+                          timeLabel={relativeLabel(ts)}
+                        />
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : (
+                filtering && (
+                  <View style={styles.filteredEmpty}>
+                    <Text style={styles.filteredEmptyText}>
+                      Nothing in {STAGE_LABEL[stageFilter].toLowerCase()} right now.
+                    </Text>
+                  </View>
+                )
+              )}
+
+              <RestingSection items={restingAll} onOpen={openChat} />
+            </View>
           </ScrollView>
         )}
       </SafeAreaView>
@@ -355,77 +354,3 @@ function EmptyState() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
-  safe: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: spacing[3],
-    gap: spacing[1],
-  },
-  title: { ...typography.h2, color: colors.text },
-  subtitle: { ...typography.caption, color: colors.textSecondary },
-
-  scroll: {
-    paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[2],
-    paddingBottom: 116,
-    gap: spacing[5],
-  },
-
-  activeWrap: { gap: 8 },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    paddingHorizontal: 4,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontFamily: 'InstrumentSerif-Italic',
-    fontSize: 20,
-    color: colors.text,
-    letterSpacing: -0.2,
-  },
-  sectionCount: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 12,
-    color: colors.textTertiary,
-  },
-  sectionHint: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 11,
-    color: 'rgba(250, 250, 247, 0.32)',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  activeStack: { gap: 8 },
-
-  filteredEmpty: {
-    paddingHorizontal: 4,
-    paddingVertical: 12,
-  },
-  filteredEmptyText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: layout.screenPaddingH,
-    gap: spacing[3],
-  },
-  emptyTitle: { ...typography.h4, color: colors.text },
-  emptyBody: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});

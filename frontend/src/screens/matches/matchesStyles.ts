@@ -17,10 +17,25 @@ export const matchesStyles = StyleSheet.create({
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.caption, color: colors.textSecondary },
   scroll: {
+    flexGrow: 1,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  topContent: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[2],
-    paddingBottom: 116,
+    paddingTop: spacing[3],
+    paddingBottom: spacing[4],
+  },
+  contentSheet: {
+    flexGrow: 1,
     gap: spacing[5],
+    paddingHorizontal: layout.screenPaddingH,
+    paddingTop: spacing[6],
+    paddingBottom: 132,
+    borderTopLeftRadius: 34,
+    borderTopRightRadius: 34,
+    backgroundColor: colors.surfaceLevel1,
+    overflow: 'hidden',
   },
   skelCarousel: {
     flexDirection: 'row',
@@ -45,11 +60,13 @@ export const matchesStyles = StyleSheet.create({
     backgroundColor: colors.surfaceInset,
   },
   skelRowMiddle: { flex: 1 },
-  activeWrap: { gap: 8 },
+  activeWrap: {
+    gap: 10,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing[2],
     gap: 8,
   },
   sectionTitle: {
@@ -70,7 +87,7 @@ export const matchesStyles = StyleSheet.create({
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
-  activeStack: { gap: 8 },
+  activeStack: { gap: spacing[2] },
   filteredEmpty: {
     paddingHorizontal: 4,
     paddingVertical: 12,
