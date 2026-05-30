@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { colors } from '../../theme/colors';
-import { layout, spacing } from '../../theme/spacing';
+import { layout, rhythm, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 
 export const activeStyles = StyleSheet.create({
@@ -14,13 +14,18 @@ export const activeStyles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: spacing[4],
+    paddingTop: rhythm.screenTop,
+    paddingBottom: rhythm.headerBottom,
     gap: spacing[1],
   },
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.caption, color: colors.textSecondary },
-  list: { padding: layout.screenPaddingH, gap: spacing[4], paddingBottom: 116 },
+  list: {
+    paddingHorizontal: layout.screenPaddingH,
+    paddingTop: rhythm.sectionGap,
+    paddingBottom: rhythm.tabClearance,
+    gap: rhythm.sectionGap,
+  },
   noticePill: {
     minHeight: 40,
     borderRadius: 20,

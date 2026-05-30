@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 30,
     color: '#0a0a0b',
-    letterSpacing: -1,
+    letterSpacing: 0,
   },
   label: {
     fontFamily: 'Outfit-Bold',

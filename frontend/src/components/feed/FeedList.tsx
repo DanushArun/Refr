@@ -15,7 +15,7 @@ import { ReferralEventCard } from './ReferralEventCard';
 import { EditorialCard } from './EditorialCard';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { spacing } from '../../theme/spacing';
+import { rhythm, spacing } from '../../theme/spacing';
 
 interface FeedListProps {
   cards: FeedCard[];
@@ -152,8 +152,8 @@ export function FeedList({
 
 const styles = StyleSheet.create({
   contentContainer: {
-    paddingTop: spacing[4],
-    paddingBottom: spacing[24],
+    paddingTop: rhythm.sectionGap,
+    paddingBottom: rhythm.tabClearance,
   },
   footer: {
     paddingVertical: spacing[8],

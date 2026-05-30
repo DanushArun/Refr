@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { colors } from '../../theme/colors';
-import { layout, spacing } from '../../theme/spacing';
+import { layout, rhythm, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 
 export const profileStyles = StyleSheet.create({
@@ -12,16 +12,16 @@ export const profileStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    padding: layout.screenPaddingH,
-    paddingTop: spacing[8],
-    paddingBottom: spacing[20],
-    gap: spacing[6],
+    paddingHorizontal: layout.screenPaddingH,
+    paddingTop: rhythm.screenTop,
+    paddingBottom: rhythm.tabClearance,
+    gap: rhythm.sectionGap,
   },
-  profileCard: { gap: spacing[5] },
+  profileCard: { gap: rhythm.sectionGap },
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[4],
+    gap: rhythm.sectionGap,
   },
   profileMeta: { flex: 1, gap: spacing[2] },
   displayName: { ...typography.h3, color: colors.text },
@@ -40,7 +40,7 @@ export const profileStyles = StyleSheet.create({
   endorserPanel: {
     borderRadius: layout.cardBorderRadius,
     padding: spacing[4],
-    gap: spacing[4],
+    gap: rhythm.sectionGap,
     backgroundColor: colors.surfaceLevel1,
     borderWidth: 1,
     borderColor: colors.goldGlow,
@@ -48,7 +48,7 @@ export const profileStyles = StyleSheet.create({
   endorserTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[4],
+    gap: rhythm.sectionGap,
   },
   endorserCopy: { flex: 1, gap: spacing[1] },
   endorserTitle: {

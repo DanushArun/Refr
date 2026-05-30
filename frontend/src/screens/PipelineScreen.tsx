@@ -2,18 +2,17 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
-import {
-  View,
+import { View,
   Text,
   StyleSheet,
   FlatList,
-  SafeAreaView,
+  
   ActivityIndicator,
-  Alert,
-} from 'react-native';
+  Alert, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
+import { layout, rhythm, spacing } from '../theme/spacing';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
 import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
@@ -201,7 +200,7 @@ export function PipelineScreen() {
     // the layout doesn't jump when the API resolves.
     return (
       <View style={styles.container}>
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
           <View style={styles.header}>
             <Text style={styles.title}>Activity</Text>
             <Skeleton width={140} height={14} style={{ marginTop: 6 }} />
@@ -220,7 +219,7 @@ export function PipelineScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.title}>Activity</Text>
           <Text style={styles.subtitle}>
@@ -329,16 +328,17 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: spacing[3],
+    paddingTop: rhythm.screenTop,
+    paddingBottom: rhythm.headerBottom,
     gap: spacing[1],
   },
   title: { ...typography.h2, color: colors.text },
   subtitle: { ...typography.body, color: colors.textSecondary },
   list: {
-    padding: layout.screenPaddingH,
-    gap: spacing[4],
-    paddingBottom: spacing[20],
+    paddingHorizontal: layout.screenPaddingH,
+    paddingTop: rhythm.sectionGap,
+    paddingBottom: rhythm.tabClearance,
+    gap: rhythm.sectionGap,
   },
   skeletonCard: {
     height: 280,

@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { colors } from '../../theme/colors';
-import { layout, spacing } from '../../theme/spacing';
+import { layout, rhythm, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 
 export const earningsScreenStyles = StyleSheet.create({
@@ -13,10 +13,10 @@ export const earningsScreenStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    padding: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: 116,
-    gap: spacing[6],
+    paddingHorizontal: layout.screenPaddingH,
+    paddingTop: rhythm.screenTop,
+    paddingBottom: rhythm.tabClearance,
+    gap: rhythm.sectionGap,
   },
   earningsHero: {
     borderRadius: layout.cardBorderRadiusLarge,

@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  RefreshControl,
-  SafeAreaView,
+import { RefreshControl,
+  
   ScrollView,
   Text,
-  View,
-} from 'react-native';
+  View, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Phrase } from '../utils/haptics';
@@ -155,7 +154,7 @@ export function MatchesScreen() {
     // active-row pills. Layout doesn't jump when the API resolves.
     return (
       <View style={styles.container}>
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
           <View style={styles.header}>
             <Text style={styles.title}>Matches</Text>
             <Skeleton width={120} height={14} style={{ marginTop: 6 }} />
@@ -189,7 +188,7 @@ export function MatchesScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.title}>Matches</Text>
           <Text style={styles.subtitle}>
@@ -224,6 +223,7 @@ export function MatchesScreen() {
           <EmptyState onDiscover={openDiscover} />
         ) : (
           <ScrollView
+            style={styles.scrollView}
             contentContainerStyle={styles.scroll}
             showsVerticalScrollIndicator={false}
             refreshControl={

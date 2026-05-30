@@ -1,17 +1,18 @@
 import { StyleSheet } from 'react-native';
 
 import { colors } from '../../theme/colors';
-import { layout, spacing } from '../../theme/spacing';
+import { layout, rhythm, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 
 export const inboxStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   safe: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  scrollView: { flex: 1 },
   header: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: spacing[3],
+    paddingTop: rhythm.screenTop,
+    paddingBottom: rhythm.headerBottom,
     gap: spacing[1],
   },
   title: { ...typography.h2, color: colors.text },
@@ -24,14 +25,15 @@ export const inboxStyles = StyleSheet.create({
   topContent: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: spacing[3],
-    paddingBottom: spacing[4],
+    paddingBottom: rhythm.sectionGap,
   },
   contentSheet: {
     flexGrow: 1,
-    gap: spacing[5],
+    minHeight: '100%',
+    gap: rhythm.sectionGap,
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[6],
-    paddingBottom: 132,
+    paddingTop: rhythm.sheetTop,
+    paddingBottom: rhythm.tabClearance + spacing[4],
     borderTopLeftRadius: 34,
     borderTopRightRadius: 34,
     backgroundColor: colors.surfaceLevel1,

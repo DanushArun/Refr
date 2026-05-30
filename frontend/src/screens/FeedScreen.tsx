@@ -1,21 +1,20 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  View,
+import { View,
   Text,
   StyleSheet,
-  SafeAreaView,
+  
   Modal,
   Pressable,
   TextInput,
   Alert,
-  Platform,
-} from 'react-native';
+  Platform, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFeed } from '../hooks/useFeed';
 import { FeedList } from '../components/feed/FeedList';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
+import { layout, rhythm, spacing } from '../theme/spacing';
 import { Button } from '../components/common/Button';
 import { referralsApi } from '../services/api';
 import type { FeedCard } from '@refr/shared';
@@ -69,7 +68,7 @@ export function FeedScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.wordmark}>ENDORSLY</Text>
@@ -105,7 +104,8 @@ export function FeedScreen() {
                   Endorse {referModal.card.seekerName}?
                 </Text>
                 <Text style={styles.modalSubtitle}>
-                  You'll be able to chat with them once they accept. Your Endorsement Score increases when you submit.
+                  You'll be able to chat with them once they accept. Your Score
+                  increases when you submit.
                 </Text>
 
                 <Text style={styles.modalMeta}>
@@ -156,8 +156,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[4],
-    paddingBottom: spacing[3],
+    paddingTop: rhythm.screenTop,
+    paddingBottom: rhythm.headerBottom,
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',

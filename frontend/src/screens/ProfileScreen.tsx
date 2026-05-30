@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
+import { View,
   Text,
   ScrollView,
-  SafeAreaView,
+  
   ActivityIndicator,
   Alert,
   RefreshControl,
-  Switch,
-} from 'react-native';
+  Switch, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
 import { Avatar } from '../components/common/Avatar';
@@ -109,7 +108,7 @@ export function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.accent} />
         </View>
@@ -121,7 +120,7 @@ export function ProfileScreen() {
   const avatarUrl = profile?.avatarUrl ?? user.avatarUrl;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

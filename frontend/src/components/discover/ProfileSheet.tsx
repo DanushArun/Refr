@@ -42,20 +42,28 @@ export function EndorserProfileSheet({
 }: CommonProps & { card: EndorserCard | null }) {
   if (!card) return null;
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent={false}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      transparent={false}
+    >
       <View style={styles.modalRoot}>
         <AmbientBackground />
         <SafeAreaView style={styles.safe}>
           <CloseButton onClose={onClose} />
 
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.heroRow}>
               <Avatar displayName={card.name} size="xl" />
               <View style={styles.heroMeta}>
                 <PersonName name={card.name} textStyle={styles.name} />
                 <Text style={styles.role}>{card.jobTitle}</Text>
                 <Text style={styles.company}>{card.companyName}</Text>
-                <View style={{ marginTop: spacing[2], flexDirection: 'row', gap: spacing[2], flexWrap: 'wrap' }}>
+                <View style={styles.badgeRow}>
                   <TierBadge score={card.trustScore} size="md" />
                   <View style={styles.verifiedPill}>
                     <View style={styles.verifiedDot} />
@@ -77,16 +85,19 @@ export function EndorserProfileSheet({
             <Section label="SKILLS THEY ENDORSE FOR">
               <View style={styles.chipRow}>
                 {card.skills.map((s) => (
-                  <View key={s} style={styles.chip}><Text style={styles.chipText}>{s}</Text></View>
+                  <View key={s} style={styles.chip}>
+                    <Text style={styles.chipText}>{s}</Text>
+                  </View>
                 ))}
               </View>
             </Section>
 
             <Section label="ABOUT">
               <Text style={styles.about}>
-                Works at <Text style={{ color: colors.accent, fontFamily: 'Outfit-SemiBold' }}>{card.companyName}</Text> as a {card.jobTitle}.
-                Typical response time is {card.responseTime}. Has endorsed {card.hires} successful hire{card.hires === 1 ? '' : 's'} to date.
-                Accepts {card.acceptanceRate}% of incoming requests — prioritises strong match-fit over volume.
+                Works at <Text style={styles.aboutStrong}>{card.companyName}</Text> as a{' '}
+                {card.jobTitle}. Typical response time is {card.responseTime}. Has endorsed{' '}
+                {card.hires} successful hire{card.hires === 1 ? '' : 's'} to date. Accepts{' '}
+                {card.acceptanceRate}% of incoming requests.
               </Text>
             </Section>
 
@@ -125,11 +136,19 @@ export function SeekerProfileSheet({
 }: CommonProps & { card: SeekerCard | null }) {
   if (!card) return null;
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent={false}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      transparent={false}
+    >
       <SafeAreaView style={styles.safe}>
         <CloseButton onClose={onClose} />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.heroRow}>
             <Avatar displayName={card.name} size="xl" />
             <View style={styles.heroMeta}>
@@ -185,7 +204,7 @@ export function SeekerProfileSheet({
             </View>
             <Text style={styles.matchExplain}>
               {card.targetCompanies.length > 0
-                ? `Higher fit because ${card.name.split(' ')[0]} is targeting companies in your domain.`
+                ? `${card.name.split(' ')[0]} is targeting companies in your domain.`
                 : 'Based on skill overlap and experience.'}
             </Text>
           </Section>
@@ -202,7 +221,7 @@ export function SeekerProfileSheet({
   );
 }
 
-/* ── shared subcomponents ───────────────────────────────────── */
+/* Shared subcomponents */
 
 function CloseButton({ onClose }: { onClose: () => void }) {
   return (
@@ -302,12 +321,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
     fontSize: 24,
     lineHeight: 28,
-    letterSpacing: -0.5,
+    letterSpacing: 0,
     color: colors.text,
   },
   role: { ...typography.body, color: colors.textSecondary },
   company: { ...typography.caption, color: colors.accent, fontFamily: 'Outfit-SemiBold' },
   targetRoleText: { ...typography.caption, color: colors.accent, fontFamily: 'Outfit-SemiBold' },
+  badgeRow: {
+    marginTop: spacing[2],
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing[2],
+  },
   verifiedPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -350,7 +375,7 @@ const styles = StyleSheet.create({
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 22,
     color: colors.text,
-    letterSpacing: -0.4,
+    letterSpacing: 0,
   },
   statSuffix: {
     fontFamily: 'JetBrainsMono-Regular',
@@ -378,6 +403,10 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     lineHeight: 22,
+  },
+  aboutStrong: {
+    color: colors.accent,
+    fontFamily: 'Outfit-SemiBold',
   },
   headline: {
     fontFamily: 'Outfit-SemiBold',

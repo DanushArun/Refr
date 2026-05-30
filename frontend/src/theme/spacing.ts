@@ -45,3 +45,14 @@ export const layout = {
   headerHeight: 56,
   touchTargetMin: spacing[11],      // 44 — iOS HIG minimum
 } as const;
+
+export const rhythm = {
+  screenTop: spacing[5],
+  headerBottom: spacing[2],
+  filterBottom: spacing[1],
+  sectionGap: spacing[4],
+  listGap: spacing[3],
+  sheetTop: spacing[5],
+  tabClearance: 116,
+  deckTopOffset: spacing[7],
+} as const;

@@ -1,13 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import {
-  ActivityIndicator,
+import { ActivityIndicator,
   Alert,
-  SafeAreaView,
+  
   ScrollView,
   Text,
-  View,
-} from 'react-native';
+  View, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../components/common/Avatar';
 import { PressableScale } from '../components/common/PressableScale';
@@ -90,7 +89,7 @@ export function EarningsScreen() {
   ) + 1;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

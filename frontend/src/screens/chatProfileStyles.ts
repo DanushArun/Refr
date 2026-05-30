@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { colors } from '../theme/colors';
-import { layout, spacing } from '../theme/spacing';
+import { layout, rhythm, spacing } from '../theme/spacing';
 
 export const chatProfileStyles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
@@ -26,12 +26,12 @@ export const chatProfileStyles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingBottom: spacing[10],
+    paddingBottom: rhythm.tabClearance,
   },
   hero: {
     alignItems: 'center',
-    paddingTop: spacing[8],
-    paddingBottom: spacing[6],
+    paddingTop: rhythm.sectionGap,
+    paddingBottom: rhythm.sectionGap,
     gap: spacing[2],
   },
   name: {
@@ -53,7 +53,7 @@ export const chatProfileStyles = StyleSheet.create({
   actionGrid: {
     flexDirection: 'row',
     gap: spacing[3],
-    marginBottom: spacing[5],
+    marginBottom: rhythm.sectionGap,
   },
   actionTile: {
     flex: 1,
@@ -80,7 +80,7 @@ export const chatProfileStyles = StyleSheet.create({
   },
   actionTextPrimary: { color: colors.accent },
   section: {
-    marginBottom: spacing[5],
+    marginBottom: rhythm.sectionGap,
     borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: colors.surfaceLevel1,

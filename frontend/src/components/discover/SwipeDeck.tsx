@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     ...typography.h3,
     color: colors.text,
     fontFamily: 'Outfit-Bold',
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   emptyBody: {
     ...typography.body,
@@ -320,4 +320,3 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
-

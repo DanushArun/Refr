@@ -1,12 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Animated,
+import { Animated,
   Easing,
-  SafeAreaView,
+  
   StyleSheet,
   Text,
-  View,
-} from 'react-native';
+  View, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { PressableScale } from '../components/common/PressableScale';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Phrase } from '../utils/haptics';
@@ -86,7 +85,7 @@ export function WelcomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ConstellationBackdrop />
       {/* Subtle vignette over the constellation so the wordmark stays legible */}
       <LinearGradient
@@ -183,7 +182,7 @@ const styles = StyleSheet.create({
     fontFamily: 'InstrumentSerif-Regular',
     fontSize: 22,
     color: colors.text,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
     textAlign: 'center',
   },
   descriptor: {

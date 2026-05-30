@@ -3,11 +3,11 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Phrase } from '../utils/haptics';
@@ -241,7 +241,7 @@ export function EndorserInboxScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.title}>Inbox</Text>
           <Text style={styles.subtitle}>
@@ -268,6 +268,7 @@ export function EndorserInboxScreen() {
           <EmptyState />
         ) : (
           <ScrollView
+            style={styles.scrollView}
             contentContainerStyle={styles.scroll}
             showsVerticalScrollIndicator={false}
             refreshControl={

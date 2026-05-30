@@ -72,7 +72,9 @@ export function TierProgress({ score, variant = 'full' }: TierProgressProps) {
         <Text style={styles.footNum}>{score}</Text>
         {next ? (
           <Text style={styles.footHint}>
-            <Text style={{ color: next.color, fontFamily: 'JetBrainsMono-Medium' }}>{remaining}</Text>{' '}
+            <Text style={{ color: next.color, fontFamily: 'JetBrainsMono-Medium' }}>
+              {remaining}
+            </Text>{' '}
             <Text style={{ color: colors.textSecondary }}>pts to {next.name}</Text>
           </Text>
         ) : (
@@ -132,7 +134,7 @@ const styles = StyleSheet.create({
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 20,
     color: colors.text,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   footHint: { ...typography.caption, color: colors.textSecondary },
 });
