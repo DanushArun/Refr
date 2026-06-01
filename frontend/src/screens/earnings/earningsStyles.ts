@@ -20,15 +20,11 @@ export const earningsStyles = StyleSheet.create({
     gap: spacing[3],
   },
   errorTitle: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 28,
+    ...typography.screenTitle,
     color: colors.text,
-    letterSpacing: 0,
   },
   errorBody: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 14,
-    lineHeight: 20,
+    ...typography.rowMeta,
     color: colors.textSecondary,
     textAlign: 'center',
   },
@@ -41,8 +37,7 @@ export const earningsStyles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   retryButtonText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
+    ...typography.buttonLabel,
     color: colors.background,
   },
   content: {
@@ -70,14 +65,11 @@ export const earningsStyles = StyleSheet.create({
     gap: 2,
   },
   heroLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0,
   },
   heroSub: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.rowCaption,
     color: colors.textSecondary,
   },
   heroScore: {
@@ -90,8 +82,7 @@ export const earningsStyles = StyleSheet.create({
     color: colors.text,
   },
   heroScoreLabel: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 11,
+    ...typography.rowCaption,
     color: colors.textTertiary,
   },
   heroValue: {
@@ -115,10 +106,8 @@ export const earningsStyles = StyleSheet.create({
     gap: 2,
   },
   heroTileLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0,
   },
   heroTileValue: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -141,10 +130,8 @@ export const earningsStyles = StyleSheet.create({
     gap: spacing[4],
   },
   scoreLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 11,
+    ...typography.sectionEyebrow,
     color: colors.textSecondary,
-    letterSpacing: 0,
   },
   scoreValue: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -154,9 +141,7 @@ export const earningsStyles = StyleSheet.create({
     letterSpacing: 0,
   },
   scoreCaption: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    lineHeight: 18,
+    ...typography.rowMeta,
     color: colors.textSecondary,
   },
   rankPill: {
@@ -175,10 +160,8 @@ export const earningsStyles = StyleSheet.create({
     color: colors.goldBright,
   },
   rankPillLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0,
   },
   scoreFacts: {
     flexDirection: 'row',
@@ -198,9 +181,7 @@ export const earningsStyles = StyleSheet.create({
     color: colors.text,
   },
   scoreFactLabel: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 11,
-    lineHeight: 14,
+    ...typography.rowCaption,
     color: colors.textSecondary,
   },
   scoreDivider: {
@@ -216,11 +197,8 @@ export const earningsStyles = StyleSheet.create({
     gap: spacing[3],
   },
   scoreRulesLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0,
-    textTransform: 'uppercase',
   },
   scoreRulesText: {
     flex: 1,
@@ -236,16 +214,12 @@ export const earningsStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sectionTitle: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 22,
+    ...typography.sectionTitle,
     color: colors.text,
-    letterSpacing: 0,
   },
   sectionCount: {
-    ...typography.caption,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0,
-    textTransform: 'uppercase',
   },
   darkCard: {
     backgroundColor: colors.surfaceLevel1,
@@ -267,13 +241,11 @@ export const earningsStyles = StyleSheet.create({
   rowLast: { borderBottomWidth: 0 },
   payoutMeta: { flex: 1, gap: 2 },
   payoutName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
+    ...typography.rowTitle,
     color: colors.text,
   },
   payoutSub: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.rowCaption,
     color: colors.textSecondary,
   },
   payoutRight: { alignItems: 'flex-end', gap: 2 },
@@ -288,10 +260,8 @@ export const earningsStyles = StyleSheet.create({
     color: colors.textTertiary,
   },
   emptyText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
+    ...typography.rowMeta,
     color: colors.textSecondary,
-    lineHeight: 19,
   },
   lbRow: {
     flexDirection: 'row',
@@ -315,13 +285,11 @@ export const earningsStyles = StyleSheet.create({
   },
   lbMeta: { flex: 1, gap: 2 },
   lbName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
+    ...typography.rowTitle,
     color: colors.cardSurfaceText,
   },
   lbCompany: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.rowCaption,
     color: colors.cardSurfaceTextMuted,
   },
   lbRight: { alignItems: 'flex-end', gap: 2 },
@@ -336,9 +304,7 @@ export const earningsStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   leaderboardEmpty: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    lineHeight: 19,
+    ...typography.rowMeta,
     color: colors.cardSurfaceTextMuted,
     padding: spacing[4],
   },

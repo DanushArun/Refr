@@ -1,23 +1,24 @@
 /**
  * Endorsly Design System - Typography
  *
- * IBM Plex Serif - career-story hooks, company-intel headlines, brand moments
- * IBM Plex Sans  - body text, UI labels, navigation, chat, forms
- * IBM Plex Mono  - numbers, stats, payouts, ranks, Endorsement Score
+ * Bricolage Grotesque - expressive social-career moments and profile identity
+ * TikTok Sans         - product UI, settings, lists, navigation, chat, forms
+ * Geist Mono          - numbers, stats, payouts, ranks, Endorsement Score
  *
- * Font keys kept as legacy "Outfit-*" / "InstrumentSerif-*" so 30+ existing
- * components render without edits; see app/_layout.tsx for the alias table.
+ * Legacy "Outfit-*" and "InstrumentSerif-*" aliases remain in app/_layout.tsx.
+ * They intentionally resolve to non-bold weights to keep the app light.
  */
 
 export const fontFamilies = {
-  heading: 'InstrumentSerif-Regular',
-  headingItalic: 'InstrumentSerif-Italic',
-  body: 'Outfit-Regular',
-  bodyMedium: 'Outfit-Medium',
-  bodySemiBold: 'Outfit-SemiBold',
-  bodyBold: 'Outfit-Bold',
-  mono: 'JetBrainsMono-Regular',
-  monoMedium: 'JetBrainsMono-Medium',
+  heading: 'BricolageGrotesque-Regular',
+  headingMedium: 'BricolageGrotesque-Medium',
+  headingItalic: 'BricolageGrotesque-Medium',
+  body: 'TikTokSans-Regular',
+  bodyMedium: 'TikTokSans-Medium',
+  bodySemiBold: 'TikTokSans-Semibold',
+  bodyBold: 'TikTokSans-Semibold',
+  mono: 'GeistMono-Regular',
+  monoMedium: 'GeistMono-Medium',
 } as const;
 
 export const fontSizes = {
@@ -73,24 +74,24 @@ export const typography = {
     letterSpacing: letterSpacings.tight,
   },
   h1: {
-    fontFamily: fontFamilies.heading,
+    fontFamily: fontFamilies.headingMedium,
     fontSize: fontSizes.h1,
     lineHeight: lineHeights.h1,
     letterSpacing: letterSpacings.tight,
   },
   h2: {
-    fontFamily: fontFamilies.heading,
+    fontFamily: fontFamilies.headingMedium,
     fontSize: fontSizes.h2,
     lineHeight: lineHeights.h2,
     letterSpacing: letterSpacings.tight,
   },
   h3: {
-    fontFamily: fontFamilies.bodySemiBold,
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: fontSizes.h3,
     lineHeight: lineHeights.h3,
   },
   h4: {
-    fontFamily: fontFamilies.bodySemiBold,
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: fontSizes.h4,
     lineHeight: lineHeights.h4,
   },
@@ -110,7 +111,7 @@ export const typography = {
     lineHeight: lineHeights.bodySmall,
   },
   label: {
-    fontFamily: fontFamilies.bodySemiBold,
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: fontSizes.label,
     lineHeight: lineHeights.label,
     letterSpacing: letterSpacings.wide,
@@ -120,6 +121,73 @@ export const typography = {
     fontFamily: fontFamilies.body,
     fontSize: fontSizes.caption,
     lineHeight: lineHeights.caption,
+  },
+  screenTitle: {
+    fontFamily: fontFamilies.headingMedium,
+    fontSize: fontSizes.h2,
+    lineHeight: 32,
+    letterSpacing: letterSpacings.normal,
+  },
+  screenSubtitle: {
+    fontFamily: fontFamilies.body,
+    fontSize: fontSizes.bodySmall,
+    lineHeight: 19,
+    letterSpacing: letterSpacings.normal,
+  },
+  sectionTitle: {
+    fontFamily: fontFamilies.bodySemiBold,
+    fontSize: 16,
+    lineHeight: 22,
+    letterSpacing: letterSpacings.normal,
+  },
+  sectionEyebrow: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: fontSizes.caption,
+    lineHeight: lineHeights.caption,
+    letterSpacing: letterSpacings.normal,
+    textTransform: 'uppercase' as const,
+  },
+  rowTitle: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: letterSpacings.normal,
+  },
+  rowMeta: {
+    fontFamily: fontFamilies.body,
+    fontSize: fontSizes.bodySmall,
+    lineHeight: 18,
+    letterSpacing: letterSpacings.normal,
+  },
+  rowCaption: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: fontSizes.caption,
+    lineHeight: lineHeights.caption,
+    letterSpacing: letterSpacings.normal,
+  },
+  chipLabel: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: fontSizes.label,
+    lineHeight: lineHeights.label,
+    letterSpacing: letterSpacings.normal,
+  },
+  buttonLabel: {
+    fontFamily: fontFamilies.bodyMedium,
+    fontSize: 14,
+    lineHeight: lineHeights.label,
+    letterSpacing: letterSpacings.normal,
+  },
+  identityTitle: {
+    fontFamily: fontFamilies.headingMedium,
+    fontSize: 30,
+    lineHeight: 36,
+    letterSpacing: letterSpacings.normal,
+  },
+  editorialTitle: {
+    fontFamily: fontFamilies.heading,
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: letterSpacings.normal,
   },
   statLarge: {
     fontFamily: fontFamilies.mono,

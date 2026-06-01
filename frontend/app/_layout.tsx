@@ -7,26 +7,24 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SystemBars } from 'react-native-edge-to-edge';
-import {
-  IBMPlexSans_400Regular,
-  IBMPlexSans_500Medium,
-  IBMPlexSans_600SemiBold,
-  IBMPlexSans_700Bold,
-} from '@expo-google-fonts/ibm-plex-sans';
-import {
-  IBMPlexSerif_600SemiBold,
-  IBMPlexSerif_600SemiBold_Italic,
-} from '@expo-google-fonts/ibm-plex-serif';
-import {
-  IBMPlexMono_400Regular,
-  IBMPlexMono_500Medium,
-} from '@expo-google-fonts/ibm-plex-mono';
 import { colors } from '../src/theme/colors';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { loadDemoRole } from '../src/services/demoRoleStorage';
 import { AuroraShader } from '../src/components/constellation/AuroraShader';
 
 SplashScreen.preventAutoHideAsync();
+
+const BricolageGrotesqueRegular =
+  require('../assets/fonts/BricolageGrotesque-Regular.ttf');
+const BricolageGrotesqueMedium =
+  require('../assets/fonts/BricolageGrotesque-Medium.ttf');
+const BricolageGrotesqueSemibold =
+  require('../assets/fonts/BricolageGrotesque-Semibold.ttf');
+const GeistMonoRegular = require('../assets/fonts/GeistMono-Regular.ttf');
+const GeistMonoMedium = require('../assets/fonts/GeistMono-Medium.ttf');
+const TikTokSansRegular = require('../assets/fonts/TikTokSans-Regular.ttf');
+const TikTokSansMedium = require('../assets/fonts/TikTokSans-Medium.ttf');
+const TikTokSansSemibold = require('../assets/fonts/TikTokSans-Semibold.ttf');
 
 const ROOT_STACK_ANIMATION = Platform.OS === 'android' ? 'ios_from_right' : 'default';
 
@@ -45,14 +43,22 @@ export default function RootLayout(): React.ReactElement | null {
   }, []);
 
   const [fontsLoaded, fontError] = useFonts({
-    'Outfit-Regular': IBMPlexSans_400Regular,
-    'Outfit-Medium': IBMPlexSans_500Medium,
-    'Outfit-SemiBold': IBMPlexSans_600SemiBold,
-    'Outfit-Bold': IBMPlexSans_700Bold,
-    'InstrumentSerif-Regular': IBMPlexSerif_600SemiBold,
-    'InstrumentSerif-Italic': IBMPlexSerif_600SemiBold_Italic,
-    'JetBrainsMono-Regular': IBMPlexMono_400Regular,
-    'JetBrainsMono-Medium': IBMPlexMono_500Medium,
+    'BricolageGrotesque-Regular': BricolageGrotesqueRegular,
+    'BricolageGrotesque-Medium': BricolageGrotesqueMedium,
+    'BricolageGrotesque-Semibold': BricolageGrotesqueSemibold,
+    'GeistMono-Regular': GeistMonoRegular,
+    'GeistMono-Medium': GeistMonoMedium,
+    'TikTokSans-Regular': TikTokSansRegular,
+    'TikTokSans-Medium': TikTokSansMedium,
+    'TikTokSans-Semibold': TikTokSansSemibold,
+    'Outfit-Regular': TikTokSansRegular,
+    'Outfit-Medium': TikTokSansMedium,
+    'Outfit-SemiBold': TikTokSansSemibold,
+    'Outfit-Bold': TikTokSansSemibold,
+    'InstrumentSerif-Regular': BricolageGrotesqueRegular,
+    'InstrumentSerif-Italic': BricolageGrotesqueMedium,
+    'JetBrainsMono-Regular': GeistMonoRegular,
+    'JetBrainsMono-Medium': GeistMonoMedium,
   });
 
   useEffect(() => {

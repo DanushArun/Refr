@@ -49,14 +49,11 @@ export const earningsScreenStyles = StyleSheet.create({
     gap: 2,
   },
   heroLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
+    ...typography.sectionEyebrow,
     color: 'rgba(0, 0, 0, 0.65)',
-    letterSpacing: 2.4,
   },
   heroSub: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.rowCaption,
     color: 'rgba(0, 0, 0, 0.62)',
   },
   heroValue: {
@@ -80,10 +77,8 @@ export const earningsScreenStyles = StyleSheet.create({
     gap: 2,
   },
   heroTileLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 9,
+    ...typography.sectionEyebrow,
     color: 'rgba(0, 0, 0, 0.55)',
-    letterSpacing: 1.0,
   },
   heroTileValue: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -122,16 +117,12 @@ export const earningsScreenStyles = StyleSheet.create({
     gap: spacing[2],
   },
   sectionTitle: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 22,
+    ...typography.sectionTitle,
     color: colors.text,
-    letterSpacing: 0,
   },
   sectionCount: {
-    ...typography.caption,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
   },
   payoutRow: {
     flexDirection: 'row',
@@ -145,13 +136,11 @@ export const earningsScreenStyles = StyleSheet.create({
   payoutRowLast: { borderBottomWidth: 0 },
   payoutMeta: { flex: 1, gap: 2 },
   payoutName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
+    ...typography.rowTitle,
     color: colors.text,
   },
   payoutSub: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.rowCaption,
     color: colors.textSecondary,
   },
   payoutRight: { alignItems: 'flex-end', gap: 2 },
@@ -166,10 +155,8 @@ export const earningsScreenStyles = StyleSheet.create({
     color: colors.textTertiary,
   },
   emptyText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
+    ...typography.rowMeta,
     color: colors.textSecondary,
-    lineHeight: 19,
   },
   lbRow: {
     flexDirection: 'row',
@@ -193,13 +180,11 @@ export const earningsScreenStyles = StyleSheet.create({
   },
   lbMeta: { flex: 1, gap: 2 },
   lbName: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
+    ...typography.rowTitle,
     color: colors.text,
   },
   lbCompany: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.rowCaption,
     color: colors.textSecondary,
   },
   lbRight: { alignItems: 'flex-end', gap: 2 },
@@ -214,9 +199,7 @@ export const earningsScreenStyles = StyleSheet.create({
     color: colors.textTertiary,
   },
   leaderboardEmpty: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
-    lineHeight: 19,
+    ...typography.rowMeta,
     color: colors.textSecondary,
     padding: spacing[4],
   },

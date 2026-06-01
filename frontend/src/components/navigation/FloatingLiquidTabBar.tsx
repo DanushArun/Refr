@@ -63,9 +63,10 @@ function labelFor(options: BottomTabNavigationOptions, routeName: string): strin
 }
 
 function barOffset(bottomInset: number): ViewStyle {
-  const fallback = Platform.OS === 'ios' ? spacing[3] : spacing[4];
+  const minimumClearance = Platform.OS === 'ios' ? spacing[2] : spacing[3];
+  const loweredInset = Math.max(0, bottomInset - spacing[2]);
 
-  return { marginBottom: Math.max(bottomInset, fallback) };
+  return { marginBottom: Math.max(loweredInset, minimumClearance) };
 }
 
 function pressTab(props: BottomTabBarProps, route: TabRoute, focused: boolean): void {

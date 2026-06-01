@@ -15,8 +15,8 @@ export const inboxStyles = StyleSheet.create({
     paddingBottom: rhythm.headerBottom,
     gap: spacing[1],
   },
-  title: { ...typography.h2, color: colors.text },
-  subtitle: { ...typography.caption, color: colors.textSecondary },
+  title: { ...typography.screenTitle, color: colors.text },
+  subtitle: { ...typography.screenSubtitle, color: colors.textSecondary },
   scroll: {
     flexGrow: 1,
     paddingTop: 0,
@@ -49,22 +49,16 @@ export const inboxStyles = StyleSheet.create({
     gap: 8,
   },
   sectionTitle: {
-    fontFamily: 'InstrumentSerif-Italic',
-    fontSize: 20,
+    ...typography.sectionTitle,
     color: colors.text,
-    letterSpacing: 0,
   },
   sectionCount: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 12,
+    ...typography.statSmall,
     color: colors.textTertiary,
   },
   sectionHint: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 11,
+    ...typography.sectionEyebrow,
     color: 'rgba(250, 250, 247, 0.32)',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
   },
   activeStack: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -75,10 +69,8 @@ export const inboxStyles = StyleSheet.create({
     paddingVertical: 12,
   },
   filteredEmptyText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 13,
+    ...typography.rowMeta,
     color: colors.textSecondary,
-    lineHeight: 18,
   },
   empty: {
     flex: 1,
@@ -87,11 +79,10 @@ export const inboxStyles = StyleSheet.create({
     padding: layout.screenPaddingH,
     gap: spacing[3],
   },
-  emptyTitle: { ...typography.h4, color: colors.text },
+  emptyTitle: { ...typography.sectionTitle, color: colors.text },
   emptyBody: {
-    ...typography.body,
+    ...typography.rowMeta,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
   },
 });

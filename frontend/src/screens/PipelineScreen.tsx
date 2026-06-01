@@ -348,8 +348,8 @@ const styles = StyleSheet.create({
     paddingBottom: rhythm.headerBottom,
     gap: spacing[1],
   },
-  title: { ...typography.h2, color: colors.text },
-  subtitle: { ...typography.body, color: colors.textSecondary },
+  title: { ...typography.screenTitle, color: colors.text },
+  subtitle: { ...typography.screenSubtitle, color: colors.textSecondary },
   list: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: rhythm.sectionGap,
@@ -389,12 +389,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing[1],
     opacity: 0.48,
   },
-  emptyTitle: { ...typography.h4, color: colors.textSecondary },
+  emptyTitle: { ...typography.sectionTitle, color: colors.textSecondary },
   emptyBody: {
-    ...typography.body,
+    ...typography.rowMeta,
     color: colors.textTertiary,
     textAlign: 'center',
-    lineHeight: 24,
   },
-
 });

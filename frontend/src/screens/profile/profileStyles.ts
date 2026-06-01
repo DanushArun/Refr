@@ -21,11 +21,11 @@ export const profileStyles = StyleSheet.create({
     gap: spacing[1],
   },
   eyebrow: {
-    ...typography.label,
+    ...typography.sectionEyebrow,
     color: colors.goldBright,
   },
   pageTitle: {
-    ...typography.h2,
+    ...typography.screenTitle,
     color: colors.text,
   },
   hero: {
@@ -47,11 +47,11 @@ export const profileStyles = StyleSheet.create({
     gap: spacing[1.5],
   },
   displayName: {
-    ...typography.h3,
+    ...typography.identityTitle,
     color: colors.text,
   },
   identityLine: {
-    ...typography.bodySmall,
+    ...typography.screenSubtitle,
     color: colors.textSecondary,
   },
   roleBadge: {
@@ -65,11 +65,8 @@ export const profileStyles = StyleSheet.create({
     backgroundColor: colors.gold,
   },
   roleBadgeText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 11,
+    ...typography.sectionEyebrow,
     color: colors.navyDeep,
-    letterSpacing: 0,
-    textTransform: 'uppercase',
   },
   snapshot: {
     gap: spacing[4],
@@ -81,7 +78,7 @@ export const profileStyles = StyleSheet.create({
     gap: spacing[1],
   },
   scoreLabel: {
-    ...typography.label,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
   },
   scoreValue: {
@@ -109,17 +106,12 @@ export const profileStyles = StyleSheet.create({
     backgroundColor: colors.surfaceInset,
   },
   metricValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 20,
+    ...typography.statMedium,
     color: colors.text,
-    letterSpacing: 0,
   },
   metricLabel: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 10,
+    ...typography.sectionEyebrow,
     color: colors.textTertiary,
-    letterSpacing: 0,
-    textTransform: 'uppercase',
   },
   section: {
     gap: spacing[3],
@@ -130,8 +122,8 @@ export const profileStyles = StyleSheet.create({
     borderColor: colors.border,
   },
   sectionTitle: {
-    ...typography.label,
-    color: colors.textTertiary,
+    ...typography.sectionTitle,
+    color: colors.text,
   },
   sectionBody: {
     gap: spacing[2],
@@ -156,12 +148,12 @@ export const profileStyles = StyleSheet.create({
   },
   settingsLabel: {
     flex: 0.8,
-    ...typography.bodySmall,
+    ...typography.rowTitle,
     color: colors.text,
   },
   settingsValue: {
     flex: 1,
-    ...typography.bodySmall,
+    ...typography.rowMeta,
     color: colors.textSecondary,
     textAlign: 'right',
   },
@@ -176,10 +168,8 @@ export const profileStyles = StyleSheet.create({
     gap: spacing[2],
   },
   chipGroupTitle: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
+    ...typography.rowTitle,
     color: colors.text,
-    letterSpacing: 0,
   },
   chipWrap: {
     flexDirection: 'row',
@@ -196,13 +186,11 @@ export const profileStyles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 12,
+    ...typography.chipLabel,
     color: colors.textSecondary,
-    letterSpacing: 0,
   },
   emptyText: {
-    ...typography.bodySmall,
+    ...typography.rowMeta,
     color: colors.textTertiary,
   },
   actionRow: {
@@ -220,14 +208,12 @@ export const profileStyles = StyleSheet.create({
     gap: spacing[0.5],
   },
   actionLabel: {
-    ...typography.caption,
+    ...typography.rowCaption,
     color: colors.textTertiary,
   },
   actionValue: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 15,
+    ...typography.rowTitle,
     color: colors.text,
-    letterSpacing: 0,
   },
   signOutBtn: {
     marginTop: spacing[1],
