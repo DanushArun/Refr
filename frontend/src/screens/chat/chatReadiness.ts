@@ -152,7 +152,7 @@ function statusCopy(args: {
   }
   if (!args.resumeAttached) {
     return {
-      statusDetail: 'Collect a resume link before using your reputation.',
+      statusDetail: 'Collect a resume link before sending an endorsement.',
       statusLabel: 'Resume needed',
     };
   }

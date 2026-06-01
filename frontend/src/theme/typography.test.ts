@@ -10,6 +10,8 @@ const productTokens = typography as unknown as Record<string, TextToken>;
 test('test_fontFamilies_whenProductTextRenders_usesTikTokSansAsPrimaryUiVoice', () => {
   const families = fontFamilies as Record<string, string>;
 
+  expect(families.heading).toBe('CabinetGrotesk-Regular');
+  expect(families.headingMedium).toBe('CabinetGrotesk-Medium');
   expect(families.body).toBe('TikTokSans-Regular');
   expect(families.bodyMedium).toBe('TikTokSans-Medium');
   expect(families.bodySemiBold).toBe('TikTokSans-Semibold');
@@ -17,7 +19,7 @@ test('test_fontFamilies_whenProductTextRenders_usesTikTokSansAsPrimaryUiVoice', 
 });
 
 test('test_typography_whenScreenChromeRenders_usesDisplayWithoutBoldUi', () => {
-  expect(productTokens.screenTitle.fontFamily).toBe('BricolageGrotesque-Medium');
+  expect(productTokens.screenTitle.fontFamily).toBe('CabinetGrotesk-Medium');
   expect(productTokens.screenTitle.letterSpacing ?? 0).toBe(0);
 });
 

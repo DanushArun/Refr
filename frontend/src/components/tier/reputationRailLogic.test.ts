@@ -1,6 +1,7 @@
 import {
   buildReputationRailMetrics,
   clampRailMarkerProgress,
+  formatTierTitle,
 } from './reputationRailLogic';
 
 describe('reputationRailLogic', () => {
@@ -14,6 +15,10 @@ describe('reputationRailLogic', () => {
 
   test('test_buildReputationRailMetrics_when_score_is_47_returns_gold_tier', (): void => {
     expect(buildReputationRailMetrics(47).currentTierName).toBe('Gold');
+  });
+
+  test('test_formatTierTitle_when_score_is_gold_returns_tier_only', (): void => {
+    expect(formatTierTitle(buildReputationRailMetrics(47))).toBe('Gold');
   });
 
   test('test_buildReputationRailMetrics_when_score_is_47_returns_13_remaining', (): void => {

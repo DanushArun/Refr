@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'InstrumentSerif-Regular', // Clash Display
+    fontFamily: 'InstrumentSerif-Regular',
     fontSize: 28,
     lineHeight: 36,
     color: colors.text,

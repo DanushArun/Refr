@@ -14,12 +14,8 @@ import { AuroraShader } from '../src/components/constellation/AuroraShader';
 
 SplashScreen.preventAutoHideAsync();
 
-const BricolageGrotesqueRegular =
-  require('../assets/fonts/BricolageGrotesque-Regular.ttf');
-const BricolageGrotesqueMedium =
-  require('../assets/fonts/BricolageGrotesque-Medium.ttf');
-const BricolageGrotesqueSemibold =
-  require('../assets/fonts/BricolageGrotesque-Semibold.ttf');
+const CabinetGroteskRegular = require('../assets/fonts/CabinetGrotesk-Regular.ttf');
+const CabinetGroteskMedium = require('../assets/fonts/CabinetGrotesk-Medium.ttf');
 const GeistMonoRegular = require('../assets/fonts/GeistMono-Regular.ttf');
 const GeistMonoMedium = require('../assets/fonts/GeistMono-Medium.ttf');
 const TikTokSansRegular = require('../assets/fonts/TikTokSans-Regular.ttf');
@@ -43,9 +39,8 @@ export default function RootLayout(): React.ReactElement | null {
   }, []);
 
   const [fontsLoaded, fontError] = useFonts({
-    'BricolageGrotesque-Regular': BricolageGrotesqueRegular,
-    'BricolageGrotesque-Medium': BricolageGrotesqueMedium,
-    'BricolageGrotesque-Semibold': BricolageGrotesqueSemibold,
+    'CabinetGrotesk-Regular': CabinetGroteskRegular,
+    'CabinetGrotesk-Medium': CabinetGroteskMedium,
     'GeistMono-Regular': GeistMonoRegular,
     'GeistMono-Medium': GeistMonoMedium,
     'TikTokSans-Regular': TikTokSansRegular,
@@ -55,8 +50,8 @@ export default function RootLayout(): React.ReactElement | null {
     'Outfit-Medium': TikTokSansMedium,
     'Outfit-SemiBold': TikTokSansSemibold,
     'Outfit-Bold': TikTokSansSemibold,
-    'InstrumentSerif-Regular': BricolageGrotesqueRegular,
-    'InstrumentSerif-Italic': BricolageGrotesqueMedium,
+    'InstrumentSerif-Regular': CabinetGroteskRegular,
+    'InstrumentSerif-Italic': CabinetGroteskMedium,
     'JetBrainsMono-Regular': GeistMonoRegular,
     'JetBrainsMono-Medium': GeistMonoMedium,
   });

@@ -37,6 +37,10 @@ export function buildReputationRailMetrics(score: number): ReputationRailMetrics
   };
 }
 
+export function formatTierTitle(metrics: ReputationRailMetrics): string {
+  return metrics.currentTierName;
+}
+
 function normalizeScore(score: number): number {
   if (!Number.isFinite(score)) return 0;
   return Math.max(0, Math.round(score));

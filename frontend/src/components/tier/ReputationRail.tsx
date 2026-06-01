@@ -17,7 +17,11 @@ import type { SharedValue } from 'react-native-reanimated';
 
 import { colors } from '../../theme/colors';
 import { DotMatrixField } from '../common/DotMatrixField';
-import { buildReputationRailMetrics, type ReputationRailMetrics } from './reputationRailLogic';
+import {
+  buildReputationRailMetrics,
+  formatTierTitle,
+  type ReputationRailMetrics,
+} from './reputationRailLogic';
 import {
   MARKER_WIDTH,
   reputationRailStyles as styles,
@@ -85,7 +89,7 @@ function RailHeader({
     <View style={styles.header}>
       <View style={styles.headerText}>
         <Text style={styles.eyebrow}>ENDORSEMENT SCORE</Text>
-        <Text style={styles.title}>{metrics.currentTierName} reputation</Text>
+        <Text style={styles.title}>{formatTierTitle(metrics)}</Text>
       </View>
       <View style={styles.rankPill}>
         <Text style={styles.rankValue}>{rank > 0 ? `#${rank}` : '-'}</Text>

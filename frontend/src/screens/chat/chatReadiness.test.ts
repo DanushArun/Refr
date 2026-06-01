@@ -25,6 +25,16 @@ describe('chatReadiness', () => {
     expect(submitDisabledReason(summary)).toBe('Ask for resume before submitting');
   });
 
+  test('test_readiness_when_resume_missing_expected_endorsement_copy', () => {
+    const summary = buildReadiness({
+      messages: [message('I want the DevOps role')],
+      stage: 'matched',
+      targetRole: 'DevOps Engineer',
+    });
+
+    expect(summary.statusDetail).toBe('Collect a resume link before sending an endorsement.');
+  });
+
   test('test_readiness_when_resume_and_role_present_expected_ready', () => {
     const summary = buildReadiness({
       messages: [message('Resume https://example.com/resume')],

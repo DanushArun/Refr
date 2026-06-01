@@ -1,18 +1,18 @@
 /**
  * Endorsly Design System - Typography
  *
- * Bricolage Grotesque - expressive social-career moments and profile identity
- * TikTok Sans         - product UI, settings, lists, navigation, chat, forms
- * Geist Mono          - numbers, stats, payouts, ranks, Endorsement Score
+ * Cabinet Grotesk - Awwwards-listed accent for titles and identity moments
+ * TikTok Sans     - product UI, settings, lists, navigation, chat, forms
+ * Geist Mono      - numbers, stats, payouts, ranks, Endorsement Score
  *
  * Legacy "Outfit-*" and "InstrumentSerif-*" aliases remain in app/_layout.tsx.
  * They intentionally resolve to non-bold weights to keep the app light.
  */
 
 export const fontFamilies = {
-  heading: 'BricolageGrotesque-Regular',
-  headingMedium: 'BricolageGrotesque-Medium',
-  headingItalic: 'BricolageGrotesque-Medium',
+  heading: 'CabinetGrotesk-Regular',
+  headingMedium: 'CabinetGrotesk-Medium',
+  headingItalic: 'CabinetGrotesk-Regular',
   body: 'TikTokSans-Regular',
   bodyMedium: 'TikTokSans-Medium',
   bodySemiBold: 'TikTokSans-Semibold',

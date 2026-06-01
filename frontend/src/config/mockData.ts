@@ -608,7 +608,7 @@ const FEED_CARDS: FeedCard[] = [
     body:
       'Data from 500+ Endorsly endorsements: endorsed candidates are 4.2x more '
       + 'likely to get an interview and 2.8x more likely to get an offer. '
-      + 'A referrer puts their reputation on the line. That changes '
+      + 'A referrer puts their name on the endorsement. That changes '
       + 'everything.',
     author: 'Endorsly Editorial',
     tags: ['referrals', 'data', 'career-advice'],
