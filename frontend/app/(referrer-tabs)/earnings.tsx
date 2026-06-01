@@ -1,10 +1,6 @@
-import { LaunchRouteGate } from '../../src/components/navigation/LaunchRouteGate';
+import type { ReactElement } from 'react';
 import { EarningsScreen } from '../../src/screens/EarningsScreen';
 
-export default function EarningsRoute() {
-  return (
-    <LaunchRouteGate fallbackHref="/(referrer-tabs)/discover">
-      <EarningsScreen />
-    </LaunchRouteGate>
-  );
+export default function EarningsRoute(): ReactElement {
+  return <EarningsScreen />;
 }

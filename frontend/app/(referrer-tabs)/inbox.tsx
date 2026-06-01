@@ -1,4 +1,4 @@
-import { LaunchRouteGate } from '../../src/components/navigation/LaunchRouteGate';
+import type { ReactElement } from 'react';
 import { EndorserInboxScreen } from '../../src/screens/EndorserInboxScreen';
 
 /**
@@ -9,10 +9,6 @@ import { EndorserInboxScreen } from '../../src/screens/EndorserInboxScreen';
  * `discover.tsx`). The label "Inbox" finally maps to what users expect:
  * a list of conversations.
  */
-export default function EndorserInboxRoute() {
-  return (
-    <LaunchRouteGate fallbackHref="/(referrer-tabs)/discover">
-      <EndorserInboxScreen />
-    </LaunchRouteGate>
-  );
+export default function EndorserInboxRoute(): ReactElement {
+  return <EndorserInboxScreen />;
 }

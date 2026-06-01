@@ -238,56 +238,62 @@ export function SeekerCard({
     <GestureDetector gesture={gesture}>
       <Animated.View
         entering={enterAnim}
-        style={[styles.cardWrapper, isTop ? topStyle : backStyle]}
+        style={styles.cardWrapper}
       >
-        <View style={styles.ambientShadow} />
+        <Animated.View style={[styles.cardInner, isTop ? topStyle : backStyle]}>
+          <View style={styles.ambientShadow} />
 
-        <View style={styles.surface}>
-          {isTop && (
-            <>
-              <Animated.View
-                pointerEvents="none"
-                style={[styles.reactiveGlow, reactiveGlowStyle]}
-              />
-              <SwipeStamp translateX={translateX} kind="request" commitLabel="ENDORSE" />
-              <SwipeStamp translateX={translateX} kind="pass" />
-            </>
-          )}
+          <View style={styles.surface}>
+            {isTop && (
+              <>
+                <Animated.View
+                  pointerEvents="none"
+                  style={[styles.reactiveGlow, reactiveGlowStyle]}
+                />
+                <SwipeStamp translateX={translateX} kind="request" commitLabel="ENDORSE" />
+                <SwipeStamp translateX={translateX} kind="pass" />
+              </>
+            )}
 
-          <Pressable onPress={isTop ? handleTap : undefined} style={styles.tapArea}>
-            {isTop ? <TopCardContent card={card} /> : <StackPreview />}
-          </Pressable>
-
-          {/* Subtle diagonal sheen only — no hard 1px bevel lines on the
-              swipe cards. The bevels read as ugly white stripes against the
-              dark brand zone. */}
-          <LinearGradient
-            colors={['rgba(255,255,255,0.06)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.05)']}
-            locations={[0, 0.55, 1]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.materialSheen}
-            pointerEvents="none"
-          />
-        </View>
-
-        {isTop && canUndo && onUndo && (
-          <View
-            style={styles.clipMount}
-            pointerEvents="box-none"
-          >
-            <Pressable
-              onPress={onUndo}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.undoCircle,
-                pressed && styles.undoCirclePressed,
-              ]}
-            >
-              <Ionicons name="arrow-undo" size={14} color={colors.gold} />
+            <Pressable onPress={isTop ? handleTap : undefined} style={styles.tapArea}>
+              {isTop ? <TopCardContent card={card} /> : <StackPreview />}
             </Pressable>
+
+            {/* Subtle diagonal sheen only — no hard 1px bevel lines on the
+                swipe cards. The bevels read as ugly white stripes against the
+                dark brand zone. */}
+            <LinearGradient
+              colors={[
+                'rgba(255,255,255,0.06)',
+                'rgba(255,255,255,0)',
+                'rgba(0,0,0,0.05)',
+              ]}
+              locations={[0, 0.55, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.materialSheen}
+              pointerEvents="none"
+            />
           </View>
-        )}
+
+          {isTop && canUndo && onUndo && (
+            <View
+              style={styles.clipMount}
+              pointerEvents="box-none"
+            >
+              <Pressable
+                onPress={onUndo}
+                hitSlop={8}
+                style={({ pressed }) => [
+                  styles.undoCircle,
+                  pressed && styles.undoCirclePressed,
+                ]}
+              >
+                <Ionicons name="arrow-undo" size={14} color={colors.gold} />
+              </Pressable>
+            </View>
+          )}
+        </Animated.View>
       </Animated.View>
     </GestureDetector>
   );
@@ -402,6 +408,9 @@ const styles = StyleSheet.create({
     right: 20,
     top: 0,
     height: CARD_HEIGHT,
+  },
+  cardInner: {
+    flex: 1,
   },
   ambientShadow: {
     ...StyleSheet.absoluteFillObject,

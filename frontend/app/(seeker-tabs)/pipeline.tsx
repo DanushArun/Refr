@@ -1,10 +1,6 @@
-import { LaunchRouteGate } from '../../src/components/navigation/LaunchRouteGate';
+import type { ReactElement } from 'react';
 import { PipelineScreen } from '../../src/screens/PipelineScreen';
 
-export default function PipelineRoute() {
-  return (
-    <LaunchRouteGate fallbackHref="/(seeker-tabs)/discover">
-      <PipelineScreen />
-    </LaunchRouteGate>
-  );
+export default function PipelineRoute(): ReactElement {
+  return <PipelineScreen />;
 }

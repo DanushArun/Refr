@@ -1,11 +1,6 @@
-import { LaunchRouteSettler } from '../../src/components/navigation/LaunchRouteGate';
+import type { ReactElement } from 'react';
 import { DiscoverScreen } from '../../src/screens/DiscoverScreen';
 
-export default function DiscoverRoute() {
-  console.log('[route-debug] Seeker DiscoverRoute render');
-  return (
-    <LaunchRouteSettler>
-      <DiscoverScreen />
-    </LaunchRouteSettler>
-  );
+export default function DiscoverRoute(): ReactElement {
+  return <DiscoverScreen />;
 }

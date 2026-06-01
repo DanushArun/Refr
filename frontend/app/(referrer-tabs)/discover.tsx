@@ -1,4 +1,4 @@
-import { LaunchRouteSettler } from '../../src/components/navigation/LaunchRouteGate';
+import type { ReactElement } from 'react';
 import { EndorserDiscoverScreen } from '../../src/screens/EndorserDiscoverScreen';
 
 /**
@@ -8,10 +8,6 @@ import { EndorserDiscoverScreen } from '../../src/screens/EndorserDiscoverScreen
  * (Was previously routed at `/inbox`, which was misleading — that label
  * now belongs to the actual chat inbox at `inbox.tsx`.)
  */
-export default function EndorserDiscoverRoute() {
-  return (
-    <LaunchRouteSettler>
-      <EndorserDiscoverScreen />
-    </LaunchRouteSettler>
-  );
+export default function EndorserDiscoverRoute(): ReactElement {
+  return <EndorserDiscoverScreen />;
 }
