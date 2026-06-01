@@ -19,6 +19,7 @@ import { brandForName } from './companyBrand';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
 import { SwipeStamp } from './SwipeStamp';
+import { DISCOVER_CARD_HEIGHT, discoverCardLayout } from './discoverCardLayout';
 import type {
   EntryFrom,
   SwipeCommand,
@@ -26,12 +27,11 @@ import type {
 } from './SwipeDeck';
 import type { SeekerCard as SeekerCardData } from './seekerCardData';
 
-const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
+const { width: WINDOW_WIDTH } = Dimensions.get('window');
 const COMMIT_THRESHOLD = WINDOW_WIDTH * 0.32;
 const FLY_OFF_X = WINDOW_WIDTH * 1.4;
 const SWIPE_OUT_MS = 220;
 const ENTRY_IN_MS = 320;
-const CARD_HEIGHT = Math.min(580, Math.round(WINDOW_HEIGHT * 0.62));
 const MAX_DRIFT_Y = 90;
 const BACK_RISE_TRANSLATE_Y = 8;
 const BACK_RISE_SCALE = 0.025;
@@ -351,7 +351,6 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
         <Text numberOfLines={1} style={styles.overlayMeta}>
           {skillLine}
         </Text>
-        <View style={styles.grabberHint} />
       </View>
     </View>
   );
@@ -404,10 +403,10 @@ function StackPreview() {
 const styles = StyleSheet.create({
   cardWrapper: {
     position: 'absolute',
-    left: 20,
-    right: 20,
+    left: discoverCardLayout.inset,
+    right: discoverCardLayout.inset,
     top: 0,
-    height: CARD_HEIGHT,
+    height: DISCOVER_CARD_HEIGHT,
   },
   cardInner: {
     flex: 1,
@@ -415,7 +414,7 @@ const styles = StyleSheet.create({
   ambientShadow: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#000000',
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
     opacity: 0.45,
     transform: [{ translateY: 22 }],
     shadowColor: '#000000',
@@ -425,7 +424,7 @@ const styles = StyleSheet.create({
   },
   surface: {
     flex: 1,
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
     overflow: 'hidden',
     backgroundColor: colors.cardSurface,
     shadowColor: '#000000',
@@ -455,14 +454,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 28,
-    paddingBottom: 28,
-    gap: 9,
+    paddingHorizontal: discoverCardLayout.overlayPaddingHorizontal,
+    paddingBottom: discoverCardLayout.overlayPaddingBottom,
+    gap: discoverCardLayout.overlayGap,
   },
   overlayTitleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
+    alignItems: 'flex-start',
+    gap: discoverCardLayout.titleRowGap,
   },
   candidateName: {
     flex: 1,
@@ -476,17 +475,18 @@ const styles = StyleSheet.create({
   },
   experienceChip: {
     minWidth: 78,
-    height: 34,
-    borderRadius: 17,
+    height: discoverCardLayout.chipHeight,
+    borderRadius: discoverCardLayout.chipRadius,
     borderWidth: 1,
     borderColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: discoverCardLayout.chipPaddingHorizontal,
     backgroundColor: 'rgba(3, 7, 18, 0.42)',
   },
   experienceChipText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     color: colors.goldBright,
@@ -509,15 +509,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: 'rgba(245, 241, 232, 0.72)',
   },
-  grabberHint: {
-    alignSelf: 'center',
-    width: 36,
-    height: 5,
-    borderRadius: 999,
-    marginTop: 18,
-    backgroundColor: 'rgba(245, 241, 232, 0.44)',
-  },
-
   /* Stack preview — muted sailor gold plate, mirrors EndorserCard back-of-deck */
   stackPlate: {
     flex: 1,
@@ -527,14 +518,14 @@ const styles = StyleSheet.create({
   /* Credit-card material overlays */
   materialSheen: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
   },
 
   /* Reactive gold/navy mood overlay — gold while pulling right (accept),
      cool navy while pulling left (pass). */
   reactiveGlow: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
     zIndex: 4,
   },
 

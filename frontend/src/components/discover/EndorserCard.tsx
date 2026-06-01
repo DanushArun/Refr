@@ -21,6 +21,7 @@ import { getCompanyBrand } from './companyBrand';
 import { officeImageFor } from '../activity/companyOffices';
 import { colors } from '../../theme/colors';
 import { SwipeStamp } from './SwipeStamp';
+import { DISCOVER_CARD_HEIGHT, discoverCardLayout } from './discoverCardLayout';
 import type {
   EntryFrom,
   SwipeCommand,
@@ -28,12 +29,11 @@ import type {
 } from './SwipeDeck';
 import type { EndorserCard as EndorserCardData } from './endorserCardData';
 
-const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
+const { width: WINDOW_WIDTH } = Dimensions.get('window');
 const COMMIT_THRESHOLD = WINDOW_WIDTH * 0.32;
 const FLY_OFF_X = WINDOW_WIDTH * 1.4;
 const SWIPE_OUT_MS = 220;
 const ENTRY_IN_MS = 320;
-const CARD_HEIGHT = Math.min(580, Math.round(WINDOW_HEIGHT * 0.62));
 
 // Caps vertical drift so a panicked diagonal drag can't fling the card off
 // the deck plane. We let the user see ±90px of vertical motion at most;
@@ -499,10 +499,10 @@ function StackPreview() {
 const styles = StyleSheet.create({
   cardWrapper: {
     position: 'absolute',
-    left: 20,
-    right: 20,
+    left: discoverCardLayout.inset,
+    right: discoverCardLayout.inset,
     top: 0,
-    height: CARD_HEIGHT,
+    height: DISCOVER_CARD_HEIGHT,
   },
   cardInner: {
     flex: 1,
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   ambientShadow: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#000000',
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
     opacity: 0.50,
     transform: [{ translateY: 28 }],
     shadowColor: '#000000',
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   },
   surface: {
     flex: 1,
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
     overflow: 'hidden',
     backgroundColor: colors.cardSurface,
     // Drop shadow gives the card the "lifted credit card" feel
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   /* Subtle diagonal sheen — the only material overlay on the swipe card */
   materialSheen: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
   },
 
   /* Reactive ambient overlay — gold for "endorse," cool navy for "pass."
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
      a sticker. */
   reactiveGlow: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
+    borderRadius: discoverCardLayout.radius,
     zIndex: 4,
   },
 
@@ -566,52 +566,53 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 28,
-    paddingBottom: 32,
-    gap: 12,
+    paddingHorizontal: discoverCardLayout.overlayPaddingHorizontal,
+    paddingBottom: discoverCardLayout.overlayPaddingBottom,
+    gap: discoverCardLayout.overlayGap,
   },
   overlayTitleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
+    alignItems: 'flex-start',
+    gap: discoverCardLayout.titleRowGap,
   },
   companyTitle: {
     flex: 1,
     fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 38,
-    lineHeight: 43,
+    fontSize: 36,
+    lineHeight: 40,
     color: colors.cream,
     textShadowColor: 'rgba(0, 0, 0, 0.45)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   verifiedChip: {
-    minWidth: 92,
-    height: 36,
-    borderRadius: 18,
+    minWidth: 88,
+    height: discoverCardLayout.chipHeight,
+    borderRadius: discoverCardLayout.chipRadius,
     borderWidth: 1,
     borderColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: discoverCardLayout.chipPaddingHorizontal,
     backgroundColor: 'rgba(3, 7, 18, 0.42)',
   },
   verifiedChipText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     letterSpacing: 0.9,
     color: colors.goldBright,
   },
   companyRole: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 29,
-    lineHeight: 34,
-    color: colors.cream,
+    fontFamily: 'Outfit-Medium',
+    fontSize: 16,
+    lineHeight: 21,
+    color: 'rgba(245, 241, 232, 0.78)',
   },
   endorserProofRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginTop: 4,
+    marginTop: 2,
   },
   endorserProofText: {
     flex: 1,
@@ -622,9 +623,9 @@ const styles = StyleSheet.create({
   },
   endorserMetaLine: {
     fontFamily: 'Outfit-Regular',
-    fontSize: 16,
-    lineHeight: 21,
-    color: 'rgba(245, 241, 232, 0.76)',
+    fontSize: 15,
+    lineHeight: 20,
+    color: 'rgba(245, 241, 232, 0.72)',
   },
 
   /* Stack preview — anonymous plate, no identity content. Muted sailor gold
