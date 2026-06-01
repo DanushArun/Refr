@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
 import { Phrase } from '../utils/haptics';
@@ -20,8 +21,7 @@ import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 type CompanyFilter = 'all' | string;
 
-export function DiscoverScreen() {
-  console.log('[route-debug] DiscoverScreen render');
+export function DiscoverScreen(): React.ReactElement {
   const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildEndorserCards('1'), [queueKey]);
@@ -158,7 +158,6 @@ export function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.debugText}>DISCOVER</Text>
       {/* Constellation reveals only when the deck is exhausted — the
           "you're caught up" reward beat. Hidden during normal swiping so
           the deck holds the user's full attention. */}
@@ -268,13 +267,5 @@ const styles = StyleSheet.create({
     // Reserve space below the deck for the action bar + remaining badge +
     // floating tab bar (84pt). Keeps cards from bleeding into the chrome.
     paddingBottom: 116,
-  },
-  debugText: {
-    position: 'absolute',
-    top: 140,
-    left: 24,
-    color: '#ffffff',
-    fontSize: 28,
-    zIndex: 1000,
   },
 });

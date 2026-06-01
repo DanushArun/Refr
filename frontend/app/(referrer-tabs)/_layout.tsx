@@ -1,9 +1,17 @@
+import type { ComponentProps, ReactElement } from 'react';
 import { Tabs } from 'expo-router';
-import { LiquidGlassTabBar } from '../../src/components/navigation/LiquidGlassTabBar';
-import {
-  SMOOTH_TAB_SCREEN_OPTIONS,
-  TAB_DETACH_INACTIVE_SCREENS,
-} from '../../src/components/navigation/tabTransition';
+import { Ionicons } from '@expo/vector-icons';
+import { BASE_TAB_SCREEN_OPTIONS } from '../../src/components/navigation/tabBarOptions';
+
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const ICONS: Record<string, { focused: IconName; unfocused: IconName }> = {
+  discover: { focused: 'compass', unfocused: 'compass-outline' },
+  inbox: { focused: 'mail', unfocused: 'mail-outline' },
+  active: { focused: 'people', unfocused: 'people-outline' },
+  earnings: { focused: 'trophy', unfocused: 'trophy-outline' },
+  profile: { focused: 'person', unfocused: 'person-outline' },
+};
 
 /**
  * Referrer tab layout — five tabs.
@@ -16,13 +24,23 @@ import {
  *   Earnings — payout history + reputation score.
  *   Profile  — settings + verification.
  */
-export default function ReferrerTabsLayout() {
+export default function ReferrerTabsLayout(): ReactElement {
   return (
     <Tabs
       initialRouteName="discover"
-      detachInactiveScreens={TAB_DETACH_INACTIVE_SCREENS}
-      screenOptions={SMOOTH_TAB_SCREEN_OPTIONS}
-      tabBar={(props) => <LiquidGlassTabBar {...props} />}
+      screenOptions={({ route }) => ({
+        ...BASE_TAB_SCREEN_OPTIONS,
+        tabBarIcon: ({ color, focused }) => {
+          const icon = ICONS[route.name] ?? ICONS.discover;
+          return (
+            <Ionicons
+              name={focused ? icon.focused : icon.unfocused}
+              size={23}
+              color={color}
+            />
+          );
+        },
+      })}
     >
       <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
       <Tabs.Screen name="inbox" options={{ title: 'Inbox' }} />

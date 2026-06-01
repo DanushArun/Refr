@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   SwipeDeck,
   type SwipeDeckHandle,
@@ -35,7 +36,7 @@ import { FilterBar, type FilterOption } from '../components/common/FilterBar';
  * endorser's main vouching decision is "is this person at a level I'd
  * stake my reputation on?".
  */
-export function EndorserDiscoverScreen() {
+export function EndorserDiscoverScreen(): React.ReactElement {
   const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildSeekerCards('2'), [queueKey]);

@@ -7,6 +7,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "platforms": ["ios", "android", "web"],
+    "splash": {
+      "backgroundColor": "#05070D",
+      "resizeMode": "contain"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.refr.app",
@@ -27,7 +31,16 @@
       }
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#05070D",
+          "dark": {
+            "backgroundColor": "#05070D"
+          }
+        }
+      ]
     ],
     "owner": "danush07",
     "runtimeVersion": "exposdk:54.0.0",

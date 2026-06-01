@@ -1,10 +1,6 @@
-import { LaunchRouteGate } from '../../src/components/navigation/LaunchRouteGate';
+import type { ReactElement } from 'react';
 import { MatchesScreen } from '../../src/screens/MatchesScreen';
 
-export default function MatchesRoute() {
-  return (
-    <LaunchRouteGate fallbackHref="/(seeker-tabs)/discover">
-      <MatchesScreen />
-    </LaunchRouteGate>
-  );
+export default function MatchesRoute(): ReactElement {
+  return <MatchesScreen />;
 }
