@@ -11,6 +11,12 @@ export const activeStyles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing[5],
+  },
+  loadingSignal: {
+    width: 112,
+    height: 56,
+    opacity: 0.68,
   },
   header: {
     paddingHorizontal: layout.screenPaddingH,
@@ -47,6 +53,12 @@ export const activeStyles = StyleSheet.create({
     justifyContent: 'center',
     padding: layout.screenPaddingH,
     gap: spacing[3],
+  },
+  emptySignal: {
+    width: 132,
+    height: 60,
+    marginBottom: spacing[1],
+    opacity: 0.48,
   },
   emptyTitle: { ...typography.h4, color: colors.textSecondary },
   emptyBody: {

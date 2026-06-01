@@ -2,13 +2,13 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
-import { View,
-  Text,
-  StyleSheet,
+import {
+  Alert,
   FlatList,
-  
-  ActivityIndicator,
-  Alert, } from 'react-native';
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -16,6 +16,7 @@ import { layout, rhythm, spacing } from '../theme/spacing';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
 import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
+import { DotMatrixField } from '../components/common/DotMatrixField';
 import { Skeleton } from '../components/common/Skeleton';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 import { Phrase } from '../utils/haptics';
@@ -236,6 +237,13 @@ export function PipelineScreen() {
 
         {visibleItems.length === 0 ? (
           <View style={styles.empty}>
+            <DotMatrixField
+              variant="static"
+              tone="dark"
+              cellSize={10}
+              dotRadius={0.9}
+              style={styles.emptySignal}
+            />
             <Text style={styles.emptyTitle}>Nothing in this lane</Text>
             <Text style={styles.emptyBody}>
               No endorsements match this filter yet.
@@ -316,7 +324,16 @@ function PipelineSkeletonCard() {
         <Skeleton width={160} height={20} />
         <Skeleton width={120} height={14} />
         <Skeleton width={200} height={12} style={{ marginTop: 4 }} />
-        <Skeleton width="100%" height={28} style={{ marginTop: 14 }} />
+        <View style={styles.skeletonSignalSlot}>
+          <DotMatrixField
+            variant="pulse"
+            tone="dark"
+            active
+            cellSize={9}
+            dotRadius={0.85}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </View>
       </View>
     </View>
   );
@@ -325,7 +342,6 @@ function PipelineSkeletonCard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   safe: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     paddingHorizontal: layout.screenPaddingH,
     paddingTop: rhythm.screenTop,
@@ -352,12 +368,26 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 8,
   },
+  skeletonSignalSlot: {
+    height: 34,
+    marginTop: 14,
+    borderRadius: 10,
+    overflow: 'hidden',
+    opacity: 0.54,
+    backgroundColor: colors.surface,
+  },
   empty: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: layout.screenPaddingH,
     gap: spacing[3],
+  },
+  emptySignal: {
+    width: 132,
+    height: 60,
+    marginBottom: spacing[1],
+    opacity: 0.48,
   },
   emptyTitle: { ...typography.h4, color: colors.textSecondary },
   emptyBody: {

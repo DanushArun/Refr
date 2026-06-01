@@ -43,7 +43,7 @@ import {
  *                 carousel up top; the "go say hi" prompt. Same matches are
  *                 *also* in Conversations below — the carousel is a
  *                 spotlight, not a hide-from-list.
- *   2. Active   — ongoing conversations. Compact pill rows with stage
+ *   2. Active   — ongoing conversations. Compact divider rows with stage
  *                 rails; the daily-scan surface.
  *   3. Resting  — terminal or stale (30+ days) matches. Collapsed by
  *                 default. Never deleted; this is how we keep history
@@ -154,7 +154,7 @@ export function MatchesScreen() {
   if (loading) {
     // Skeleton placeholder mirrors the 3-tier shape: title + caption,
     // the fresh carousel as a row of avatar circles, then a stack of
-    // active-row pills. Layout doesn't jump when the API resolves.
+    // active conversation rows. Layout doesn't jump when the API resolves.
     return (
       <View style={styles.container}>
         <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>

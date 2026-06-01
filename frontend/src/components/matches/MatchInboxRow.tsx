@@ -10,23 +10,8 @@ import { StageRail } from './StageRail';
 /**
  * Active conversation row — Endorsly-specific shape.
  *
- * Each row is its own pill, not a row in a unified slab. Layout:
- * rail, avatar, participant metadata, then time and stage on the right.
- * The 4-segment vertical rail is the compact pipeline-progress cue.
- *
- * Engineering choices:
- *   1. Stand-alone pill with 8px gap to neighbours — breaks the "infinite
- *      scrolling list" feel of a flat slab. Each conversation reads as its
- *      own object.
- *   2. Asymmetric border-radius (24/16) — gives the row directional weight
- *      so the eye flows left-to-right toward the time/CTA.
- *   3. Vertical stage rail on the left — encodes the referral's pipeline
- *      position visually without consuming horizontal space. Same data the
- *      Activity tab uses, compressed for inbox density.
- *   4. Gold rim (1 px @ 18% alpha) + dark glass surface — consistent with
- *      the rest of the app's nautical glass-morphism language.
- *   5. Press feedback — gold wash + slight scale-down so the row feels like
- *      a tappable artefact, not an inert bullet.
+ * This is a list item, not a boxed card. The parent list owns the top rule;
+ * each row draws one bottom divider so conversations read as a clean ledger.
  */
 
 export interface MatchInboxRowData {
@@ -72,10 +57,11 @@ function MatchInboxRowImpl({ data, onPress, timeLabel }: Props) {
   return (
     <PressableScale
       onPress={onPress}
-      pressedScale={0.98}
+      pressedScale={0.995}
+      pressedOpacity={0.76}
       style={[
-        styles.pill,
-        isUnread && styles.pillUnread,
+        styles.row,
+        isUnread && styles.rowUnread,
       ]}
     >
       {/* Vertical stage rail — visual progress, no text */}
@@ -130,34 +116,21 @@ export const MatchInboxRow = React.memo(MatchInboxRowImpl, (prev, next) =>
 );
 
 const styles = StyleSheet.create({
-  /* Pill is the row container — own surface, own rim, own shadow. The
-     asymmetric border-radius (top-left 24, bottom-right 16) gives a subtle
-     directional flow toward the time stamp. */
-  pill: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    minHeight: 78,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.025)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.04)',
+    minHeight: 76,
+    paddingLeft: 6,
+    paddingRight: 2,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(250, 250, 247, 0.10)',
   },
-  /* Unread state lifts the rim to full gold + adds a soft shadow halo so
-     the row reads as "needs attention" before the eye even parses content. */
-  pillUnread: {
-    borderColor: 'rgba(212, 167, 68, 0.55)',
-    backgroundColor: 'rgba(212, 167, 68, 0.08)',
-    shadowColor: colors.gold,
-    shadowOpacity: 0.20,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+  rowUnread: {
+    backgroundColor: 'rgba(212, 167, 68, 0.045)',
+    borderBottomColor: 'rgba(212, 167, 68, 0.26)',
   },
-  // pillPressed removed — PressableScale now handles the pressed-state
-  // transform consistently with every other tap target in the app.
 
   middle: {
     flex: 1,

@@ -16,6 +16,7 @@ import Animated, {
 import type { SharedValue } from 'react-native-reanimated';
 
 import { colors } from '../../theme/colors';
+import { DotMatrixField } from '../common/DotMatrixField';
 import { buildReputationRailMetrics, type ReputationRailMetrics } from './reputationRailLogic';
 import {
   MARKER_WIDTH,
@@ -116,6 +117,14 @@ function RailTrack({
   return (
     <View style={styles.railPanel}>
       <View style={styles.railField}>
+        <DotMatrixField
+          variant="progress"
+          progress={metrics.progress}
+          tone="dark"
+          cellSize={9}
+          dotRadius={0.85}
+          style={styles.railSignalField}
+        />
         <ScoreMarker score={score} railWidth={railWidth} markerProgress={markerProgress} />
         <View style={styles.railBase} onLayout={onRailLayout}>
           <Animated.View style={[styles.railFill, fillStyle]}>
@@ -126,7 +135,6 @@ function RailTrack({
               style={styles.fillGradient}
             />
           </Animated.View>
-          <View style={styles.railHighlight} pointerEvents="none" />
         </View>
       </View>
       <RailMeta metrics={metrics} />

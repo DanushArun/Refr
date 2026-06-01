@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import type { ReferralEventCard as ReferralEventCardType } from '@refr/shared';
 import { GlassCard } from '../common/GlassCard';
+import { DotMatrixField } from '../common/DotMatrixField';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
@@ -19,25 +20,39 @@ interface ReferralEventCardProps {
  * For hires: triggers the helper's high celebration in the referrer.
  */
 export function ReferralEventCard({ card }: ReferralEventCardProps) {
+  const signalProgress = eventSignalProgress(card.eventDescription);
+
   return (
     <Animated.View entering={FadeIn.duration(260).reduceMotion(ReduceMotion.System)}>
-    <GlassCard style={styles.card}>
-      <View style={styles.inner}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>→</Text>
+      <GlassCard style={styles.card}>
+        <DotMatrixField
+          variant="progress"
+          progress={signalProgress}
+          tone="dark"
+          cellSize={8}
+          dotRadius={0.8}
+          style={styles.signalStamp}
+        />
+        <View style={styles.inner}>
+          <View style={styles.iconContainer}>
+            <Text style={styles.icon}>→</Text>
+          </View>
+          <View style={styles.content}>
+            <Text style={styles.headline}>
+              {card.referrerDisplayName} endorsed {card.seekerDisplayName} for {card.companyName}
+            </Text>
+            <Text style={styles.meta}>
+              {card.eventDescription} · {formatTimeAgo(card.createdAt)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.content}>
-          <Text style={styles.headline}>
-            {card.referrerDisplayName} endorsed {card.seekerDisplayName} for {card.companyName}
-          </Text>
-          <Text style={styles.meta}>
-            {card.eventDescription} · {formatTimeAgo(card.createdAt)}
-          </Text>
-        </View>
-      </View>
-    </GlassCard>
+      </GlassCard>
     </Animated.View>
   );
+}
+
+function eventSignalProgress(description: string): number {
+  return /hired|converted|joined|accepted/i.test(description) ? 0.82 : 0.46;
 }
 
 function formatTimeAgo(iso: string): string {
@@ -54,8 +69,13 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing[4],
     marginVertical: spacing[2],
   },
-  cardHire: {
-    backgroundColor: colors.successLight,
+  signalStamp: {
+    position: 'absolute',
+    top: 8,
+    right: 0,
+    bottom: 8,
+    width: 96,
+    opacity: 0.52,
   },
   inner: {
     flexDirection: 'row',
@@ -82,11 +102,6 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text,
     lineHeight: 22,
-  },
-  celebration: {
-    ...typography.bodySmall,
-    color: colors.success,
-    fontFamily: 'Outfit-Medium',
   },
   meta: {
     ...typography.caption,

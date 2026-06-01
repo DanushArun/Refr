@@ -49,17 +49,20 @@ export const matchesStyles = StyleSheet.create({
     width: 76,
   },
   skelActiveStack: {
-    gap: 8,
     marginTop: spacing[3],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(250, 250, 247, 0.10)',
   },
   skelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    backgroundColor: colors.surfaceInset,
+    minHeight: 76,
+    paddingLeft: 6,
+    paddingRight: 2,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(250, 250, 247, 0.10)',
   },
   skelRowMiddle: { flex: 1 },
   activeWrap: {
@@ -89,7 +92,10 @@ export const matchesStyles = StyleSheet.create({
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
-  activeStack: { gap: spacing[2] },
+  activeStack: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(250, 250, 247, 0.10)',
+  },
   filteredEmpty: {
     paddingHorizontal: 4,
     paddingVertical: 12,

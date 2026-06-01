@@ -3,7 +3,6 @@ import type {
   BottomTabNavigationOptions,
 } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 import {
   Keyboard,
@@ -125,15 +124,7 @@ function itemStyle(pressed: boolean, focused: boolean): StyleProp<ViewStyle> {
 function BarSurface(): ReactElement {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <LinearGradient
-        colors={['rgba(255,255,255,0.12)', 'rgba(5,7,13,0.78)']}
-        end={{ x: 1, y: 1 }}
-        start={{ x: 0, y: 0 }}
-        style={StyleSheet.absoluteFill}
-      />
       <View style={styles.innerShade} />
-      <View style={styles.topSheen} />
-      <View style={styles.bottomGlow} />
     </View>
   );
 }
@@ -216,23 +207,7 @@ const styles = StyleSheet.create({
   },
   innerShade: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(1, 4, 12, 0.42)',
-  },
-  topSheen: {
-    position: 'absolute',
-    top: 0,
-    left: 28,
-    right: 28,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0)',
-  },
-  bottomGlow: {
-    position: 'absolute',
-    left: 36,
-    right: 36,
-    bottom: 0,
-    height: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0)',
+    backgroundColor: 'rgba(102, 74, 15, 0.35)',
   },
   row: {
     flex: 1,

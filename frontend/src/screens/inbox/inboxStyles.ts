@@ -66,7 +66,10 @@ export const inboxStyles = StyleSheet.create({
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
-  activeStack: { gap: spacing[2] },
+  activeStack: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(250, 250, 247, 0.10)',
+  },
   filteredEmpty: {
     paddingHorizontal: 4,
     paddingVertical: 12,

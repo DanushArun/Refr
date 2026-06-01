@@ -73,13 +73,19 @@ export const reputationRailStyles = StyleSheet.create({
     height: 76,
     justifyContent: 'flex-end',
   },
+  railSignalField: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 12,
+    opacity: 0.72,
+  },
   railBase: {
     height: 12,
     borderRadius: 999,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.075)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.085)',
   },
   railFill: {
     height: '100%',
@@ -88,14 +94,6 @@ export const reputationRailStyles = StyleSheet.create({
   },
   fillGradient: {
     ...StyleSheet.absoluteFillObject,
-  },
-  railHighlight: {
-    position: 'absolute',
-    top: 1,
-    left: 8,
-    right: 8,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.20)',
   },
   marker: {
     position: 'absolute',
