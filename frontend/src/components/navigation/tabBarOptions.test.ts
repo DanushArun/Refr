@@ -1,5 +1,6 @@
 import {
   BASE_TAB_SCREEN_OPTIONS,
+  LIQUID_TAB_BAR_HEIGHT,
   TAB_BAR_STYLE,
   TAB_SCENE_STYLE,
 } from './tabBarOptions';
@@ -14,7 +15,19 @@ describe('tabBarOptions', () => {
     expect(TAB_SCENE_STYLE.backgroundColor).toBe('transparent');
   });
 
-  it('test_tab_bar_when_configured_uses_dark_background', (): void => {
-    expect(TAB_BAR_STYLE.backgroundColor).toBe(colors.backgroundElevated);
+  it('test_tab_switching_when_configured_keeps_scene_visible', (): void => {
+    expect(BASE_TAB_SCREEN_OPTIONS.animation).toBe('none');
+  });
+
+  it('test_tab_bar_when_configured_overlays_scene_content', (): void => {
+    expect(TAB_BAR_STYLE.position).toBe('absolute');
+  });
+
+  it('test_liquid_tab_bar_when_configured_matches_reference_height', (): void => {
+    expect(LIQUID_TAB_BAR_HEIGHT).toBe(75);
+  });
+
+  it('test_tab_bar_when_configured_keeps_gold_active_tint', (): void => {
+    expect(BASE_TAB_SCREEN_OPTIONS.tabBarActiveTintColor).toBe(colors.gold);
   });
 });

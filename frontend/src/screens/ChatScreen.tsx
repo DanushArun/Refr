@@ -18,6 +18,7 @@ import { Avatar } from '../components/common/Avatar';
 import { PressableScale } from '../components/common/PressableScale';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
+import { navigateAfterPress } from '../utils/navigationAfterPress';
 import { useChatController, type ChatController } from './chat/useChatController';
 import { MessageList } from './chat/ChatMessages';
 import { chatStyles as styles } from './chat/chatStyles';
@@ -26,19 +27,7 @@ import { REACTION_EMOJIS } from './chat/chatLogic';
 export function ChatScreen(): React.ReactElement {
   const controller = useChatController();
 
-  if (controller.loading) return <ChatLoading />;
   return <ChatView controller={controller} />;
-}
-
-function ChatLoading(): React.ReactElement {
-  return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.loadingWrap}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    </SafeAreaView>
-  );
 }
 
 function ChatView({ controller }: { controller: ChatController }): React.ReactElement {
@@ -59,18 +48,22 @@ function ChatHeader({ controller }: { controller: ChatController }): React.React
 
   return (
     <View style={styles.header}>
-      <Pressable
-        onPress={() => router.back()}
+      <PressableScale
+        onPress={() => navigateAfterPress(() => router.back())}
         hitSlop={12}
-        style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.6 }]}
+        pressedScale={0.92}
+        pressedOpacity={0.7}
+        style={styles.backBtn}
       >
         <Ionicons name="chevron-back" size={26} color={colors.text} />
-      </Pressable>
-      <Pressable
+      </PressableScale>
+      <PressableScale
         accessibilityRole="button"
         accessibilityLabel={`Open ${controller.participantName} contact info`}
         onPress={() => openChatProfile(controller)}
-        style={({ pressed }) => [styles.headerProfile, pressed && { opacity: 0.75 }]}
+        pressedScale={0.985}
+        pressedOpacity={0.78}
+        style={styles.headerProfile}
       >
         <Avatar
           displayName={controller.participantName}
@@ -83,23 +76,25 @@ function ChatHeader({ controller }: { controller: ChatController }): React.React
             {controller.typing ? <Text style={styles.typingInline}>typing...</Text> : sub}
           </Text>
         </View>
-      </Pressable>
+      </PressableScale>
     </View>
   );
 }
 
 function openChatProfile(controller: ChatController): void {
-  router.push({
-    pathname: '/chat-profile',
-    params: {
-      companyName: controller.companyName,
-      participantAvatar: controller.participantAvatar ?? '',
-      participantName: controller.participantName,
-      participantSubtitle: controller.participantSubtitle ?? '',
-      referralId: controller.referralId,
-      stage: controller.stage,
-      targetRole: controller.targetRole ?? '',
-    },
+  navigateAfterPress(() => {
+    router.push({
+      pathname: '/chat-profile',
+      params: {
+        companyName: controller.companyName,
+        participantAvatar: controller.participantAvatar ?? '',
+        participantName: controller.participantName,
+        participantSubtitle: controller.participantSubtitle ?? '',
+        referralId: controller.referralId,
+        stage: controller.stage,
+        targetRole: controller.targetRole ?? '',
+      },
+    });
   });
 }
 
@@ -114,6 +109,7 @@ function ChatBody({ controller }: { controller: ChatController }): React.ReactEl
         <View style={styles.messageViewport}>
           <MessageList
             groups={controller.grouped}
+            loading={controller.loading}
             viewerId={controller.viewerId}
             deliveryStates={controller.deliveryStates}
             reactions={controller.reactions}
@@ -129,7 +125,9 @@ function ChatBody({ controller }: { controller: ChatController }): React.ReactEl
 }
 
 function QuickReplies({ controller }: { controller: ChatController }): React.ReactElement | null {
-  if (controller.draft.length > 0 || controller.quickReplies.length === 0) return null;
+  if (controller.loading || controller.draft.length > 0 || controller.quickReplies.length === 0) {
+    return null;
+  }
 
   return (
     <View style={styles.quickRow}>
@@ -154,7 +152,7 @@ function QuickReplies({ controller }: { controller: ChatController }): React.Rea
 
 function Composer({ controller }: { controller: ChatController }): React.ReactElement {
   const insets = useSafeAreaInsets();
-  const disabled = !controller.draft.trim() || controller.sending;
+  const disabled = controller.loading || !controller.draft.trim() || controller.sending;
 
   return (
     <View style={[styles.inputRow, { paddingBottom: composerBottomPadding(insets.bottom) }]}>

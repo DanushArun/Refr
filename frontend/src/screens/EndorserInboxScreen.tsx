@@ -24,6 +24,7 @@ import {
 } from '../components/matches/matchTiering';
 import { inboxStyles as styles } from './inbox/inboxStyles';
 import { referralsApi } from '../services/api';
+import { navigateAfterPress } from '../utils/navigationAfterPress';
 import type {
   ReferralStatus,
   ReferrerInboxItem,
@@ -211,17 +212,19 @@ export function EndorserInboxScreen() {
     // resolve it by id. Falls back gracefully if the item isn't there
     // (shouldn't happen in practice — both lists are derived from `items`).
     const source = items.find((i) => i.referral.id === item.referral.id);
-    router.push({
-      pathname: '/chat',
-      params: {
-        referralId: item.referral.id,
-        participantName: item.referrerName,
-        participantAvatar: source?.seekerAvatar ?? '',
-        participantSubtitle: source?.seekerHeadline,
-        targetRole: item.referral.targetRole,
-        companyName: item.companyName,
-        stage: item.referral.status,
-      },
+    navigateAfterPress(() => {
+      router.push({
+        pathname: '/chat',
+        params: {
+          referralId: item.referral.id,
+          participantName: item.referrerName,
+          participantAvatar: source?.seekerAvatar ?? '',
+          participantSubtitle: source?.seekerHeadline,
+          targetRole: item.referral.targetRole,
+          companyName: item.companyName,
+          stage: item.referral.status,
+        },
+      });
     });
   }, [items]);
 

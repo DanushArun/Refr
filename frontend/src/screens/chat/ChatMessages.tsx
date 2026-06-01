@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Skeleton } from '../../components/common/Skeleton';
 import { colors } from '../../theme/colors';
 import { chatStyles as styles } from './chatStyles';
 import {
@@ -19,6 +20,7 @@ import {
 
 interface MessageListProps {
   groups: GroupedMessage[];
+  loading: boolean;
   viewerId: string;
   deliveryStates: Record<string, DeliveryState>;
   reactions: Record<string, string[]>;
@@ -58,12 +60,31 @@ export function MessageList(props: MessageListProps): React.ReactElement {
       showsVerticalScrollIndicator={false}
       onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
       renderItem={renderItem}
+      ListEmptyComponent={props.loading ? <MessageSkeletons /> : null}
       ListFooterComponent={props.typing ? <TypingBubble /> : null}
       removeClippedSubviews={true}
       initialNumToRender={12}
       maxToRenderPerBatch={8}
       windowSize={9}
     />
+  );
+}
+
+function MessageSkeletons(): React.ReactElement {
+  return (
+    <View style={styles.messageSkeletonWrap}>
+      <View style={styles.skeletonTheirs}>
+        <Skeleton width="68%" height={38} radius={18} />
+        <Skeleton width="48%" height={34} radius={18} />
+      </View>
+      <View style={styles.skeletonMine}>
+        <Skeleton width="58%" height={38} radius={18} />
+      </View>
+      <View style={styles.skeletonTheirs}>
+        <Skeleton width="76%" height={38} radius={18} />
+        <Skeleton width="42%" height={34} radius={18} />
+      </View>
+    </View>
   );
 }
 

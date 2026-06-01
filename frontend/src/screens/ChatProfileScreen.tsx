@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -11,7 +10,9 @@ import { router, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '../components/common/Avatar';
+import { PressableScale } from '../components/common/PressableScale';
 import { colors } from '../theme/colors';
+import { navigateAfterPress } from '../utils/navigationAfterPress';
 import type { HeaderAction } from './chat/useChatController';
 import type {
   ReadinessItem,
@@ -54,15 +55,17 @@ export function ChatProfileScreen(): React.ReactElement {
 function ProfileNav({ title }: { title: string }): React.ReactElement {
   return (
     <View style={styles.nav}>
-      <Pressable
+      <PressableScale
         accessibilityLabel="Back to chat"
         accessibilityRole="button"
         hitSlop={12}
-        onPress={() => router.back()}
-        style={({ pressed }) => [styles.navSide, pressed && { opacity: 0.65 }]}
+        onPress={() => navigateAfterPress(() => router.back())}
+        pressedScale={0.92}
+        pressedOpacity={0.7}
+        style={styles.navSide}
       >
         <Ionicons name="chevron-back" size={28} color={colors.text} />
-      </Pressable>
+      </PressableScale>
       <Text style={styles.navTitle}>{title}</Text>
       <View style={styles.navSide} />
     </View>
@@ -95,7 +98,11 @@ function ActionGrid({
 }): React.ReactElement {
   return (
     <View style={styles.actionGrid}>
-      <ActionTile icon="chatbubble-ellipses-outline" label="Message" onPress={router.back} />
+      <ActionTile
+        icon="chatbubble-ellipses-outline"
+        label="Message"
+        onPress={() => navigateAfterPress(() => router.back())}
+      />
       <ActionTile
         disabled={controller.actionDisabled}
         icon={controller.actionIcon}
@@ -235,20 +242,21 @@ function ActionTile({
   primary?: boolean;
 }): React.ReactElement {
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [
+      pressedScale={0.96}
+      pressedOpacity={0.82}
+      style={[
         styles.actionTile,
         primary && styles.actionTilePrimary,
         disabled && styles.actionTileDisabled,
-        pressed && !disabled && { opacity: 0.82 },
       ]}
     >
       <Ionicons name={icon} size={28} color={primary ? colors.accent : colors.text} />
       <Text style={[styles.actionText, primary && styles.actionTextPrimary]}>{label}</Text>
-    </Pressable>
+    </PressableScale>
   );
 }
 

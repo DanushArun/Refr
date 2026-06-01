@@ -58,6 +58,17 @@ export const chatStyles = StyleSheet.create({
     paddingBottom: spacing[5],
     gap: spacing[4],
   },
+  messageSkeletonWrap: {
+    gap: spacing[4],
+  },
+  skeletonTheirs: {
+    alignItems: 'flex-start',
+    gap: spacing[1],
+  },
+  skeletonMine: {
+    alignItems: 'flex-end',
+    gap: spacing[1],
+  },
   groupWrap: { maxWidth: '82%' },
   groupMine: { alignSelf: 'flex-end', alignItems: 'flex-end' },
   groupTheirs: { alignSelf: 'flex-start', alignItems: 'flex-start' },

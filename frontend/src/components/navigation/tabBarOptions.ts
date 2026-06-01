@@ -3,12 +3,14 @@ import { colors } from '../../theme/colors';
 
 export const TAB_SCENE_STYLE = { backgroundColor: 'transparent' } as const;
 
+export const LIQUID_TAB_BAR_HEIGHT = 75;
+export const LIQUID_TAB_BAR_RADIUS = LIQUID_TAB_BAR_HEIGHT / 2;
+
 export const TAB_BAR_STYLE = {
-  backgroundColor: colors.backgroundElevated,
-  borderTopColor: colors.border,
-  height: 84,
-  paddingBottom: 28,
-  paddingTop: 8,
+  backgroundColor: 'transparent',
+  borderTopWidth: 0,
+  elevation: 0,
+  position: 'absolute',
 } as const;
 
 export const BASE_TAB_SCREEN_OPTIONS: BottomTabNavigationOptions = {
@@ -17,7 +19,10 @@ export const BASE_TAB_SCREEN_OPTIONS: BottomTabNavigationOptions = {
   lazy: false,
   sceneStyle: TAB_SCENE_STYLE,
   tabBarActiveTintColor: colors.gold,
+  tabBarAllowFontScaling: false,
   tabBarHideOnKeyboard: true,
   tabBarInactiveTintColor: colors.textTertiary,
+  tabBarLabelPosition: 'below-icon',
+  tabBarShowLabel: true,
   tabBarStyle: TAB_BAR_STYLE,
 };

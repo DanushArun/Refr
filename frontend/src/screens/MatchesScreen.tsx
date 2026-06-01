@@ -22,6 +22,7 @@ import {
 } from '../components/matches/matchTiering';
 import { referralsApi } from '../services/api';
 import { useWarmTabData } from '../hooks/useWarmTabData';
+import { navigateAfterPress } from '../utils/navigationAfterPress';
 import type { SeekerPipelineItem } from '@refr/shared';
 import { matchesStyles as styles } from './matches/matchesStyles';
 import {
@@ -102,7 +103,7 @@ export function MatchesScreen() {
   }, []);
 
   const openDiscover = useCallback(() => {
-    router.push('/(seeker-tabs)/discover');
+    navigateAfterPress(() => router.push('/(seeker-tabs)/discover'));
   }, []);
 
   const retryLoad = useCallback(() => {
@@ -120,16 +121,18 @@ export function MatchesScreen() {
   );
 
   const openChat = useCallback((item: SeekerPipelineItem) => {
-    router.push({
-      pathname: '/chat',
-      params: {
-        referralId: item.referral.id,
-        participantName: item.referrerName,
-        participantAvatar: '',
-        targetRole: item.referral.targetRole,
-        companyName: item.companyName,
-        stage: item.referral.status,
-      },
+    navigateAfterPress(() => {
+      router.push({
+        pathname: '/chat',
+        params: {
+          referralId: item.referral.id,
+          participantName: item.referrerName,
+          participantAvatar: '',
+          targetRole: item.referral.targetRole,
+          companyName: item.companyName,
+          stage: item.referral.status,
+        },
+      });
     });
   }, []);
 

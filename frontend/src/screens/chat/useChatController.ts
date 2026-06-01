@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, InteractionManager } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
 import type { PipelineStage } from '../../components/activity/PipelineStepper';
@@ -179,16 +179,28 @@ function useConversationLoader(args: {
   userId: string;
 }): void {
   useEffect(() => {
-    chatApi.getConversation(args.referralId)
-      .then((conv) => {
-        args.setConversationId(conv.id);
-        args.setMessages(conv.messages ?? []);
-        args.setDeliveryStates(readStatesFor(conv.messages ?? [], args.userId));
-      })
-      .catch((err) => {
-        Alert.alert('Conversation unavailable', errorText(err, 'Please reopen this chat.'));
-      })
-      .finally(() => args.setLoading(false));
+    let active = true;
+    const task = InteractionManager.runAfterInteractions(() => {
+      chatApi.getConversation(args.referralId)
+        .then((conv) => {
+          if (!active) return;
+          args.setConversationId(conv.id);
+          args.setMessages(conv.messages ?? []);
+          args.setDeliveryStates(readStatesFor(conv.messages ?? [], args.userId));
+        })
+        .catch((err) => {
+          if (!active) return;
+          Alert.alert('Conversation unavailable', errorText(err, 'Please reopen this chat.'));
+        })
+        .finally(() => {
+          if (active) args.setLoading(false);
+        });
+    });
+
+    return () => {
+      active = false;
+      task.cancel();
+    };
   }, [args.referralId, args.userId]);
 }
 

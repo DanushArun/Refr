@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -28,11 +28,14 @@ import { AuroraShader } from '../src/components/constellation/AuroraShader';
 
 SplashScreen.preventAutoHideAsync();
 
+const ROOT_STACK_ANIMATION = Platform.OS === 'android' ? 'ios_from_right' : 'default';
+
 const ROOT_STACK_SCREEN_OPTIONS = {
   headerShown: false,
   contentStyle: { backgroundColor: 'transparent' },
-  animation: 'none',
+  animation: ROOT_STACK_ANIMATION,
   gestureEnabled: true,
+  gestureDirection: 'horizontal',
 } as const;
 
 export default function RootLayout(): React.ReactElement | null {

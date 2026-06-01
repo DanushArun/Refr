@@ -16,7 +16,7 @@ import {
 } from '../components/discover/endorserCardData';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
-import { spacing, layout } from '../theme/spacing';
+import { layout, rhythm, spacing } from '../theme/spacing';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 type CompanyFilter = 'all' | string;
@@ -264,8 +264,6 @@ const styles = StyleSheet.create({
   deckFrame: {
     flex: 1,
     marginTop: spacing[2],
-    // Reserve space below the deck for the action bar + remaining badge +
-    // floating tab bar (84pt). Keeps cards from bleeding into the chrome.
-    paddingBottom: 116,
+    paddingBottom: rhythm.tabClearance,
   },
 });

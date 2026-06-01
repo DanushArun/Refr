@@ -2,14 +2,13 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   RefreshControl,
-  SafeAreaView,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ReferralStatus, ReferrerInboxItem } from '@refr/shared';
 import { Button } from '../components/common/Button';
 import { EndorserVoyageCard } from '../components/activity/EndorserVoyageCard';
@@ -18,10 +17,12 @@ import { latestStageTimestamp } from '../components/activity/referralCardShared'
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { playSensoryEvent } from '../utils/haptics';
+import { navigateAfterPress } from '../utils/navigationAfterPress';
 import { useWarmTabData } from '../hooks/useWarmTabData';
 import { DEMO_PAYOUT_PER_HIRE, getCurrentDemoCompanyName } from '../config/demoWorld';
 import { activeStyles as styles } from './active/activeStyles';
 import { NoticePill } from './active/ActiveSummary';
+import { EmptyState, ErrorState, LoadingState } from './active/ActiveStates';
 import {
   ACTIVE_STAGE_FILTERS,
   type ActiveStageFilter,
@@ -121,31 +122,33 @@ export function ActiveScreen() {
 
   const handleChat = useCallback(
     (item: ReferrerInboxItem) => {
-      router.push({
-        pathname: '/chat',
-        params: {
-          referralId: item.referral.id,
-          participantName: item.seekerName,
-          participantAvatar: item.seekerAvatar,
-          participantSubtitle: item.seekerHeadline,
-          targetRole: item.referral.targetRole,
-          companyName,
-          stage: item.referral.status,
-        },
+      navigateAfterPress(() => {
+        router.push({
+          pathname: '/chat',
+          params: {
+            referralId: item.referral.id,
+            participantName: item.seekerName,
+            participantAvatar: item.seekerAvatar,
+            participantSubtitle: item.seekerHeadline,
+            targetRole: item.referral.targetRole,
+            companyName,
+            stage: item.referral.status,
+          },
+        });
       });
     },
     [companyName],
   );
 
   const openDiscover = useCallback(() => {
-    router.push('/(referrer-tabs)/discover');
+    navigateAfterPress(() => router.push('/(referrer-tabs)/discover'));
   }, []);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState error={error} onRetry={load} />;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <View style={styles.header}>
         <Text style={styles.title}>Pipeline</Text>
         <Text style={styles.subtitle}>
@@ -365,43 +368,4 @@ function wasHiredThisMonth(item: ReferrerInboxItem): boolean {
   start.setDate(1);
   start.setHours(0, 0, 0, 0);
   return new Date(item.referral.outcomeAt).getTime() >= start.getTime();
-}
-
-function LoadingState() {
-  return (
-    <View style={styles.center}>
-      <ActivityIndicator size="large" color={colors.accent} />
-    </View>
-  );
-}
-
-function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Pipeline</Text>
-      </View>
-      <EmptyState title="Something went wrong" body={error}>
-        <Button label="Retry" onPress={onRetry} variant="primary" size="medium" />
-      </EmptyState>
-    </SafeAreaView>
-  );
-}
-
-function EmptyState({
-  title,
-  body,
-  children,
-}: {
-  title: string;
-  body: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <View style={styles.empty}>
-      <Text style={styles.emptyTitle}>{title}</Text>
-      <Text style={styles.emptyBody}>{body}</Text>
-      {children}
-    </View>
-  );
 }

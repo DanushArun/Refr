@@ -19,7 +19,7 @@ import { Phrase } from '../utils/haptics';
 import { prefetchImages } from '../utils/prefetchImages';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
-import { spacing, layout } from '../theme/spacing';
+import { layout, rhythm, spacing } from '../theme/spacing';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 /**
@@ -287,9 +287,7 @@ const styles = StyleSheet.create({
   },
   deckFrame: {
     flex: 1,
-    // Header(60) + filter(50+4) + breathing room — matches the seeker's
-    // Discovery rhythm now that this screen has its own filter strip.
     marginTop: spacing[2],
-    paddingBottom: 116,
+    paddingBottom: rhythm.tabClearance,
   },
 });

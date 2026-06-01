@@ -2,6 +2,7 @@ import type { ComponentProps, ReactElement } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BASE_TAB_SCREEN_OPTIONS } from '../../src/components/navigation/tabBarOptions';
+import { FloatingLiquidTabBar } from '../../src/components/navigation/FloatingLiquidTabBar';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -29,6 +30,7 @@ export default function SeekerTabsLayout(): ReactElement {
           );
         },
       })}
+      tabBar={(props) => <FloatingLiquidTabBar {...props} />}
     >
       <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
       <Tabs.Screen name="matches" options={{ title: 'Matches' }} />
