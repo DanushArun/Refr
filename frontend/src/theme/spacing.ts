@@ -53,6 +53,6 @@ export const rhythm = {
   sectionGap: spacing[4],
   listGap: spacing[3],
   sheetTop: spacing[5],
-  tabClearance: spacing[4],
+  tabClearance: spacing[28],
   deckTopOffset: spacing[7],
 } as const;
