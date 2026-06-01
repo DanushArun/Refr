@@ -121,8 +121,6 @@ export function FilterBar<T extends string>({
 const styles = StyleSheet.create({
   wrap: {
     paddingBottom: spacing[2],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(212, 167, 68, 0.18)',
     marginBottom: spacing[2],
   },
   content: {

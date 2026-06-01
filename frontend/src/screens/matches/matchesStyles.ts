@@ -24,7 +24,7 @@ export const matchesStyles = StyleSheet.create({
   },
   topContent: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[3],
+    paddingTop: spacing[1],
     paddingBottom: rhythm.sectionGap,
   },
   contentSheet: {
