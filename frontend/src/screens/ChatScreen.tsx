@@ -163,6 +163,8 @@ function Composer({ controller }: { controller: ChatController }): React.ReactEl
           onChangeText={controller.setDraft}
           placeholder="Message"
           placeholderTextColor={colors.textTertiary}
+          autoCorrect={false}
+          spellCheck={false}
           multiline
           maxLength={4000}
         />

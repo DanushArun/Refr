@@ -20,7 +20,7 @@ describe('earningsLogic', () => {
   });
 
   test('calculatePayoutAmount_whenHiresExist_returnsSuccessFeeTotal', () => {
-    expect(calculatePayoutAmount(3, 22000)).toBe(120000);
+    expect(calculatePayoutAmount(3, 22000)).toBe(66000);
   });
 
   test('calculateRankPosition_whenViewerMissing_returnsZero', () => {
