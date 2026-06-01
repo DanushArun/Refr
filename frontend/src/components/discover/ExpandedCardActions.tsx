@@ -100,8 +100,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     backgroundColor: 'rgba(245, 241, 232, 0.98)',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: BLACK_08,
   },
   skipButton: {
     width: 82,

@@ -252,6 +252,7 @@ function SwipeDeckInner<T>(
             variant="secondary"
             size="medium"
             fullWidth={false}
+            style={styles.emptyAction}
           />
         )}
       </Animated.View>
@@ -318,5 +319,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 280,
     lineHeight: 22,
+  },
+  emptyAction: {
+    alignSelf: 'center',
   },
 });
