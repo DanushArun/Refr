@@ -206,8 +206,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: LIQUID_TAB_BAR_RADIUS,
     borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.28)',
-    backgroundColor: 'rgba(3, 7, 18, 0.72)',
+    borderColor: 'rgba(0, 0, 0, 0)',
+    backgroundColor: 'rgba(5, 16, 46, 0.92)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.38,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     left: 28,
     right: 28,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    backgroundColor: 'rgba(255, 255, 255, 0)',
   },
   bottomGlow: {
     position: 'absolute',
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     right: 36,
     bottom: 0,
     height: 1,
-    backgroundColor: colors.goldDim,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
   },
   row: {
     flex: 1,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   itemFocused: {
-    borderColor: 'rgba(255, 255, 255, 0.16)',
+    borderColor: 'rgba(255, 255, 255, 0)',
     backgroundColor: 'rgba(255, 255, 255, 0.09)',
   },
   itemPressed: {
