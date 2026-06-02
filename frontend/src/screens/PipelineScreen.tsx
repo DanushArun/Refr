@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useIsFocused } from '@react-navigation/native';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useIsFocused, useScrollToTop } from '@react-navigation/native';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
 import { prefetchImages } from '../utils/prefetchImages';
 import {
@@ -120,6 +120,7 @@ const DEMO_PIPELINE: SeekerPipelineItem[] = [
 
 export function PipelineScreen() {
   const isFocused = useIsFocused();
+  const listRef = useRef<FlatList<SeekerPipelineItem>>(null);
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -138,6 +139,7 @@ export function PipelineScreen() {
   }, []);
 
   useWarmTabData(loadPipeline);
+  useScrollToTop(listRef);
 
   const counts = useMemo<Record<FilterKey, number>>(() => {
     const all = [...DEMO_PIPELINE, ...items];
@@ -251,6 +253,7 @@ export function PipelineScreen() {
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             data={visibleItems}
             keyExtractor={keyExtractor}
             contentContainerStyle={styles.list}

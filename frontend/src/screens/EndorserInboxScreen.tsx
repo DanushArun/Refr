@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useScrollToTop } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Alert,
@@ -149,6 +150,7 @@ function adapt(item: ReferrerInboxItem): SeekerPipelineItem {
 
 export function EndorserInboxScreen() {
   const hasLoadedRef = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
   const [items, setItems] = useState<ReferrerInboxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -169,6 +171,7 @@ export function EndorserInboxScreen() {
   }, []);
 
   useWarmTabData(load);
+  useScrollToTop(scrollRef);
 
   const onRefresh = useCallback(() => {
     Phrase.pullRefresh();
@@ -271,6 +274,7 @@ export function EndorserInboxScreen() {
           <EmptyState />
         ) : (
           <ScrollView
+            ref={scrollRef}
             style={styles.scrollView}
             contentContainerStyle={styles.scroll}
             showsVerticalScrollIndicator={false}

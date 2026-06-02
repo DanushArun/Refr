@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { RefreshControl,
-  
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useScrollToTop } from '@react-navigation/native';
+import {
+  RefreshControl,
   ScrollView,
   Text,
-  View, } from 'react-native';
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -55,6 +57,7 @@ import {
  * I with each person?" — stage is the right axis here.
  */
 export function MatchesScreen() {
+  const scrollRef = useRef<ScrollView>(null);
   const [items, setItems] = useState<SeekerPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,6 +78,7 @@ export function MatchesScreen() {
   }, []);
 
   useWarmTabData(load);
+  useScrollToTop(scrollRef);
 
   const onRefresh = useCallback(() => {
     Phrase.pullRefresh();
@@ -226,6 +230,7 @@ export function MatchesScreen() {
           <EmptyState onDiscover={openDiscover} />
         ) : (
           <ScrollView
+            ref={scrollRef}
             style={styles.scrollView}
             contentContainerStyle={styles.scroll}
             showsVerticalScrollIndicator={false}

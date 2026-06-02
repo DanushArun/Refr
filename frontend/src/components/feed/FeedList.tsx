@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
+import { useScrollToTop } from '@react-navigation/native';
 import {
   FlatList,
   View,
@@ -49,6 +50,9 @@ export function FeedList({
   onFetchMore,
   onRefresh,
 }: FeedListProps) {
+  const listRef = useRef<FlatList<FeedCard>>(null);
+  useScrollToTop(listRef);
+
   const renderItem: ListRenderItem<FeedCard> = useCallback(
     ({ item }) => {
       switch (item.type) {
@@ -124,6 +128,7 @@ export function FeedList({
 
   return (
     <FlatList
+      ref={listRef}
       data={cards}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}

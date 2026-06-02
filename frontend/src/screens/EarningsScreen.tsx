@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useScrollToTop } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Alert,
@@ -46,6 +46,7 @@ const PAYOUT_PER_HIRE = 22000;
 export function EarningsScreen() {
   const isFocused = useIsFocused();
   const hasLoadedRef = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
   const [reputation, setReputation] = useState<ReputationData | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,7 @@ export function EarningsScreen() {
   }, []);
 
   useWarmTabData(load);
+  useScrollToTop(scrollRef);
 
   const payouts = useMemo(() => buildMockPayouts(reputation?.successfulHires ?? 0), [reputation]);
 
@@ -97,6 +99,7 @@ export function EarningsScreen() {
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <CenterPulseDotMatrixBackground />
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >

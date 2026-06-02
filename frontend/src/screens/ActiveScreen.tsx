@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useScrollToTop } from '@react-navigation/native';
 import {
   Alert,
   FlatList,
@@ -219,6 +219,9 @@ function ActiveList({
   onRefresh,
   active,
 }: ActiveListProps) {
+  const listRef = useRef<FlatList<ReferrerInboxItem>>(null);
+  useScrollToTop(listRef);
+
   const renderItem = useCallback(
     ({ item }: { item: ReferrerInboxItem }) => (
       <ActiveItem
@@ -249,6 +252,7 @@ function ActiveList({
   }
   return (
     <FlatList
+      ref={listRef}
       data={items}
       keyExtractor={(item) => item.referral.id}
       contentContainerStyle={styles.list}

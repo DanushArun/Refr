@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useScrollToTop } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Alert,
@@ -35,9 +36,13 @@ type ProfileContentProps = {
 };
 
 export function ProfileContent(props: ProfileContentProps): React.ReactElement {
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
