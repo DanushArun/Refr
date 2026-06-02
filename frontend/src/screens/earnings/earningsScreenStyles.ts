@@ -57,11 +57,11 @@ export const earningsScreenStyles = StyleSheet.create({
     color: 'rgba(0, 0, 0, 0.62)',
   },
   heroValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 44,
-    lineHeight: 50,
-    letterSpacing: 0,
-    color: '#000000',
+    fontFamily: 'MoneyFont-Bold',
+    fontSize: 46,
+    lineHeight: 52,
+    letterSpacing: 2,
+    color: '#1A1100',
   },
   heroSplits: {
     flexDirection: 'row',
@@ -81,7 +81,7 @@ export const earningsScreenStyles = StyleSheet.create({
     color: 'rgba(0, 0, 0, 0.55)',
   },
   heroTileValue: {
-    fontFamily: 'JetBrainsMono-Medium',
+    fontFamily: 'MoneyFont-Bold',
     fontSize: 16,
     letterSpacing: 0,
   },
@@ -131,7 +131,7 @@ export const earningsScreenStyles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.095)',
   },
   payoutRowLast: { borderBottomWidth: 0 },
   payoutMeta: { flex: 1, gap: 2 },
@@ -145,9 +145,9 @@ export const earningsScreenStyles = StyleSheet.create({
   },
   payoutRight: { alignItems: 'flex-end', gap: 2 },
   payoutAmount: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: colors.success,
+    fontFamily: 'MoneyFont-Regular',
+    fontSize: 16,
+    color: colors.text,
   },
   payoutDate: {
     fontFamily: 'JetBrainsMono-Regular',
@@ -165,7 +165,7 @@ export const earningsScreenStyles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: 'rgba(255, 255, 255, 0.095)',
   },
   lbRowLast: { borderBottomWidth: 0 },
   lbRowYou: {
@@ -202,13 +202,6 @@ export const earningsScreenStyles = StyleSheet.create({
     ...typography.rowMeta,
     color: colors.textSecondary,
     padding: spacing[4],
-  },
-  glassCard: {
-    backgroundColor: colors.surfaceLevel1,
-    borderRadius: layout.cardBorderRadius,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   glassCardBody: {
     padding: spacing[4],

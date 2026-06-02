@@ -86,10 +86,10 @@ export const earningsStyles = StyleSheet.create({
     color: colors.textTertiary,
   },
   heroValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 44,
-    lineHeight: 50,
-    letterSpacing: 0,
+    fontFamily: 'MoneyFont-Bold',
+    fontSize: 46,
+    lineHeight: 52,
+    letterSpacing: 2,
     color: colors.text,
   },
   heroSplits: {
@@ -250,9 +250,9 @@ export const earningsStyles = StyleSheet.create({
   },
   payoutRight: { alignItems: 'flex-end', gap: 2 },
   payoutAmount: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 14,
-    color: colors.success,
+    fontFamily: 'MoneyFont-Regular',
+    fontSize: 16,
+    color: colors.text,
   },
   payoutDate: {
     fontFamily: 'JetBrainsMono-Regular',

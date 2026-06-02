@@ -17,6 +17,7 @@ import {
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { layout, rhythm, spacing } from '../theme/spacing';
+import { DotMatrixBackground } from '../components/common/DotMatrixBackground';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 type CompanyFilter = 'all' | string;

@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import { ActivityIndicator,
+import {
+  ActivityIndicator,
   Alert,
-  
   ScrollView,
   Text,
-  View, } from 'react-native';
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../components/common/Avatar';
@@ -14,6 +15,10 @@ import { EndorserOrb } from '../components/constellation/EndorserOrb';
 import { Phrase } from '../utils/haptics';
 import { TierBadge } from '../components/tier/TierBadge';
 import { ReputationRail } from '../components/tier/ReputationRail';
+import { FrostedGlassSurface } from '../components/common/FrostedGlassSurface';
+import {
+  CenterPulseDotMatrixBackground,
+} from '../components/common/CenterPulseDotMatrixBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import { earningsScreenStyles as styles } from './earnings/earningsScreenStyles';
 import {
@@ -90,6 +95,7 @@ export function EarningsScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
+      <CenterPulseDotMatrixBackground />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -319,9 +325,9 @@ function DarkCard({
   padded?: boolean;
 }) {
   return (
-    <View style={styles.glassCard}>
+    <FrostedGlassSurface>
       <View style={padded ? styles.glassCardBody : undefined}>{children}</View>
-    </View>
+    </FrostedGlassSurface>
   );
 }
 

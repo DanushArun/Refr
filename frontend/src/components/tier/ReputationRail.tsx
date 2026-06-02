@@ -16,6 +16,8 @@ import Animated, {
 import type { SharedValue } from 'react-native-reanimated';
 
 import { colors } from '../../theme/colors';
+import { layout } from '../../theme/spacing';
+import { FrostedGlassSurface } from '../common/FrostedGlassSurface';
 import { DotMatrixField } from '../common/DotMatrixField';
 import {
   buildReputationRailMetrics,
@@ -46,7 +48,10 @@ export function ReputationRail({ score, rank, style }: ReputationRailProps): Rea
   }, [markerProgress, metrics.markerProgress, metrics.progress, progress]);
 
   return (
-    <View style={[styles.card, style]}>
+    <FrostedGlassSurface
+      borderRadius={layout.cardBorderRadiusLarge}
+      style={[styles.card, style]}
+    >
       <RailGlow />
       <RailHeader metrics={metrics} rank={rank} />
       <RailTrack
@@ -56,7 +61,7 @@ export function ReputationRail({ score, rank, style }: ReputationRailProps): Rea
         markerProgress={markerProgress}
       />
       <RuleStrip />
-    </View>
+    </FrostedGlassSurface>
   );
 }
 

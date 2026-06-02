@@ -21,6 +21,8 @@ const GeistMonoMedium = require('../assets/fonts/GeistMono-Medium.ttf');
 const TikTokSansRegular = require('../assets/fonts/TikTokSans-Regular.ttf');
 const TikTokSansMedium = require('../assets/fonts/TikTokSans-Medium.ttf');
 const TikTokSansSemibold = require('../assets/fonts/TikTokSans-Semibold.ttf');
+const OxaniumBold = require('../assets/fonts/Oxanium-Bold.ttf');
+const ChakraPetchBold = require('../assets/fonts/ChakraPetch-Bold.ttf');
 
 const ROOT_STACK_ANIMATION = Platform.OS === 'android' ? 'ios_from_right' : 'default';
 
@@ -54,6 +56,8 @@ export default function RootLayout(): React.ReactElement | null {
     'InstrumentSerif-Italic': CabinetGroteskMedium,
     'JetBrainsMono-Regular': GeistMonoRegular,
     'JetBrainsMono-Medium': GeistMonoMedium,
+    'MoneyFont-Bold': OxaniumBold,
+    'TechFont-Bold': ChakraPetchBold,
   });
 
   useEffect(() => {
