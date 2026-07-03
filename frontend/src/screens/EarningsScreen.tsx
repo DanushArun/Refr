@@ -102,24 +102,21 @@ export function EarningsScreen() {
         {/* 1 · HERO — velvet ledger card with brass status inlays */}
         <View style={styles.earningsHero}>
           <LinearGradient
-            colors={[colors.backgroundElevated, colors.navyDeep, colors.background]}
-            locations={[0, 0.55, 1]}
+            colors={[colors.backgroundElevated, '#123126', colors.navyDeep]}
+            locations={[0, 0.58, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.heroGoldFill}
+            style={styles.heroCardSurface}
             pointerEvents="none"
           />
-          {/* Top sheen + bottom shade for material depth */}
           <LinearGradient
-            colors={[colors.goldGlow, 'rgba(244,237,221,0)', 'rgba(0,0,0,0.20)']}
-            locations={[0, 0.5, 1]}
+            colors={['rgba(244, 237, 221, 0.10)', 'rgba(244, 237, 221, 0.03)', 'transparent']}
+            locations={[0, 0.34, 1]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.materialSheen}
+            end={{ x: 0.78, y: 1 }}
+            style={styles.heroCardTopGlow}
             pointerEvents="none"
           />
-          <View style={styles.bevelTop} pointerEvents="none" />
-          <View style={styles.bevelBottom} pointerEvents="none" />
 
           <View style={styles.heroTopRow}>
             <View style={styles.heroTopInfo}>
@@ -128,16 +125,12 @@ export function EarningsScreen() {
                 {reputation.user.displayName} · {reputation.company.name}
               </Text>
             </View>
-            <View style={styles.heroOrbWrap}>
-              <EndorserOrb
-                score={reputation.endorsementScore}
-                hires={reputation.successfulHires ?? 0}
-                active={inFlight}
-                size={56}
-                showLabel={false}
-                animated={isFocused}
-              />
-            </View>
+            <HeroOrbBadge
+              score={reputation.endorsementScore}
+              hires={reputation.successfulHires ?? 0}
+              active={inFlight}
+              animated={isFocused}
+            />
           </View>
 
           <Text style={styles.heroValue} numberOfLines={1} adjustsFontSizeToFit>
@@ -226,6 +219,37 @@ export function EarningsScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function HeroOrbBadge({
+  score,
+  hires,
+  active,
+  animated,
+}: {
+  score: number;
+  hires: number;
+  active: number;
+  animated: boolean;
+}): React.ReactElement {
+  return (
+    <View
+      accessible
+      accessibilityLabel={`Endorsement orb. Score ${score}`}
+      style={styles.heroOrbFrame}
+    >
+      <View style={styles.heroOrbClip} pointerEvents="none">
+        <EndorserOrb
+          score={score}
+          hires={hires}
+          active={active}
+          size={50}
+          showLabel={false}
+          animated={animated}
+        />
+      </View>
+    </View>
   );
 }
 
