@@ -18,6 +18,13 @@ export const profileStyles = StyleSheet.create({
     gap: spacing[3],
   },
   pageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: spacing[2],
+  },
+  pageHeaderCopy: {
+    flex: 1,
     gap: spacing[0.5],
   },
   eyebrow: {

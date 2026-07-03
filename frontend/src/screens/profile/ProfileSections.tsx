@@ -11,12 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/common/Button';
 import { useSensorySettings } from '../../hooks/useSensorySettings';
 import { colors } from '../../theme/colors';
-import {
-  AboutSection,
-  AccountSection,
-  SensorySettingsSection,
-  ViewModeSection,
-} from './ProfileControls';
+import { AboutSection, AccountSection, SensorySettingsSection } from './ProfileControls';
 import { ProfileHeader, ProfileHero, RoleDetails } from './ProfileHero';
 import { getErrorMessage } from './profileUtils';
 import { profileStyles as styles } from './profileStyles';
@@ -71,7 +66,7 @@ function ProfileBody({
 
   return (
     <>
-      <ProfileHeader isReferrer={isReferrer} />
+      <ProfileHeader isReferrer={isReferrer} showDemoSwitch={showDemoSwitch} />
       <ProfileHero
         avatarUrl={profile?.avatarUrl}
         displayName={displayName}
@@ -81,7 +76,6 @@ function ProfileBody({
       <RoleDetails isReferrer={isReferrer} profile={profile} />
       <AccountSection email={email} isReferrer={isReferrer} />
       <SensorySettingsSection sensory={sensory} />
-      {showDemoSwitch && <ViewModeSection isReferrer={isReferrer} />}
       <AboutSection />
       <Button
         label="Sign out"

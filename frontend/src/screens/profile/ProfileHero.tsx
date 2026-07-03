@@ -7,12 +7,22 @@ import { profileStyles as styles } from './profileStyles';
 import { InfoRow, Metric, ProfileSurface, Section } from './ProfilePrimitives';
 import { formatExperience, formatStatus, getIdentityLine } from './profileUtils';
 import type { FullProfile, ReferrerProfile, SeekerProfile } from './profileTypes';
+import { ViewModeTopButton } from './ProfileControls';
 
-export function ProfileHeader({ isReferrer }: { isReferrer: boolean }): React.ReactElement {
+export function ProfileHeader({
+  isReferrer,
+  showDemoSwitch,
+}: {
+  isReferrer: boolean;
+  showDemoSwitch: boolean;
+}): React.ReactElement {
   return (
     <View style={styles.pageHeader}>
-      <Text style={styles.eyebrow}>{isReferrer ? 'Endorser profile' : 'Seeker profile'}</Text>
-      <Text style={styles.pageTitle}>Profile</Text>
+      <View style={styles.pageHeaderCopy}>
+        <Text style={styles.eyebrow}>{isReferrer ? 'Endorser profile' : 'Seeker profile'}</Text>
+        <Text style={styles.pageTitle}>Profile</Text>
+      </View>
+      {showDemoSwitch ? <ViewModeTopButton isReferrer={isReferrer} /> : null}
     </View>
   );
 }

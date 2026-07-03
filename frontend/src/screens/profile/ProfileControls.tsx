@@ -50,23 +50,15 @@ export function SensorySettingsSection({
   );
 }
 
-export function ViewModeSection({ isReferrer }: { isReferrer: boolean }): React.ReactElement {
+export function ViewModeTopButton({ isReferrer }: { isReferrer: boolean }): React.ReactElement {
   return (
-    <Section title="View mode">
-      <View style={styles.actionRow}>
-        <View style={styles.actionCopy}>
-          <Text style={styles.actionLabel}>Currently viewing as</Text>
-          <Text style={styles.actionValue}>{isReferrer ? 'Endorser' : 'Seeker'}</Text>
-        </View>
-        <Button
-          label={`Switch to ${isReferrer ? 'Seeker' : 'Endorser'}`}
-          onPress={() => void switchDemoRole(isReferrer)}
-          variant="secondary"
-          size="small"
-          fullWidth={false}
-        />
-      </View>
-    </Section>
+    <Button
+      label={`Switch to ${isReferrer ? 'Seeker' : 'Endorser'}`}
+      onPress={() => void switchDemoRole(isReferrer)}
+      variant="secondary"
+      size="small"
+      fullWidth={false}
+    />
   );
 }
 
