@@ -1,9 +1,8 @@
 import { StyleSheet } from 'react-native';
 
 import { colors } from '../../theme/colors';
-import { layout, spacing } from '../../theme/spacing';
+import { spacing } from '../../theme/spacing';
 import {
-  LIQUID_TAB_BAR_ICON_SIZE,
   LIQUID_TAB_BAR_HEIGHT,
   LIQUID_TAB_BAR_RADIUS,
 } from './tabBarOptions';
@@ -20,7 +19,7 @@ export const floatingLiquidTabBarStyles = StyleSheet.create({
   bar: {
     alignSelf: 'stretch',
     height: LIQUID_TAB_BAR_HEIGHT,
-    marginHorizontal: layout.screenPaddingH,
+    marginHorizontal: spacing[2],
     overflow: 'hidden',
     borderRadius: LIQUID_TAB_BAR_RADIUS,
     borderWidth: 0,
@@ -43,7 +42,7 @@ export const floatingLiquidTabBarStyles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing[1.5],
+    paddingHorizontal: spacing[3],
     paddingVertical: spacing[1.5],
   },
   activePill: {
@@ -70,8 +69,7 @@ export const floatingLiquidTabBarStyles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.145)',
   },
   iconSlot: {
-    width: LIQUID_TAB_BAR_ICON_SIZE,
-    height: LIQUID_TAB_BAR_ICON_SIZE,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },

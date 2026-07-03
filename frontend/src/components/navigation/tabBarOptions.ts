@@ -5,7 +5,6 @@ export const TAB_SCENE_STYLE = { backgroundColor: 'transparent' } as const;
 
 export const LIQUID_TAB_BAR_HEIGHT = 68;
 export const LIQUID_TAB_BAR_RADIUS = LIQUID_TAB_BAR_HEIGHT / 2;
-export const LIQUID_TAB_BAR_ICON_SIZE = 23;
 
 export const TAB_BAR_STYLE = {
   backgroundColor: 'transparent',

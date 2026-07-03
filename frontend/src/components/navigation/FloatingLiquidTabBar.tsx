@@ -19,8 +19,8 @@ import {
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { hapticSelection } from '../../utils/haptics';
+import { activePillMetrics } from './FloatingLiquidTabBar.geometry';
 import { floatingLiquidTabBarStyles as styles } from './FloatingLiquidTabBar.styles';
-import { LIQUID_TAB_BAR_ICON_SIZE } from './tabBarOptions';
 
 type TabRoute = BottomTabBarProps['state']['routes'][number];
 
@@ -72,17 +72,10 @@ function barOffset(bottomInset: number): ViewStyle {
 }
 
 function activePillStyle(index: number, routeCount: number, rowWidth: number): StyleProp<ViewStyle> {
-  if (rowWidth <= 0 || routeCount <= 0) return null;
+  const metrics = activePillMetrics(index, routeCount, rowWidth);
+  if (!metrics) return null;
 
-  const rowPadding = spacing[1.5];
-  const availableWidth = rowWidth - rowPadding * 2;
-  const cellWidth = availableWidth / routeCount;
-  const pillWidth = Math.min(cellWidth + spacing[4], availableWidth);
-  const centeredLeft = rowPadding + index * cellWidth + (cellWidth - pillWidth) / 2;
-  const maxLeft = rowWidth - rowPadding - pillWidth;
-  const left = Math.min(Math.max(centeredLeft, rowPadding), maxLeft);
-
-  return [styles.activePill, { left, width: pillWidth }];
+  return [styles.activePill, metrics];
 }
 
 function pressTab(props: BottomTabBarProps, route: TabRoute, focused: boolean): void {
@@ -115,7 +108,7 @@ function renderIcon(
   focused: boolean,
   color: string,
 ): ReactNode {
-  return options.tabBarIcon?.({ focused, color, size: LIQUID_TAB_BAR_ICON_SIZE }) ?? null;
+  return options.tabBarIcon?.({ focused, color, size: 23 }) ?? null;
 }
 
 function renderBadge(badge: BottomTabNavigationOptions['tabBarBadge']): ReactNode {

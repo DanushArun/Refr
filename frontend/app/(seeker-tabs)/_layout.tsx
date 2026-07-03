@@ -1,10 +1,7 @@
 import type { ComponentProps, ReactElement } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  BASE_TAB_SCREEN_OPTIONS,
-  LIQUID_TAB_BAR_ICON_SIZE,
-} from '../../src/components/navigation/tabBarOptions';
+import { BASE_TAB_SCREEN_OPTIONS } from '../../src/components/navigation/tabBarOptions';
 import { FloatingLiquidTabBar } from '../../src/components/navigation/FloatingLiquidTabBar';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -22,12 +19,12 @@ export default function SeekerTabsLayout(): ReactElement {
       initialRouteName="discover"
       screenOptions={({ route }) => ({
         ...BASE_TAB_SCREEN_OPTIONS,
-        tabBarIcon: ({ color }) => {
+        tabBarIcon: ({ color, focused }) => {
           const icon = ICONS[route.name] ?? ICONS.discover;
           return (
             <Ionicons
-              name={icon.unfocused}
-              size={LIQUID_TAB_BAR_ICON_SIZE}
+              name={focused ? icon.focused : icon.unfocused}
+              size={23}
               color={color}
             />
           );

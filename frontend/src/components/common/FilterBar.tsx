@@ -36,6 +36,8 @@ export type FilterBarProps<T extends string> = {
    * useful on Discover where chip counts would be noise.
    */
   showCounts?: boolean;
+  /** Fixed visual width for chips that should scan as uniform controls. */
+  chipWidth?: number;
   /** Optional accessible label for screen readers. */
   ariaLabel?: string;
 };
@@ -45,6 +47,7 @@ export function FilterBar<T extends string>({
   current,
   onChange,
   showCounts = true,
+  chipWidth,
   ariaLabel = 'Filters',
 }: FilterBarProps<T>) {
   const handlePress = (key: T) => {
@@ -75,6 +78,8 @@ export function FilterBar<T extends string>({
               onPress={() => handlePress(opt.key)}
               style={[
                 styles.chip,
+                chipWidth !== undefined && styles.chipFixed,
+                chipWidth !== undefined && { width: chipWidth },
                 active ? styles.chipActive : styles.chipInactive,
                 dim && styles.chipDim,
               ]}
@@ -88,8 +93,10 @@ export function FilterBar<T extends string>({
                 style={[
                   styles.label,
                   active ? styles.labelActive : styles.labelInactive,
+                  chipWidth !== undefined && styles.labelFixed,
                   dim && styles.labelDim,
                 ]}
+                numberOfLines={chipWidth !== undefined ? 1 : undefined}
               >
                 {opt.label}
               </Text>
@@ -137,6 +144,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
   },
+  chipFixed: {
+    justifyContent: 'center',
+    minHeight: 44,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+  },
   chipActive: {
     backgroundColor: colors.goldGlow,
     borderColor: colors.brass,
@@ -152,6 +165,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
     fontSize: 11,
     letterSpacing: 0,
+  },
+  labelFixed: {
+    flexShrink: 1,
+    textAlign: 'center',
   },
   labelActive: { color: colors.text },
   labelInactive: { color: colors.goldBright },

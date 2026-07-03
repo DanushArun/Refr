@@ -8,7 +8,6 @@ jest.mock('react-native', () => ({
 
 import { spacing } from '../../theme/spacing';
 import {
-  LIQUID_TAB_BAR_ICON_SIZE,
   LIQUID_TAB_BAR_HEIGHT,
   LIQUID_TAB_BAR_RADIUS,
 } from './tabBarOptions';
@@ -21,6 +20,10 @@ test('test_liquidTabBar_whenRendered_clipsOneContinuousGlassCapsule', (): void =
   expect(styles.bar.borderRadius).toBe(LIQUID_TAB_BAR_RADIUS);
   expect(styles.bar.overflow).toBe('hidden');
   expect(styles.bar.borderWidth ?? 0).toBe(0);
+});
+
+test('test_liquidTabBar_whenRendered_givesEdgeTabsEnoughHorizontalRoom', (): void => {
+  expect(styles.bar.marginHorizontal).toBe(spacing[2]);
 });
 
 test('test_liquidTabBar_whenRendered_usesMaterialLayersInsteadOfRoughEdges', (): void => {
@@ -40,9 +43,9 @@ test('test_liquidTabBar_whenFocused_doesNotResizeIconCells', (): void => {
   expect(styles.activePill.position).toBe('absolute');
 });
 
-test('test_liquidTabBar_whenFocused_keepsIconFrameFixed', (): void => {
-  expect(styles.iconSlot.width).toBe(LIQUID_TAB_BAR_ICON_SIZE);
-  expect(styles.iconSlot.height).toBe(LIQUID_TAB_BAR_ICON_SIZE);
+test('test_liquidTabBar_whenFocused_keepsOriginalIconFrame', (): void => {
+  expect(styles.iconSlot.width).toBeUndefined();
+  expect(styles.iconSlot.height).toBe(26);
 });
 
 test('test_liquidTabBar_whenRendered_hasTransparentBackgroundMaterial', (): void => {

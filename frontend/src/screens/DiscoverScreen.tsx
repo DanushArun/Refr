@@ -158,6 +158,7 @@ export function DiscoverScreen(): React.ReactElement {
           current={activeFilter}
           onChange={handleFilterPress}
           showCounts={false}
+          chipWidth={92}
           ariaLabel="Endorser company filter"
         />
 
