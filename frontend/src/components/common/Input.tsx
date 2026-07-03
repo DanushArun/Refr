@@ -74,14 +74,14 @@ export const Input = memo(function Input({
     if (onChangeValue && name) onChangeValue(name, text);
   }
 
-  const labelTop = labelAnim.interpolate({
+  const labelTranslateY = labelAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [14, -8],
+    outputRange: [0, -22],
   });
 
-  const labelFontSize = labelAnim.interpolate({
+  const labelScale = labelAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [15, 11],
+    outputRange: [1, 0.733], // 11 / 15 = 0.733
   });
 
   const labelColor = labelAnim.interpolate({
@@ -98,11 +98,20 @@ export const Input = memo(function Input({
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={[styles.field, { borderColor }]}>
-        {/* Floating label -- pointerEvents none so it doesn't block taps */}
         <Animated.Text
           style={[
             styles.floatingLabel,
-            { top: labelTop, fontSize: labelFontSize, color: labelColor },
+            { 
+              transform: [
+                { translateY: labelTranslateY },
+                { scale: labelScale },
+                { translateX: labelAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, -3] // Adjust horizontal position slightly due to scale anchor
+                })}
+              ],
+              color: labelColor 
+            },
           ]}
           numberOfLines={1}
           pointerEvents="none"
@@ -117,8 +126,7 @@ export const Input = memo(function Input({
           onFocus={handleFocus}
           onBlur={handleBlur}
           style={[styles.input, isActive && styles.inputActive]}
-          placeholderTextColor={isActive ? 'transparent' : colors.textTertiary}
-          placeholder={label}
+          placeholderTextColor="transparent"
           selectionColor={colors.accent}
           cursorColor={colors.accent}
         />

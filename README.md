@@ -97,8 +97,11 @@ python manage.py seed_data   # populates test data
 ```bash
 cd ../refr-backend
 source .venv/bin/activate
-python manage.py runserver 8000
+python manage.py runserver 0.0.0.0:8000
 ```
+
+Use `0.0.0.0:8000` so Expo app traffic from `192.168.x.x` can reach Django.
+For web-only work on the same machine, you can still use `127.0.0.1:8000`.
 
 ### 4. Start the frontend
 
@@ -118,8 +121,8 @@ npx expo start
 
 | Role | Email | Password |
 |------|-------|----------|
-| Seeker | `danush@gmail.com` | `password123` |
-| Referrer | `nivrant@razorpay.com` | `password123` |
+| Seeker | `seeker@gmail.com` | `password123` |
+| Referrer | `endorser@razorpay.com` | `password123` |
 
 ## Backend API
 
@@ -170,7 +173,7 @@ npm run typecheck        # TypeScript type check
 # Backend lives in ../refr-backend
 cd ../refr-backend
 source .venv/bin/activate
-python manage.py runserver 8000
+python manage.py runserver 0.0.0.0:8000
 python manage.py migrate
 python manage.py seed_data
 pytest -v                # Run backend tests

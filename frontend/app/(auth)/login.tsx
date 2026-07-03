@@ -9,7 +9,7 @@ import {
   Platform,
   TouchableOpacity,
 } from 'react-native';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
@@ -49,9 +49,29 @@ export default function LoginScreen() {
       return;
     }
 
-    // Session is saved inside signInWithEmail via saveSession.
-    // useAuth in index.tsx reacts to the auth change event and redirects.
-    setLoading(false);
+    if (!result.user) {
+      setError('Sign in response was invalid. Try again.');
+      setLoading(false);
+      return;
+    }
+
+    const role = String(result.user.role ?? 'seeker').toLowerCase();
+    const targetPath =
+      role === 'referrer'
+        ? '/(referrer-tabs)/discover'
+        : '/(seeker-tabs)/discover';
+
+    try {
+      router.replace(targetPath);
+    } catch (navigationError) {
+      setError(
+        navigationError instanceof Error
+          ? navigationError.message
+          : 'Navigation to app failed.',
+      );
+      setLoading(false);
+      return;
+    }
   };
 
   return (

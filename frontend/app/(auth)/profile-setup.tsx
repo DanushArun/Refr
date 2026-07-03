@@ -169,7 +169,7 @@ export default function ProfileSetupScreen() {
                 name="email"
                 value={seekerForm.email}
                 onChangeValue={handleSeekerChange}
-                placeholder="danush@gmail.com"
+                placeholder="seeker@gmail.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />

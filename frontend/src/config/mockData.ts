@@ -45,6 +45,8 @@ const COMPANY = {
   coinbase: { id: 'c-12', name: 'Coinbase' },
 } as const;
 
+const DEMO_ENDORSER_EMAIL = 'endorser@razorpay.com';
+
 // ── Referrers (12) ────────────────────────────────────────────────────
 // Primary demo referrer is Nivrant (id '2', rank 3, Endorsement 47).
 export interface DemoReferrer {
@@ -107,7 +109,7 @@ export const DEMO_SEEKERS: DemoSeeker[] = [
   {
     id: '1',
     name: 'Danush Arun',
-    email: 'danush@gmail.com',
+    email: 'seeker@gmail.com',
     headline: 'Backend Engineer, 6y at Amazon Pay',
     story:
       '4 years building payment infra at Amazon Pay. The scale was incredible '
@@ -308,7 +310,12 @@ export const MOCK_SEEKER_SESSION: Session = {
 export const MOCK_REFERRER_SESSION: Session = {
   access_token: 'demo-referrer-access-token',
   refresh_token: 'demo-referrer-refresh-token',
-  user: { id: nivrant.id, email: 'nivrant@razorpay.com', displayName: nivrant.name, role: 'referrer' },
+  user: {
+    id: nivrant.id,
+    email: DEMO_ENDORSER_EMAIL,
+    displayName: nivrant.name,
+    role: 'referrer',
+  },
 };
 
 // ── Feed cards (30 total) ─────────────────────────────────────────────
@@ -1149,7 +1156,7 @@ export const MOCK_SEEKER_PROFILE = {
 
 export const MOCK_REFERRER_PROFILE = {
   id: Number(nivrant.id),
-  email: 'nivrant@razorpay.com',
+  email: DEMO_ENDORSER_EMAIL,
   displayName: nivrant.name,
   role: 'referrer' as const,
   jobTitle: nivrant.jobTitle,

@@ -120,15 +120,16 @@ export async function signUpWithEmail(
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      const errorMsg = typeof errorData === 'object'
-        ? Object.values(errorData).flat().join(', ')
-        : 'Failed to sign up';
+      const errorMsg = await parseAuthErrorResponse(res);
       throw new Error(errorMsg);
     }
 
     // Backend returns { access, refresh, user } directly from register
     const data = await res.json();
+
+    if (!data?.access || !data?.refresh || !data?.user) {
+      throw new Error('Sign up response was missing auth details.');
+    }
 
     const user: User = {
       id: String(data.user?.id ?? ''),
@@ -171,11 +172,14 @@ export async function signInWithEmail(
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.detail || 'Failed to sign in');
+      const errorMsg = await parseAuthErrorResponse(res);
+      throw new Error(errorMsg);
     }
 
     const data = await res.json();
+    if (!data?.access || !data?.refresh || !data?.user) {
+      throw new Error('Sign in response was missing auth details.');
+    }
 
     // CustomTokenObtainPairView returns { access, refresh, user }
     const userData = data.user;
@@ -199,6 +203,45 @@ export async function signInWithEmail(
   } catch (error: any) {
     return { session: null, user: null, error };
   }
+}
+
+async function parseAuthErrorResponse(res: Response): Promise<string> {
+  const status = res.status;
+  const body = await res.text();
+
+  if (!body) {
+    return `Request failed with status ${status}.`;
+  }
+
+  try {
+    const parsed = JSON.parse(body) as Record<string, unknown>;
+    const detail = extractErrorDetail(parsed);
+    if (detail) {
+      return detail;
+    }
+  } catch {
+    return `Request failed with status ${status}: ${body.slice(0, 180)}`;
+  }
+
+  return `Request failed with status ${status}.`;
+}
+
+function extractErrorDetail(payload: Record<string, unknown>): string {
+  if (typeof payload.detail === 'string') {
+    return payload.detail;
+  }
+  if (typeof payload.message === 'string') {
+    return payload.message;
+  }
+  if (typeof payload.error === 'string') {
+    return payload.error;
+  }
+  const allValues = Object.values(payload).flatMap((value) => {
+    if (typeof value === 'string') return [value];
+    if (Array.isArray(value)) return value.filter((item) => typeof item === 'string') as string[];
+    return [];
+  });
+  return allValues.join(', ');
 }
 
 export async function requestPhoneOtp(phone: string): Promise<{ error: Error | null }> {
