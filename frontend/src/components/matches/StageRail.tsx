@@ -52,13 +52,13 @@ function stageOf(status: ReferralStatus): Stage | null {
 function colorFor(stage: Stage): string {
   switch (stage) {
     case 'matched':
-      return colors.pipelineAccepted; // cool blue
+      return colors.pipelineAccepted;
     case 'submitted':
-      return colors.pipelineSubmitted; // soft purple
+      return colors.pipelineSubmitted;
     case 'interviewing':
-      return colors.pipelineInterviewing; // warm cyan
+      return colors.pipelineInterviewing;
     case 'hired':
-      return colors.pipelineHired; // green
+      return colors.pipelineHired;
   }
 }
 

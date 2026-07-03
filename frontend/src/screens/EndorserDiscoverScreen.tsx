@@ -18,7 +18,11 @@ import { prefetchImages } from '../utils/prefetchImages';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { layout, rhythm, spacing } from '../theme/spacing';
-import { FilterBar, type FilterOption } from '../components/common/FilterBar';
+import {
+  DISCOVER_FILTER_CHIP_WIDTH,
+  FilterBar,
+  type FilterOption,
+} from '../components/common/FilterBar';
 
 /**
  * Endorser Discover — referrer's swipe stack of incoming candidates.
@@ -143,6 +147,7 @@ export function EndorserDiscoverScreen(): React.ReactElement {
           current={expFilter}
           onChange={onPickExp}
           showCounts={false}
+          chipWidth={DISCOVER_FILTER_CHIP_WIDTH}
           ariaLabel="Candidate experience filter"
         />
 

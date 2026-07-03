@@ -201,10 +201,27 @@ export const earningsStyles = StyleSheet.create({
     color: colors.textTertiary,
   },
   scoreRulesText: {
-    flex: 1,
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 12,
-    color: colors.goldBright,
+  },
+  scoreRulesList: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flexWrap: 'wrap',
+    gap: spacing[1],
+  },
+  scoreRulePositive: {
+    color: colors.sage,
+  },
+  scoreRuleNegative: {
+    color: colors.vermilion,
+  },
+  scoreRuleDivider: {
+    fontFamily: 'JetBrainsMono-Medium',
+    fontSize: 12,
+    color: colors.textTertiary,
     textAlign: 'right',
   },
   section: { gap: spacing[2] },
@@ -273,13 +290,13 @@ export const earningsStyles = StyleSheet.create({
     borderBottomColor: colors.cardSurfaceDivider,
   },
   lbRowYou: {
-    backgroundColor: 'rgba(212, 167, 68, 0.14)',
+    backgroundColor: colors.goldGlow,
     borderBottomWidth: 0,
   },
   lbRank: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 14,
-    color: '#B07A1A',
+    color: colors.brass,
     width: 30,
     textAlign: 'center',
   },

@@ -34,7 +34,11 @@ export function ProfileSurface({
   return (
     <View style={shellStyle}>
       <LinearGradient
-        colors={['rgba(244, 237, 221, 0.10)', colors.surfaceLevel1, 'rgba(0, 0, 0, 0.18)']}
+        colors={[
+          'rgba(157, 181, 164, 0.36)',
+          colors.profileCardSurface,
+          'rgba(12, 31, 25, 0.38)',
+        ]}
         locations={[0, 0.52, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -42,7 +46,7 @@ export function ProfileSurface({
         style={styles.profileCardSurface}
       />
       <LinearGradient
-        colors={['rgba(217, 164, 65, 0.09)', 'rgba(244, 237, 221, 0.025)', 'transparent']}
+        colors={['rgba(157, 181, 164, 0.18)', colors.profileCardInset, 'transparent']}
         locations={[0, 0.36, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0.8, y: 1 }}

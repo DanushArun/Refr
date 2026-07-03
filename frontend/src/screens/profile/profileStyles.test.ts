@@ -7,6 +7,7 @@ jest.mock('react-native', () => ({
 }));
 
 import { profileStyles } from './profileStyles';
+import { colors } from '../../theme/colors';
 
 type StyleRecord = Record<string, unknown>;
 
@@ -15,6 +16,15 @@ const styles = profileStyles as StyleRecord;
 test('test_profileCards_whenPolished_exposeSharedSurfaceLayers', (): void => {
   expect(styles.profileCardSurface).toBeDefined();
   expect(styles.profileCardGlow).toBeDefined();
+});
+
+test('test_profileCards_whenRendered_useSageSurface', (): void => {
+  expect((styles.hero as { backgroundColor?: string }).backgroundColor).toBe(
+    colors.profileCardSurface,
+  );
+  expect((styles.section as { backgroundColor?: string }).backgroundColor).toBe(
+    colors.profileCardSurface,
+  );
 });
 
 test('test_profileHeroAndSections_whenPolished_avoidHardOuterBorders', (): void => {

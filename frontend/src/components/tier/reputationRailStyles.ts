@@ -61,7 +61,7 @@ export const reputationRailStyles = StyleSheet.create({
     gap: spacing[3],
     padding: spacing[3],
     borderRadius: 18,
-    backgroundColor: 'rgba(2, 6, 18, 0.78)',
+    backgroundColor: colors.surfaceInset,
     borderWidth: 0,
     overflow: 'hidden',
   },
@@ -171,7 +171,7 @@ export const reputationRailStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    backgroundColor: 'rgba(255,255,255,0.055)',
+    backgroundColor: colors.surfaceLevel2,
     borderWidth: 0,
   },
   ruleValue: {
@@ -179,10 +179,10 @@ export const reputationRailStyles = StyleSheet.create({
     fontSize: 13,
   },
   rulePositive: {
-    color: 'rgba(91, 230, 148, 0.92)',
+    color: colors.sage,
   },
   ruleNegative: {
-    color: 'rgba(255, 115, 145, 0.90)',
+    color: colors.vermilion,
   },
   ruleLabel: {
     fontFamily: 'Outfit-Medium',

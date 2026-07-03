@@ -42,6 +42,8 @@ export type FilterBarProps<T extends string> = {
   ariaLabel?: string;
 };
 
+export const DISCOVER_FILTER_CHIP_WIDTH = 78;
+
 export function FilterBar<T extends string>({
   options,
   current,
@@ -146,9 +148,9 @@ const styles = StyleSheet.create({
   },
   chipFixed: {
     justifyContent: 'center',
-    minHeight: 44,
-    borderRadius: 999,
-    paddingHorizontal: 10,
+    minHeight: 32,
+    borderRadius: 16,
+    paddingHorizontal: 8,
   },
   chipActive: {
     backgroundColor: colors.goldGlow,
@@ -191,3 +193,5 @@ const styles = StyleSheet.create({
   countTextActive: { color: colors.text },
   countTextInactive: { color: colors.goldBright },
 });
+
+export const filterBarStyles = styles;

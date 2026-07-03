@@ -7,6 +7,7 @@ jest.mock('react-native', () => ({
 }));
 
 import { earningsScreenStyles } from './earningsScreenStyles';
+import { colors } from '../../theme/colors';
 
 const styles = earningsScreenStyles as Record<string, unknown>;
 
@@ -43,4 +44,12 @@ test('test_earningsSectionCards_whenPolished_exposeSmoothSurfaceStyle', (): void
 test('test_earningsSectionRows_whenPolished_useHairlineSeparators', (): void => {
   expect((styles.payoutRow as { borderBottomWidth?: number }).borderBottomWidth).toBe(0.5);
   expect((styles.lbRow as { borderBottomWidth?: number }).borderBottomWidth).toBe(0.5);
+});
+
+test('test_earningsLeaderboard_whenRanked_usesBrass', (): void => {
+  expect((styles.lbRank as { color?: string }).color).toBe(colors.brass);
+});
+
+test('test_earningsLeaderboard_whenViewerRow_usesBrassGlow', (): void => {
+  expect((styles.lbRowYou as { backgroundColor?: string }).backgroundColor).toBe(colors.goldGlow);
 });

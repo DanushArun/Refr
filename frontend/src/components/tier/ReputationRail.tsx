@@ -73,7 +73,7 @@ const timingConfig = {
 function RailGlow(): React.ReactElement {
   return (
     <LinearGradient
-      colors={['rgba(212,167,68,0.12)', 'rgba(255,255,255,0.035)', 'rgba(0,0,0,0)']}
+      colors={[colors.goldGlow, colors.surface, 'rgba(0,0,0,0)']}
       locations={[0, 0.5, 1]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -138,7 +138,7 @@ function RailTrack({
         <View style={styles.railBase} onLayout={onRailLayout}>
           <Animated.View style={[styles.railFill, fillStyle]}>
             <LinearGradient
-              colors={['#FFF3C4', colors.goldBright, colors.gold]}
+              colors={[colors.cream, colors.brass, colors.gold]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.fillGradient}

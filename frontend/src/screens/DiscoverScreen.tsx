@@ -14,7 +14,11 @@ import {
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { layout, rhythm, spacing } from '../theme/spacing';
-import { FilterBar, type FilterOption } from '../components/common/FilterBar';
+import {
+  DISCOVER_FILTER_CHIP_WIDTH,
+  FilterBar,
+  type FilterOption,
+} from '../components/common/FilterBar';
 
 type CompanyFilter = 'all' | string;
 
@@ -158,7 +162,7 @@ export function DiscoverScreen(): React.ReactElement {
           current={activeFilter}
           onChange={handleFilterPress}
           showCounts={false}
-          chipWidth={92}
+          chipWidth={DISCOVER_FILTER_CHIP_WIDTH}
           ariaLabel="Endorser company filter"
         />
 

@@ -1,35 +1,71 @@
 /**
  * Endorser tier system — gamifies Endorsement Score.
- * Tiers progress from warm-cheap (Bronze) to cool-rare (Diamond),
- * mirroring the visual grammar of Apex / Valorant / Duolingo Legend.
+ * Tiers now stay inside the After Hours palette: Brass for rank/status,
+ * Sage for positive maturity, Parchment for premium calm, and Vermilion only
+ * at the top detonation tier.
  *
  * Thresholds are tuned so every tier is populated at launch and Diamond
  * is aspirational (only top Endorsers reach it).
  */
 
-export type TierIcon =
-  | 'medal-outline'
-  | 'medal'
-  | 'trophy'
-  | 'sparkles'
-  | 'diamond';
+import { colors } from '../../theme/colors';
 
 export interface Tier {
   name: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
   min: number;
-  max: number;           // inclusive upper bound; Infinity for top tier
-  icon: TierIcon;        // Ionicons name — escalates in visual prestige
-  color: string;         // solid accent for borders, text, icon fill
-  light: string;         // soft backdrop for pills
-  glow: string;          // brighter accent for progress bars, badges
+  max: number;
+  starCount: number;
+  color: string;
+  light: string;
+  glow: string;
 }
 
 export const TIERS: Tier[] = [
-  { name: 'Bronze',   min: 0,   max: 19,       icon: 'medal-outline', color: '#b87333', light: 'rgba(184,115,51,0.15)', glow: '#d2935a' },
-  { name: 'Silver',   min: 20,  max: 39,       icon: 'medal',          color: '#c0c4cc', light: 'rgba(192,196,204,0.15)', glow: '#d8dce4' },
-  { name: 'Gold',     min: 40,  max: 59,       icon: 'trophy',         color: '#e6b800', light: 'rgba(230,184,0,0.15)',  glow: '#ffd24a' },
-  { name: 'Platinum', min: 60,  max: 79,       icon: 'sparkles',       color: '#22d3ee', light: 'rgba(34,211,238,0.15)', glow: '#67e8f9' },
-  { name: 'Diamond',  min: 80,  max: Infinity, icon: 'diamond',        color: '#c084fc', light: 'rgba(192,132,252,0.15)', glow: '#d8b4fe' },
+  {
+    name: 'Bronze',
+    min: 0,
+    max: 19,
+    starCount: 1,
+    color: colors.brass,
+    light: colors.warningLight,
+    glow: colors.brass,
+  },
+  {
+    name: 'Silver',
+    min: 20,
+    max: 39,
+    starCount: 2,
+    color: colors.sage,
+    light: colors.successLight,
+    glow: colors.sage,
+  },
+  {
+    name: 'Gold',
+    min: 40,
+    max: 59,
+    starCount: 3,
+    color: colors.brass,
+    light: colors.goldGlow,
+    glow: colors.brass,
+  },
+  {
+    name: 'Platinum',
+    min: 60,
+    max: 79,
+    starCount: 4,
+    color: colors.cream,
+    light: colors.surfaceLevel2,
+    glow: colors.sage,
+  },
+  {
+    name: 'Diamond',
+    min: 80,
+    max: Infinity,
+    starCount: 5,
+    color: colors.vermilion,
+    light: colors.vermilionLight,
+    glow: colors.vermilion,
+  },
 ];
 
 export function tierForScore(score: number): Tier {

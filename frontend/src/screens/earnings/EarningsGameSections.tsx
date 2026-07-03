@@ -190,7 +190,13 @@ function ScoreRules(): React.ReactElement {
   return (
     <View style={styles.scoreRules}>
       <Text style={styles.scoreRulesLabel}>Score moves</Text>
-      <Text style={styles.scoreRulesText}>+2 accepted · +10 hire · -1/wk idle</Text>
+      <View style={styles.scoreRulesList}>
+        <Text style={[styles.scoreRulesText, styles.scoreRulePositive]}>+2 accepted</Text>
+        <Text style={styles.scoreRuleDivider}>·</Text>
+        <Text style={[styles.scoreRulesText, styles.scoreRulePositive]}>+10 hire</Text>
+        <Text style={styles.scoreRuleDivider}>·</Text>
+        <Text style={[styles.scoreRulesText, styles.scoreRuleNegative]}>-1/wk idle</Text>
+      </View>
     </View>
   );
 }

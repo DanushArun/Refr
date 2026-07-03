@@ -7,6 +7,7 @@ jest.mock('react-native', () => ({
 }));
 
 import { reputationRailStyles } from './reputationRailStyles';
+import { colors } from '../../theme/colors';
 
 test('test_reputation_rail_when_rendered_uses_single_track_line', (): void => {
   const railBase = reputationRailStyles.railBase as Record<string, unknown>;
@@ -21,4 +22,12 @@ test('test_reputation_rail_whenPolished_avoidsHardNestedPanelBorders', (): void 
   for (const key of panelKeys) {
     expect((reputationRailStyles[key] as { borderWidth?: number }).borderWidth ?? 0).toBe(0);
   }
+});
+
+test('test_reputationRail_whenPositiveScoreMove_usesSage', (): void => {
+  expect((reputationRailStyles.rulePositive as { color?: string }).color).toBe(colors.sage);
+});
+
+test('test_reputationRail_whenNegativeScoreMove_usesVermilion', (): void => {
+  expect((reputationRailStyles.ruleNegative as { color?: string }).color).toBe(colors.vermilion);
 });
