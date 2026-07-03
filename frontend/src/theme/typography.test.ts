@@ -44,3 +44,9 @@ test('test_typography_whenTrustDataRenders_usesMonoForNumbersAndScores', () => {
   expect(productTokens.statLarge.fontFamily).toBe('GeistMono-Regular');
   expect(productTokens.statMedium.fontFamily).toBe('GeistMono-Medium');
 });
+
+test('test_typography_whenAfterHoursMomentRenders_usesSerifDisplayVoice', () => {
+  expect(fontFamilies.serif).toBe('IBMPlexSerif-Regular');
+  expect(fontFamilies.serifMedium).toBe('IBMPlexSerif-Medium');
+  expect(productTokens.detonationDisplay.fontFamily).toBe('IBMPlexSerif-Medium');
+});

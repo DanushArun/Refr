@@ -8,7 +8,7 @@
  *   - accent:  the brand-color line used for chips, dividers, and CTAs
  *   - text:    high-contrast text color used over the brand zone
  *
- * Unknown companies fall back to navy. The UI never breaks on a company
+ * Unknown companies fall back to After Hours midnight. The UI never breaks on a company
  * we don't yet have art for.
  *
  * Note: we used to ship stock office photos per company, but Unsplash IDs
@@ -77,10 +77,10 @@ const REGISTRY: Record<string, CompanyBrand> = {
 
 const FALLBACK: CompanyBrand = {
   mark: '◉',
-  tint: '#0A1F44',
-  tintEnd: '#04102A',
-  accent: '#D4A744',
-  text: '#FFFFFF',
+  tint: '#0C1F19',
+  tintEnd: '#07140F',
+  accent: '#D9A441',
+  text: '#F4EDDD',
 };
 
 export function getCompanyBrand(companyId: string): CompanyBrand {

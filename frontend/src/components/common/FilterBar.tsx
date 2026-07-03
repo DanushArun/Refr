@@ -10,8 +10,8 @@ import { layout, spacing } from '../../theme/spacing';
  * surface in the app (Discover, Matches, Pipeline, Inbox, Active, Endorser
  * Discover). Earnings and Profile do not use filters by design.
  *
- * Visual language: gold rim chips on a transparent background; active chip
- * is a solid gold fill with a navy label. Optional per-chip count badge —
+ * Visual language: brass-rim chips on a transparent background; active chip
+ * is a velvet/brass status surface. Optional per-chip count badge —
  * dim when zero so the user can see at a glance which buckets are empty
  * without losing the option.
  *
@@ -132,30 +132,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    height: 26,
-    paddingHorizontal: 10,
-    borderRadius: 13,
+    minHeight: 32,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
   },
   chipActive: {
-    backgroundColor: colors.gold,
-    borderColor: colors.gold,
+    backgroundColor: colors.goldGlow,
+    borderColor: colors.brass,
   },
   chipInactive: {
-    backgroundColor: 'transparent',
-    borderColor: 'rgba(212, 167, 68, 0.45)',
+    backgroundColor: colors.surface,
+    borderColor: colors.goldDim,
   },
   chipDim: {
-    borderColor: 'rgba(212, 167, 68, 0.18)',
+    borderColor: colors.border,
   },
   label: {
     fontFamily: 'Outfit-SemiBold',
     fontSize: 11,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
   },
-  labelActive: { color: '#0A1F44' },
-  labelInactive: { color: colors.gold },
-  labelDim: { color: 'rgba(212, 167, 68, 0.45)' },
+  labelActive: { color: colors.text },
+  labelInactive: { color: colors.goldBright },
+  labelDim: { color: colors.textTertiary },
   countBadge: {
     minWidth: 16,
     height: 16,
@@ -164,13 +164,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countBadgeActive: { backgroundColor: 'rgba(10, 31, 68, 0.18)' },
-  countBadgeInactive: { backgroundColor: 'rgba(212, 167, 68, 0.14)' },
+  countBadgeActive: { backgroundColor: colors.surfaceLevel2 },
+  countBadgeInactive: { backgroundColor: colors.goldGlow },
   countText: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 9,
     letterSpacing: 0,
   },
-  countTextActive: { color: '#0A1F44' },
-  countTextInactive: { color: colors.gold },
+  countTextActive: { color: colors.text },
+  countTextInactive: { color: colors.goldBright },
 });

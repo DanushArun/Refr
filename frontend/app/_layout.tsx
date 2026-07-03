@@ -7,10 +7,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SystemBars } from 'react-native-edge-to-edge';
+import {
+  IBMPlexSerif_400Regular,
+  IBMPlexSerif_400Regular_Italic,
+  IBMPlexSerif_500Medium,
+} from '@expo-google-fonts/ibm-plex-serif';
 import { colors } from '../src/theme/colors';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { loadDemoRole } from '../src/services/demoRoleStorage';
-import { AuroraShader } from '../src/components/constellation/AuroraShader';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,8 +56,11 @@ export default function RootLayout(): React.ReactElement | null {
     'Outfit-Medium': TikTokSansMedium,
     'Outfit-SemiBold': TikTokSansSemibold,
     'Outfit-Bold': TikTokSansSemibold,
-    'InstrumentSerif-Regular': CabinetGroteskRegular,
-    'InstrumentSerif-Italic': CabinetGroteskMedium,
+    'IBMPlexSerif-Regular': IBMPlexSerif_400Regular,
+    'IBMPlexSerif-Italic': IBMPlexSerif_400Regular_Italic,
+    'IBMPlexSerif-Medium': IBMPlexSerif_500Medium,
+    'InstrumentSerif-Regular': IBMPlexSerif_400Regular,
+    'InstrumentSerif-Italic': IBMPlexSerif_400Regular_Italic,
     'JetBrainsMono-Regular': GeistMonoRegular,
     'JetBrainsMono-Medium': GeistMonoMedium,
     'MoneyFont-Bold': OxaniumBold,
@@ -74,9 +81,7 @@ export default function RootLayout(): React.ReactElement | null {
         <SafeAreaProvider style={styles.safeAreaProvider}>
           <SystemBars style="light" hidden={false} />
           <StatusBar style="light" backgroundColor="transparent" translucent />
-          <View style={styles.backgroundLayer} pointerEvents="none">
-            <AuroraShader speed={0.85} />
-          </View>
+          <View style={styles.backgroundLayer} pointerEvents="none" />
           <View style={styles.routeLayer}>
             <Stack screenOptions={ROOT_STACK_SCREEN_OPTIONS} />
           </View>

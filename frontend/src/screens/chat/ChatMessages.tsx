@@ -17,6 +17,7 @@ import {
   formatGroupTime,
   GroupedMessage,
 } from './chatLogic';
+import { keyReactions } from './chatReactionKeys';
 
 interface MessageListProps {
   groups: GroupedMessage[];
@@ -205,8 +206,10 @@ function ReactionRow({
 
   return (
     <View style={[styles.reactionRow, mine ? styles.reactionRowMine : styles.reactionRowTheirs]}>
-      {reactions.map((emoji, index) => (
-        <Text key={`${emoji}-${index}`} style={styles.reactionBadgeText}>{emoji}</Text>
+      {keyReactions(reactions).map((reaction) => (
+        <Text key={reaction.key} style={styles.reactionBadgeText}>
+          {reaction.emoji}
+        </Text>
       ))}
     </View>
   );

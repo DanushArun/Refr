@@ -16,6 +16,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../common/Avatar';
+import { BrandPhotoGrade } from '../common/BrandPhotoGrade';
 import { Phrase } from '../../utils/haptics';
 import { getCompanyBrand } from './companyBrand';
 import { officeImageFor } from '../activity/companyOffices';
@@ -330,18 +331,16 @@ export function EndorserCard({
     };
   });
 
-  // Reactive overlay glow — gold tint while user pulls right, cool dim while
+  // Reactive overlay glow — vermilion tint while user pulls right, sage while
   // pulling left. Sits above the brand zone but below the stamp/seal so it
   // reads as an ambient mood shift rather than a discrete sticker.
   const reactiveGlowStyle = useAnimatedStyle(() => {
     const p = headProgress.value;
-    const goldOpacity = interpolate(p, [0, 1], [0, 0.32], Extrapolation.CLAMP);
+    const endorseOpacity = interpolate(p, [0, 1], [0, 0.30], Extrapolation.CLAMP);
     const passOpacity = interpolate(p, [-1, 0], [0.20, 0], Extrapolation.CLAMP);
     return {
-      opacity: goldOpacity + passOpacity,
-      // Cross-fade hue: positive side leans gold, negative side leans cool
-      // navy — implemented via two stacked layers; here we shift the bg.
-      backgroundColor: p >= 0 ? 'rgba(232, 189, 88, 0.55)' : 'rgba(10, 31, 68, 0.45)',
+      opacity: endorseOpacity + passOpacity,
+      backgroundColor: p >= 0 ? colors.vermilionDim : 'rgba(157, 181, 164, 0.30)',
     };
   });
 
@@ -433,12 +432,13 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
     <View style={styles.fullMediaCard}>
       <View style={[styles.officeFallback, { backgroundColor: brand.tint }]} />
       {officeImage && <Image source={officeImage} style={styles.officeImage} resizeMode="cover" />}
+      <BrandPhotoGrade />
       <LinearGradient
         colors={[
-          'rgba(1, 7, 17, 0)',
-          'rgba(1, 7, 17, 0.52)',
-          'rgba(1, 7, 17, 0.86)',
-          'rgba(1, 7, 17, 0.98)',
+          'rgba(12, 31, 25, 0)',
+          'rgba(12, 31, 25, 0.52)',
+          'rgba(12, 31, 25, 0.86)',
+          'rgba(12, 31, 25, 0.98)',
         ]}
         locations={[0.44, 0.58, 0.76, 1]}
         style={styles.bottomScrim}
@@ -491,7 +491,7 @@ function TopCardContent({ card }: { card: EndorserCardData }) {
 
 function StackPreview() {
   // Intentionally NO identity content: back-of-deck cards must read as
-  // anonymous gold plates so the next candidate isn't pre-revealed before
+  // anonymous velvet plates so the next candidate isn't pre-revealed before
   // the user has even committed to the current swipe.
   return <View style={styles.stackPlate} />;
 }
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     borderRadius: discoverCardLayout.radius,
   },
 
-  /* Reactive ambient overlay — gold for "endorse," cool navy for "pass."
+  /* Reactive ambient overlay — vermilion for "endorse," sage for "pass."
      Sits above the surface but below the stamp so it reads as a mood, not
      a sticker. */
   reactiveGlow: {
@@ -628,12 +628,12 @@ const styles = StyleSheet.create({
     color: 'rgba(245, 241, 232, 0.72)',
   },
 
-  /* Stack preview — anonymous plate, no identity content. Muted sailor gold
-     so back-of-deck cards read as warm trim against the navy page, while the
+  /* Stack preview — anonymous plate, no identity content. Muted velvet
+     so back-of-deck cards read as warm trim against the midnight page, while the
      top card's brand zone stays the visual focus. */
   stackPlate: {
     flex: 1,
-    backgroundColor: '#7A5F2E',
+    backgroundColor: colors.backgroundElevated,
   },
 
   /* Undo affordance anchored to the card. */
@@ -650,9 +650,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(10, 31, 68, 0.95)',
+    backgroundColor: colors.backgroundElevated,
     borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.40)',
+    borderColor: colors.goldDim,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.30,

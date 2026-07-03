@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useIsFocused } from '@react-navigation/native';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { officeImageUrlFor } from '../components/activity/companyOffices';
@@ -8,8 +7,6 @@ import { Phrase } from '../utils/haptics';
 import { SwipeDeck, type SwipeDeckHandle } from '../components/discover/SwipeDeck';
 import { EndorserCard as EndorserCardView } from '../components/discover/EndorserCard';
 import { ExpandedEndorserCard } from '../components/discover/ExpandedEndorserCard';
-import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
-import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
   buildEndorserCards,
   type EndorserCard,
@@ -17,13 +14,17 @@ import {
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { layout, rhythm, spacing } from '../theme/spacing';
-import { DotMatrixBackground } from '../components/common/DotMatrixBackground';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 type CompanyFilter = 'all' | string;
 
+function reportSeekerSwipeError(error: unknown): void {
+  if (__DEV__) {
+    console.warn('Failed to record seeker swipe', error);
+  }
+}
+
 export function DiscoverScreen(): React.ReactElement {
-  const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildEndorserCards('1'), [queueKey]);
 
@@ -68,22 +69,16 @@ export function DiscoverScreen(): React.ReactElement {
   }, [allCards]);
   // Tapped card animates from its deck position into a full-screen detail sheet
   const [expandedCard, setExpandedCard] = useState<EndorserCard | null>(null);
-  // Token-based trigger so the celebration fires once per right-swipe
-  const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
   // Tracks whether undo is available so we can show/hide the rewind affordance.
   const [canUndo, setCanUndo] = useState(false);
-
-  const remainingSwipes = Math.max(0, cards.length - index);
 
   // Imperative deck handle — only used for the undo affordance now that
   // tap-to-act buttons are gone (swipe is the only commit path).
   const deckRef = useRef<SwipeDeckHandle>(null);
 
   /**
-   * Fires the moment a swipe commits (start of the 220ms fly-off) — kept tight
-   * to the gesture so the celebration burst overlaps with the card's exit
-   * instead of landing after it. Records the swipe API call here too; deck
-   * advance happens separately when the fly-off completes.
+   * Records the swipe API call at commit start. The full detonation is
+   * reserved for the endorser accepting the request, not for sending one.
    */
   const handleSwipeCommitStart = useCallback(
     (card: EndorserCard, direction: 'request' | 'pass') => {
@@ -102,17 +97,14 @@ export function DiscoverScreen(): React.ReactElement {
           },
           requestNote,
         )
-        .catch(() => {});
-      // Fire the full Skia celebration. Phrase.match() runs from inside it.
-      setCelebrationTrigger(Date.now());
+        .catch(reportSeekerSwipeError);
     },
     [],
   );
 
   const commitSwipe = useCallback(
     (_card: EndorserCard, _direction: 'request' | 'pass') => {
-      // Deck-pointer advance only — the user-facing reaction (celebration +
-      // API call) already fired in handleSwipeCommitStart at gesture commit.
+      // Deck-pointer advance only; the API call fires in handleSwipeCommitStart.
       setIndex((i) => i + 1);
     },
     [],
@@ -143,14 +135,11 @@ export function DiscoverScreen(): React.ReactElement {
 
   /**
    * Undo retreats the deck pointer and lets the SwipeDeck animate the
-   * restored card back into view from the side it left from. Also drops the
-   * pending celebration token so an undone right-swipe doesn't leave the
-   * burst lingering.
+   * restored card back into view from the side it left from.
    */
   const handleUndo = useCallback(() => {
     Phrase.tap();
     setIndex((i) => Math.max(0, i - 1));
-    setCelebrationTrigger(null);
   }, []);
 
   const handleFilterPress = useCallback((company: CompanyFilter) => {
@@ -159,11 +148,6 @@ export function DiscoverScreen(): React.ReactElement {
 
   return (
     <View style={styles.container}>
-      {/* Constellation reveals only when the deck is exhausted — the
-          "you're caught up" reward beat. Hidden during normal swiping so
-          the deck holds the user's full attention. */}
-      <ConstellationBackdrop visible={remainingSwipes === 0} active={isFocused} />
-
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.wordmark}>Endorsly</Text>
@@ -238,9 +222,6 @@ export function DiscoverScreen(): React.ReactElement {
         onPass={() => handleExpandedCommit('pass')}
         onCommit={() => handleExpandedCommit('request')}
       />
-
-      {/* Full-screen overlay celebration — fires on right-swipe commit */}
-      <MatchCelebration trigger={celebrationTrigger} />
     </View>
   );
 }

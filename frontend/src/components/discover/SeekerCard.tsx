@@ -15,6 +15,7 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { BrandPhotoGrade } from '../common/BrandPhotoGrade';
 import { brandForName } from './companyBrand';
 import { Phrase } from '../../utils/haptics';
 import { colors } from '../../theme/colors';
@@ -220,11 +221,11 @@ export function SeekerCard({
 
   const reactiveGlowStyle = useAnimatedStyle(() => {
     const p = headProgress.value;
-    const goldOpacity = interpolate(p, [0, 1], [0, 0.32], Extrapolation.CLAMP);
+    const endorseOpacity = interpolate(p, [0, 1], [0, 0.30], Extrapolation.CLAMP);
     const passOpacity = interpolate(p, [-1, 0], [0.20, 0], Extrapolation.CLAMP);
     return {
-      opacity: goldOpacity + passOpacity,
-      backgroundColor: p >= 0 ? 'rgba(232, 189, 88, 0.55)' : 'rgba(10, 31, 68, 0.45)',
+      opacity: endorseOpacity + passOpacity,
+      backgroundColor: p >= 0 ? colors.vermilionDim : 'rgba(157, 181, 164, 0.30)',
     };
   });
 
@@ -310,12 +311,13 @@ function TopCardContent({ card }: { card: SeekerCardData }) {
     <View style={styles.fullMediaCard}>
       <View style={[styles.mediaFallback, { backgroundColor: brand.tint }]} />
       <Image source={{ uri: card.photoUrl }} style={styles.heroPhoto} resizeMode="cover" />
+      <BrandPhotoGrade />
       <LinearGradient
         colors={[
-          'rgba(1, 7, 17, 0)',
-          'rgba(1, 7, 17, 0.52)',
-          'rgba(1, 7, 17, 0.86)',
-          'rgba(1, 7, 17, 0.98)',
+          'rgba(12, 31, 25, 0)',
+          'rgba(12, 31, 25, 0.52)',
+          'rgba(12, 31, 25, 0.86)',
+          'rgba(12, 31, 25, 0.98)',
         ]}
         locations={[0.44, 0.58, 0.76, 1]}
         style={styles.bottomScrim}
@@ -509,10 +511,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: 'rgba(245, 241, 232, 0.72)',
   },
-  /* Stack preview — muted sailor gold plate, mirrors EndorserCard back-of-deck */
+  /* Stack preview — muted velvet plate, mirrors EndorserCard back-of-deck */
   stackPlate: {
     flex: 1,
-    backgroundColor: '#7A5F2E',
+    backgroundColor: colors.backgroundElevated,
   },
 
   /* Credit-card material overlays */
@@ -521,8 +523,7 @@ const styles = StyleSheet.create({
     borderRadius: discoverCardLayout.radius,
   },
 
-  /* Reactive gold/navy mood overlay — gold while pulling right (accept),
-     cool navy while pulling left (pass). */
+  /* Reactive vermilion/sage mood overlay while pulling right/left. */
   reactiveGlow: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: discoverCardLayout.radius,
@@ -543,9 +544,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(10, 31, 68, 0.95)',
+    backgroundColor: colors.backgroundElevated,
     borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.40)',
+    borderColor: colors.goldDim,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.30,

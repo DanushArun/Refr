@@ -1,7 +1,8 @@
 /**
  * Endorsly Design System - Typography
  *
- * Cabinet Grotesk - Awwwards-listed accent for titles and identity moments
+ * Cabinet Grotesk - Awwwards-listed accent for product titles
+ * IBM Plex Serif  - After Hours editorial and detonation moments
  * TikTok Sans     - product UI, settings, lists, navigation, chat, forms
  * Geist Mono      - numbers, stats, payouts, ranks, Endorsement Score
  *
@@ -17,6 +18,8 @@ export const fontFamilies = {
   bodyMedium: 'TikTokSans-Medium',
   bodySemiBold: 'TikTokSans-Semibold',
   bodyBold: 'TikTokSans-Semibold',
+  serif: 'IBMPlexSerif-Regular',
+  serifMedium: 'IBMPlexSerif-Medium',
   mono: 'GeistMono-Regular',
   monoMedium: 'GeistMono-Medium',
 } as const;
@@ -72,6 +75,12 @@ export const typography = {
     fontSize: fontSizes.display,
     lineHeight: lineHeights.display,
     letterSpacing: letterSpacings.tight,
+  },
+  detonationDisplay: {
+    fontFamily: fontFamilies.serifMedium,
+    fontSize: 58,
+    lineHeight: 62,
+    letterSpacing: letterSpacings.normal,
   },
   h1: {
     fontFamily: fontFamilies.headingMedium,
@@ -184,7 +193,7 @@ export const typography = {
     letterSpacing: letterSpacings.normal,
   },
   editorialTitle: {
-    fontFamily: fontFamilies.heading,
+    fontFamily: fontFamilies.serif,
     fontSize: 24,
     lineHeight: 30,
     letterSpacing: letterSpacings.normal,

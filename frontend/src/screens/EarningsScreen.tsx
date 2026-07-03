@@ -16,9 +16,6 @@ import { Phrase } from '../utils/haptics';
 import { TierBadge } from '../components/tier/TierBadge';
 import { ReputationRail } from '../components/tier/ReputationRail';
 import { FrostedGlassSurface } from '../components/common/FrostedGlassSurface';
-import {
-  CenterPulseDotMatrixBackground,
-} from '../components/common/CenterPulseDotMatrixBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import { earningsScreenStyles as styles } from './earnings/earningsScreenStyles';
 import {
@@ -97,17 +94,15 @@ export function EarningsScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-      <CenterPulseDotMatrixBackground />
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1 · HERO — gold "money" card */}
+        {/* 1 · HERO — velvet ledger card with brass status inlays */}
         <View style={styles.earningsHero}>
-          {/* Gold metallic gradient — bright top-left to deeper gold bottom-right */}
           <LinearGradient
-            colors={['#E8BD58', '#D4A744', '#B7892A']}
+            colors={[colors.backgroundElevated, colors.navyDeep, colors.background]}
             locations={[0, 0.55, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -116,7 +111,7 @@ export function EarningsScreen() {
           />
           {/* Top sheen + bottom shade for material depth */}
           <LinearGradient
-            colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.10)']}
+            colors={[colors.goldGlow, 'rgba(244,237,221,0)', 'rgba(0,0,0,0.20)']}
             locations={[0, 0.5, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -291,8 +286,7 @@ function HeroTile({
   accent?: boolean;
   muted?: boolean;
 }) {
-  // Hero card is gold — text is dark; accent (positive money) goes deeper bronze
-  const color = accent ? '#5D3F0E' : muted ? 'rgba(0, 0, 0, 0.55)' : '#000000';
+  const color = accent ? colors.goldBright : muted ? colors.textSecondary : colors.text;
   return (
     <View style={styles.heroTile}>
       <Text style={styles.heroTileLabel}>{label.toUpperCase()}</Text>

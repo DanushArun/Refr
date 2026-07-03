@@ -12,6 +12,7 @@ import {
   Circle,
   Group,
 } from '@shopify/react-native-skia';
+import { colors } from '../../theme/colors';
 
 const { width: WINDOW_WIDTH } = Dimensions.get('window');
 const COMMIT_THRESHOLD = WINDOW_WIDTH * 0.32;
@@ -33,7 +34,7 @@ interface StampProps {
 /**
  * Swipe reaction overlay.
  *
- *   `kind="request"` (right swipe) — a celebratory gold sailor's wax seal
+ *   `kind="request"` (right swipe) — a vermilion commitment seal
  *   that scales up with drag. Reads REQUEST in editorial serif. (On the
  *   seeker side, swiping right SENDS a request — endorsement is what the
  *   referrer does, not what the seeker does.) No red, no judgmental fanfare
@@ -87,15 +88,15 @@ function RequestSeal({
 
   return (
     <Animated.View pointerEvents="none" style={[styles.sealContainer, animStyle]}>
-      {/* Gold halo + disc rendered in Skia so the glow stays smooth on the GPU */}
+      {/* Vermilion halo + disc rendered in Skia so the glow stays smooth on the GPU */}
       <Canvas style={StyleSheet.absoluteFillObject}>
         <Group>
-          {/* Outer halo — soft sailor gold bloom */}
+          {/* Outer halo — scarce endorsement accent */}
           <Circle
             cx={SEAL_SIZE / 2}
             cy={SEAL_SIZE / 2}
             r={SEAL_SIZE / 2 * 0.96}
-            color="rgba(232, 189, 88, 0.48)"
+            color="rgba(255, 77, 46, 0.48)"
           >
             <BlurMask blur={28} style="solid" />
           </Circle>
@@ -104,23 +105,23 @@ function RequestSeal({
             cx={SEAL_SIZE / 2}
             cy={SEAL_SIZE / 2}
             r={SEAL_SIZE / 2 * 0.78}
-            color="rgba(232, 189, 88, 0.55)"
+            color="rgba(255, 77, 46, 0.58)"
           >
             <BlurMask blur={12} style="solid" />
           </Circle>
-          {/* Inner gold disc — the seal itself */}
+          {/* Inner vermilion disc — the seal itself */}
           <Circle
             cx={SEAL_SIZE / 2}
             cy={SEAL_SIZE / 2}
             r={SEAL_SIZE / 2 * 0.62}
-            color="#D4A744"
+            color={colors.vermilion}
           />
           {/* Highlight rim — light catches the top of a real wax seal */}
           <Circle
             cx={SEAL_SIZE / 2}
             cy={SEAL_SIZE / 2 - 6}
             r={SEAL_SIZE / 2 * 0.62}
-            color="rgba(255, 240, 200, 0.35)"
+            color="rgba(244, 237, 221, 0.28)"
           >
             <BlurMask blur={6} style="solid" />
           </Circle>
@@ -164,7 +165,7 @@ function PassWisp({ translateX }: { translateX: SharedValue<number> }) {
 }
 
 const styles = StyleSheet.create({
-  /* Right — celebratory gold seal in the upper-right of the brand zone */
+  /* Right — vermilion endorsement seal in the upper-right of the brand zone */
   sealContainer: {
     position: 'absolute',
     top: 56,
@@ -182,13 +183,13 @@ const styles = StyleSheet.create({
   sealMark: {
     fontFamily: 'InstrumentSerif-Regular',
     fontSize: 22,
-    color: '#0A1F44',
+    color: colors.navyDeep,
     marginBottom: -4,
   },
   sealText: {
     fontFamily: 'InstrumentSerif-Regular',
     fontSize: 24,
-    color: '#0A1F44',
+    color: colors.navyDeep,
     letterSpacing: 2,
   },
 
@@ -203,14 +204,14 @@ const styles = StyleSheet.create({
   wispMark: {
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 40,
-    color: 'rgba(245, 241, 232, 0.55)',
+    color: 'rgba(157, 181, 164, 0.58)',
     letterSpacing: 6,
     marginBottom: -10,
   },
   wispText: {
     fontFamily: 'InstrumentSerif-Italic',
     fontSize: 30,
-    color: 'rgba(245, 241, 232, 0.85)',
+    color: 'rgba(244, 237, 221, 0.76)',
     letterSpacing: 2,
   },
 });

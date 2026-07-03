@@ -21,12 +21,12 @@ const { width: W, height: H } = Dimensions.get('window');
  *
  * Vertical curtains driven by 3-octave fractal Brownian motion (fBm), biased
  * upward so the brightest light pools toward the top of the frame and bleeds
- * downward through translucent gold and cyan bands. The whole field drifts
+ * downward through translucent brass and sage bands. The whole field drifts
  * horizontally at one rate and undulates vertically at another, which is what
  * gives real auroras their "curtain" feel.
  *
  *  - Time uniform drives both drifts.
- *  - Final color is `gold * gold_mask + cyan * cyan_mask + violet * deep_mask`,
+ *  - Final color is `brass * brass_mask + sage * sage_mask + heat * deep_mask`,
  *    each masked by a different noise threshold so the colors don't grey out.
  *  - Vignette dims the bottom + edges so glass surfaces above retain contrast.
  *  - Output multiplied by 0.55 so it never out-shouts the foreground UI.
@@ -79,19 +79,19 @@ half4 main(float2 fragCoord) {
   mask *= topBias;
 
   // Three masks for three colors, each peaks at a different noise level
-  float goldMask = smoothstep(0.45, 0.85, mask);
-  float cyanMask = smoothstep(0.30, 0.70, mask) - goldMask * 0.5;
-  float deepMask = smoothstep(0.10, 0.55, mask) - cyanMask * 0.4;
+  float brassMask = smoothstep(0.45, 0.85, mask);
+  float sageMask = smoothstep(0.30, 0.70, mask) - brassMask * 0.5;
+  float deepMask = smoothstep(0.10, 0.55, mask) - sageMask * 0.4;
 
-  half3 gold   = half3(0.831, 0.655, 0.267);   // sailor gold
-  half3 cyan   = half3(0.024, 0.714, 0.831);   // teal cyan
-  half3 violet = half3(0.388, 0.180, 0.667);   // deep violet
-  half3 navy   = half3(0.039, 0.122, 0.267);   // hull navy
+  half3 brass = half3(0.851, 0.643, 0.255);
+  half3 sage  = half3(0.616, 0.710, 0.643);
+  half3 heat  = half3(1.000, 0.302, 0.180);
+  half3 base  = half3(0.047, 0.122, 0.098);
 
-  half3 col = navy;
-  col = mix(col, violet, half(deepMask) * half(0.45));
-  col = mix(col, cyan,   half(cyanMask) * half(0.55));
-  col = mix(col, gold,   half(goldMask) * half(0.65));
+  half3 col = base;
+  col = mix(col, heat,  half(deepMask) * half(0.18));
+  col = mix(col, sage,  half(sageMask) * half(0.32));
+  col = mix(col, brass, half(brassMask) * half(0.45));
 
   // Edge vignette so the foreground glass keeps contrast
   float2 c = uv - 0.5;
@@ -145,5 +145,5 @@ export function AuroraShader({ speed = 1 }: AuroraShaderProps) {
 
 const styles = StyleSheet.create({
   canvas: { ...StyleSheet.absoluteFillObject },
-  fallback: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0A1F44' },
+  fallback: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0C1F19' },
 });

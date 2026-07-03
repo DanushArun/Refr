@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useIsFocused } from '@react-navigation/native';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -9,7 +8,6 @@ import {
 } from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import { ExpandedSeekerCard } from '../components/discover/ExpandedSeekerCard';
-import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
 import { MatchCelebration } from '../components/discover/MatchCelebration';
 import {
   buildSeekerCards,
@@ -20,7 +18,6 @@ import { prefetchImages } from '../utils/prefetchImages';
 import { referralsApi } from '../services/api';
 import { colors } from '../theme/colors';
 import { layout, rhythm, spacing } from '../theme/spacing';
-import { DotMatrixBackground } from '../components/common/DotMatrixBackground';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
 
 /**
@@ -38,7 +35,6 @@ import { FilterBar, type FilterOption } from '../components/common/FilterBar';
  * stake my reputation on?".
  */
 export function EndorserDiscoverScreen(): React.ReactElement {
-  const isFocused = useIsFocused();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildSeekerCards('2'), [queueKey]);
   const [index, setIndex] = useState(0);
@@ -72,8 +68,6 @@ export function EndorserDiscoverScreen(): React.ReactElement {
   // filters. Stable until the queue itself rebuilds.
   const expCounts = useMemo(() => buildExpCounts(allCards), [allCards]);
 
-  const remaining = Math.max(0, cards.length - index);
-
   const deckRef = useRef<SwipeDeckHandle>(null);
 
   const commitSwipe = useCallback(
@@ -91,7 +85,7 @@ export function EndorserDiscoverScreen(): React.ReactElement {
             skills: card.skills,
             targetRole: card.targetRole,
           })
-          .catch(() => {});
+          .catch(reportEndorserSwipeError);
       }
       setIndex((i) => i + 1);
     },
@@ -137,9 +131,6 @@ export function EndorserDiscoverScreen(): React.ReactElement {
 
   return (
     <View style={styles.container}>
-      {/* Constellation reveals only when the candidate queue is exhausted. */}
-      <ConstellationBackdrop visible={remaining === 0} active={isFocused} />
-
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <Text style={styles.wordmark}>Endorsly</Text>
@@ -244,6 +235,12 @@ const EXP_LABEL: Record<ExpFilter, string> = {
   mid: 'Mid',
   senior: 'Senior',
 };
+
+function reportEndorserSwipeError(error: unknown): void {
+  if (__DEV__) {
+    console.warn('Failed to record endorser swipe', error);
+  }
+}
 
 /** Years-of-experience → bucket. Cutoffs match how endorsers actually
  *  triage requests in practice: <3y junior, 3-7 mid-level, 8+ senior. */

@@ -10,8 +10,7 @@ import { PressableScale } from '../components/common/PressableScale';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Phrase } from '../utils/haptics';
 import { router } from 'expo-router';
-import { saveDemoRole } from '../services/demoRoleStorage';
-import { ConstellationBackdrop } from '../components/constellation/ConstellationBackdrop';
+import { afterHoursBrand } from '../theme/afterHours';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, layout } from '../theme/spacing';
@@ -23,7 +22,7 @@ import { spacing, layout } from '../theme/spacing';
  *   1. Wordmark is the hero: letter-spaced, display weight, vertically centred
  *   2. Two-line promise below: emotional + functional
  *   3. ONE primary CTA pinned near the bottom, accent gradient
- *   4. Subtle radial-ish backdrop, no imagery
+ *   4. Flat brand background, no decorative imagery
  *   5. Zero competing decisions (no "sign in / sign up" split)
  *   6. Staggered fade-in motion (300ms / 600ms / 900ms)
  *
@@ -86,16 +85,6 @@ export function WelcomeScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-      <ConstellationBackdrop />
-      {/* Subtle vignette over the constellation so the wordmark stays legible */}
-      <LinearGradient
-        colors={['rgba(10,10,11,0.6)', 'rgba(10,10,11,0.2)', 'rgba(10,10,11,0.65)']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
-      />
-
       <View style={styles.container}>
         {/* Hero block — vertically centred in the upper 2/3 */}
         <View style={styles.hero}>
@@ -115,7 +104,7 @@ export function WelcomeScreen() {
           </Animated.Text>
 
           <Animated.View style={{ opacity: taglineOpacity }}>
-            <Text style={styles.tagline}>Get referred. Get hired.</Text>
+            <Text style={styles.tagline}>The room where referrals happen.</Text>
             <Text style={styles.descriptor}>
               Swipe through the people who can refer you.{'\n'}
               Match. Chat. Get hired.
@@ -139,7 +128,7 @@ export function WelcomeScreen() {
             style={styles.ctaWrap}
           >
             <LinearGradient
-              colors={['#9333ea', '#7c3aed', '#6d28d9']}
+              colors={afterHoursBrand.fills.vermilionDetonation}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.cta}
@@ -158,7 +147,7 @@ export function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'transparent' },
+  safe: { flex: 1, backgroundColor: colors.background },
   container: {
     flex: 1,
     paddingHorizontal: layout.screenPaddingH,
@@ -173,14 +162,14 @@ const styles = StyleSheet.create({
   wordmark: {
     fontFamily: 'Outfit-Bold',
     fontSize: 44,
-    color: colors.text,
+    color: colors.cream,
     letterSpacing: 4,
     textAlign: 'center',
     alignSelf: 'stretch',
   },
   tagline: {
     fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 22,
+    fontSize: 24,
     color: colors.text,
     letterSpacing: 0,
     textAlign: 'center',

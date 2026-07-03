@@ -9,6 +9,7 @@ import {
   type StyleProp,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { afterHoursBrand } from '../../theme/afterHours';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { layout } from '../../theme/spacing';
@@ -46,7 +47,7 @@ const fontSizeMap: Record<ButtonSize, number> = {
 /**
  * Button — three-variant button system.
  *
- * primary  — violet gradient, used exclusively for primary CTAs (e.g., "I can refer")
+ * primary  — vermilion, used for endorsement/primary commitment actions
  * secondary — glass surface with border, used for secondary actions
  * text      — no background, used for tertiary / destructive-soft actions
  * danger    — red tinted glass, used for destructive confirmations
@@ -86,13 +87,16 @@ export function Button({
   if (variant === 'primary') {
     return (
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
         onPress={handlePress}
         disabled={isDisabled}
+        hitSlop={size === 'small' ? { top: 4, bottom: 4, left: 4, right: 4 } : undefined}
         activeOpacity={0.8}
         style={[baseContainer, { overflow: 'hidden' }, style]}
-      >
+        >
         <LinearGradient
-          colors={['#9333ea', '#7c3aed', '#6d28d9']}
+          colors={afterHoursBrand.fills.vermilionDetonation}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[StyleSheet.absoluteFill, { borderRadius: height / 2 }]}
@@ -109,8 +113,11 @@ export function Button({
   if (variant === 'secondary') {
     return (
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
         onPress={handlePress}
         disabled={isDisabled}
+        hitSlop={size === 'small' ? { top: 4, bottom: 4, left: 4, right: 4 } : undefined}
         activeOpacity={0.7}
         style={[baseContainer, styles.secondaryContainer, style]}
       >
@@ -128,8 +135,11 @@ export function Button({
   if (variant === 'danger') {
     return (
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
         onPress={handlePress}
         disabled={isDisabled}
+        hitSlop={size === 'small' ? { top: 4, bottom: 4, left: 4, right: 4 } : undefined}
         activeOpacity={0.7}
         style={[baseContainer, styles.dangerContainer, style]}
       >
@@ -147,6 +157,8 @@ export function Button({
   // variant === 'text'
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       onPress={() => {
         if (sensoryEvent) {
           void playSensoryEvent(sensoryEvent);
@@ -156,8 +168,9 @@ export function Button({
         onPress();
       }}
       disabled={isDisabled}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       activeOpacity={0.6}
-      style={[{ height, alignItems: 'center', justifyContent: 'center', opacity: isDisabled ? 0.45 : 1 }, style]}
+      style={[styles.textContainer, { height, opacity: isDisabled ? 0.45 : 1 }, style]}
     >
       <Text style={[styles.textLabel, { fontSize }, labelStyle]}>{label}</Text>
     </TouchableOpacity>
@@ -168,7 +181,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Outfit-SemiBold',
     color: colors.text,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
   },
   secondaryContainer: {
     backgroundColor: colors.surface,
@@ -185,6 +198,10 @@ const styles = StyleSheet.create({
   },
   dangerLabel: {
     color: colors.error,
+  },
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textLabel: {
     fontFamily: 'Outfit-Medium',

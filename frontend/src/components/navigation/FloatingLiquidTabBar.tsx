@@ -126,13 +126,14 @@ function BarSurface(): ReactElement {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <View style={styles.innerShade} />
+      <View style={styles.topHairline} />
     </View>
   );
 }
 
 function TabItem({ focused, index, props, route }: TabItemProps): ReactElement {
   const descriptor = props.descriptors[route.key];
-  const color = focused ? colors.goldBright : colors.textTertiary;
+  const color = focused ? colors.goldBright : colors.textSecondary;
   const label = labelFor(descriptor.options, route.name);
 
   return (
@@ -198,8 +199,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: LIQUID_TAB_BAR_RADIUS,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0)',
-    backgroundColor: 'rgba(5, 16, 46, 0.92)',
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundElevated,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.38,
@@ -208,7 +209,15 @@ const styles = StyleSheet.create({
   },
   innerShade: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(102, 74, 15, 0.35)',
+    backgroundColor: 'rgba(12, 31, 25, 0.56)',
+  },
+  topHairline: {
+    position: 'absolute',
+    top: 0,
+    left: spacing[5],
+    right: spacing[5],
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.goldDim,
   },
   row: {
     flex: 1,
@@ -230,11 +239,11 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   itemFocused: {
-    borderColor: 'rgba(255, 255, 255, 0)',
-    backgroundColor: 'rgba(255, 255, 255, 0.09)',
+    borderColor: colors.goldDim,
+    backgroundColor: colors.surfaceLevel2,
   },
   itemPressed: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: colors.surfaceActive,
   },
   iconSlot: {
     height: 26,
@@ -259,13 +268,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing[1],
     borderRadius: 9.5,
-    backgroundColor: '#FF3B1F',
+    backgroundColor: colors.brass,
   },
   badgeText: {
     fontFamily: 'JetBrainsMono-Medium',
     fontSize: 10,
     lineHeight: 13,
-    color: '#FFFFFF',
+    color: colors.navyDeep,
     letterSpacing: 0,
   },
 });

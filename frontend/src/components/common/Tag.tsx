@@ -20,7 +20,7 @@ const colorMap: Record<TagColor, { bg: string; text: string; border: string }> =
   green: {
     bg: colors.tagGreen,
     text: colors.tagGreenText,
-    border: 'rgba(34, 197, 94, 0.25)',
+    border: colors.sage,
   },
   orange: {
     bg: colors.tagOrange,
