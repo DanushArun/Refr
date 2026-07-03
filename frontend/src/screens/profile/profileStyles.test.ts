@@ -18,7 +18,7 @@ test('test_profileCards_whenPolished_exposeSharedSurfaceLayers', (): void => {
   expect(styles.profileCardGlow).toBeDefined();
 });
 
-test('test_profileCards_whenRendered_useSageSurface', (): void => {
+test('test_profileCards_whenRendered_useProfileSurface', (): void => {
   expect((styles.hero as { backgroundColor?: string }).backgroundColor).toBe(
     colors.profileCardSurface,
   );
@@ -34,6 +34,17 @@ test('test_profileHeroAndSections_whenPolished_avoidHardOuterBorders', (): void 
 
 test('test_profileSnapshot_whenPolished_removesRoughTopDivider', (): void => {
   expect((styles.snapshot as { borderTopWidth?: number }).borderTopWidth ?? 0).toBe(0);
+});
+
+test('test_profileHero_whenReadable_usesCompactIdentityType', (): void => {
+  expect((styles.displayName as { fontSize?: number }).fontSize).toBeLessThanOrEqual(26);
+  expect((styles.displayName as { lineHeight?: number }).lineHeight).toBeLessThanOrEqual(32);
+});
+
+test('test_endorserScore_whenCompact_placesScoreOnRight', (): void => {
+  expect((styles.heroScore as { alignItems?: string }).alignItems).toBe('flex-end');
+  expect((styles.scoreBlock as { alignItems?: string }).alignItems).toBe('flex-end');
+  expect((styles.scoreValue as { textAlign?: string }).textAlign).toBe('right');
 });
 
 test('test_profileNestedCards_whenPolished_avoidHardBorders', (): void => {

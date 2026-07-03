@@ -14,6 +14,7 @@ export const BLACK_70 = 'rgba(15, 17, 21, 0.70)';
 export const BLACK_55 = 'rgba(15, 17, 21, 0.55)';
 export const BLACK_38 = 'rgba(15, 17, 21, 0.38)';
 export const GOLD = '#C8A24B';
+export const HIDDEN_ENDORSER_NAME = 'Endorser pending';
 
 export function daysSince(iso?: string | null): number | null {
   if (!iso) return null;
@@ -59,15 +60,20 @@ export function statusMeta(
   }
 }
 
-/** Tidy "ARAV  verma" → "Arav Verma" for display. We fix titlecase here so
+/** Tidy "ARAV  verma" -> "Arav Verma" for display. We fix titlecase here so
  *  the card never has to trust upstream formatting. */
-export function formatEndorserName(full: string): string {
+export function formatEndorserName(full?: string | null): string {
+  if (!full) return '';
   const trimmed = full.trim();
   if (!trimmed) return '';
   return trimmed
     .split(/\s+/)
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
     .join(' ');
+}
+
+export function displayEndorserName(full?: string | null): string {
+  return formatEndorserName(full) || HIDDEN_ENDORSER_NAME;
 }
 
 /** Latest timestamp that's relevant for the current stage — drives the

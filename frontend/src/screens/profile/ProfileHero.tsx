@@ -36,7 +36,7 @@ export function ProfileHero({
         <Avatar
           uri={avatarUrl}
           displayName={displayName}
-          size="xl"
+          size="lg"
           verificationRing={isReferrer}
         />
         <View style={styles.heroCopy}>
@@ -48,6 +48,9 @@ export function ProfileHero({
             {identityLine}
           </Text>
         </View>
+        {isReferrer && profile?.referrerProfile ? (
+          <EndorsementScore score={profile.referrerProfile.endorsement_score} />
+        ) : null}
       </View>
       {isReferrer && profile?.referrerProfile ? (
         <EndorserSnapshot profile={profile.referrerProfile} />
@@ -91,13 +94,22 @@ function RoleBadge({ isReferrer }: { isReferrer: boolean }): React.ReactElement 
 function EndorserSnapshot({ profile }: { profile: ReferrerProfile }): React.ReactElement {
   return (
     <View style={styles.snapshot}>
-      <View style={styles.scoreBlock}>
-        <Text style={styles.scoreLabel}>Endorsement Score</Text>
-        <Text style={styles.scoreValue}>{profile.endorsement_score}</Text>
-      </View>
       <View style={styles.metricRow}>
         <Metric label="Endorsements" value={profile.total_referrals} />
         <Metric label="Hires" value={profile.successful_hires} />
+      </View>
+    </View>
+  );
+}
+
+function EndorsementScore({ score }: { score: number }): React.ReactElement {
+  return (
+    <View style={styles.heroScore}>
+      <View style={styles.scoreBlock}>
+        <Text style={styles.scoreLabel} numberOfLines={2}>
+          Endorsement Score
+        </Text>
+        <Text style={styles.scoreValue}>{score}</Text>
       </View>
     </View>
   );

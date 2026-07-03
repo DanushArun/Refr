@@ -67,12 +67,15 @@ export async function signUpWithEmail(
   metadata: {
     displayName: string;
     role: 'seeker' | 'referrer';
+    avatarUrl?: string;
     // Seeker profile fields
     headline?: string;
     yearsOfExperience?: number;
     skills?: string[];
     targetCompanies?: string[];
     targetRoles?: string[];
+    location?: string;
+    education?: string;
     whyLooking?: string;
     // Referrer profile fields
     company?: string;
@@ -96,6 +99,7 @@ export async function signUpWithEmail(
         email,
         password,
         display_name: metadata.displayName,
+        avatar_url: metadata.avatarUrl || '',
         role: metadata.role,
         // Seeker fields
         headline: metadata.headline || '',
@@ -103,6 +107,8 @@ export async function signUpWithEmail(
         years_of_experience: metadata.yearsOfExperience || 0,
         target_companies: metadata.targetCompanies || [],
         target_roles: metadata.targetRoles || [],
+        location: metadata.location || '',
+        education: metadata.education || '',
         why_looking: metadata.whyLooking || '',
         // Referrer fields
         company: metadata.company || '',
@@ -215,10 +221,13 @@ export const authApi = {
       displayName: params.displayName,
       role: 'seeker',
       headline: params.headline,
+      avatarUrl: params.avatarUrl,
       yearsOfExperience: params.yearsOfExperience,
       skills: params.skills,
       targetCompanies: params.targetCompanies,
       targetRoles: params.targetRoles,
+      location: params.location,
+      education: params.education,
       whyLooking: params.whyLooking,
     });
     if (res.error) throw res.error;

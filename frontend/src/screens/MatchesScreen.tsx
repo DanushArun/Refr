@@ -11,7 +11,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Phrase } from '../utils/haptics';
 import { colors } from '../theme/colors';
-import { latestStageTimestamp } from '../components/activity/referralCardShared';
+import {
+  displayEndorserName,
+  latestStageTimestamp,
+} from '../components/activity/referralCardShared';
 import { Button } from '../components/common/Button';
 import { MatchInboxRow } from '../components/matches/MatchInboxRow';
 import { Skeleton } from '../components/common/Skeleton';
@@ -130,7 +133,7 @@ export function MatchesScreen() {
         pathname: '/chat',
         params: {
           referralId: item.referral.id,
-          participantName: item.referrerName,
+          participantName: displayEndorserName(item.referrerName),
           participantAvatar: '',
           targetRole: item.referral.targetRole,
           companyName: item.companyName,
@@ -277,7 +280,7 @@ export function MatchesScreen() {
                           key={item.referral.id}
                           data={{
                             id: item.referral.id,
-                            participantName: item.referrerName,
+                            participantName: displayEndorserName(item.referrerName),
                             companyName: item.companyName,
                             role: item.referral.targetRole,
                             status: item.referral.status,

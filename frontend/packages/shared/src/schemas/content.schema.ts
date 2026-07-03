@@ -29,11 +29,11 @@ export const behaviorEventSchema = z.object({
 });
 
 export const createReferralRequestSchema = z.object({
-  seekerId: z.string().uuid(),
-  companyId: z.string().uuid(),
+  companyId: z.union([z.string(), z.number()]),
+  jobId: z.union([z.string(), z.number()]).optional(),
   targetRole: z.string().min(1).max(100),
-  seekerNote: z.string().max(500).optional(),
-  feedCardId: z.string().uuid().optional(), // Attribution: which card triggered this
+  source: z.enum(['specific', 'browse']),
+  seekerNote: z.string().max(280).optional(),
 });
 
 export type CreateCompanyIntel = z.infer<typeof createCompanyIntelSchema>;

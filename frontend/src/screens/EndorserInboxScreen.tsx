@@ -148,6 +148,10 @@ function adapt(item: ReferrerInboxItem): SeekerPipelineItem {
   };
 }
 
+function participantNameFor(item: SeekerPipelineItem): string {
+  return item.referrerName ?? 'Candidate';
+}
+
 export function EndorserInboxScreen() {
   const hasLoadedRef = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
@@ -317,7 +321,7 @@ export function EndorserInboxScreen() {
                           key={item.referral.id}
                           data={{
                             id: item.referral.id,
-                            participantName: item.referrerName,
+                            participantName: participantNameFor(item),
                             participantAvatar: source?.seekerAvatar,
                             companyName: item.companyName,
                             role: item.referral.targetRole,

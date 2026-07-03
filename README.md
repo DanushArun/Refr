@@ -30,31 +30,18 @@ Endorsly fills that gap.
 | Layer | Technology |
 |-------|-----------|
 | Mobile | React Native 0.81 + Expo 54 + Expo Router 6 (TypeScript) |
-| Backend | Django 6.0 + Django REST Framework + SimpleJWT (Python) |
-| Database | PostgreSQL (local dev; Supabase AWS Mumbai in production) |
+| Backend API | Separate repo: `../refr-backend` |
+| Database | Owned by `../refr-backend` |
 | Auth | JWT (email + password); phone OTP planned for Phase 2 |
 | UI/Graphics | @shopify/react-native-skia, react-native-reanimated 4 |
-| Shared types | @refr/shared (TypeScript + Zod validation) |
-| AI | Google Vertex AI + Gemini 2.5 Flash (resume parsing) |
-| Monorepo | npm workspaces (`packages/*`, `frontend`) |
+| Shared types | `frontend/packages/shared` (`@refr/shared`) |
+| AI | Owned by `../refr-backend` |
+| Repo boundary | This repo is frontend-only. Do not add `backend/` here. |
 
 ## Project structure
 
 ```
-refr/
-  backend/                  Django REST API
-    refr_api/               Django project config (settings, urls)
-    api/
-      models.py             ORM models (User, Referral, ContentCard, ...)
-      views.py              API views (auth, feed, referrals, chat, reputation)
-      serializers.py        DRF serializers
-      services/
-        vertex_ai.py        Resume parsing via Google Gemini
-      management/commands/
-        seed_data.py        Seed database with test data
-      tests/                pytest test suite
-    requirements.txt        Python dependencies
-
+Refer/
   frontend/                 Expo / React Native app
     app/                    Expo Router file-based routes
       (auth)/               Login, role selection, profile setup
@@ -70,17 +57,11 @@ refr/
       services/             API client (with token refresh), auth (AsyncStorage)
       theme/                colors, typography, spacing tokens
     app.json                Expo configuration
-    metro.config.js         Monorepo-aware Metro config
-
-  packages/shared/          @refr/shared -- shared between frontend modules
-    src/
-      constants/            UserRole, ReferralStatus, ContentType
-      types/                User, Content, Feed, Referral type definitions
-      schemas/              Zod validation schemas
+    metro.config.js         Metro config
 
   docs/plans/               System design, app flow, designer brief, Figma scripts
-  package.json              Root monorepo config (npm workspaces)
-  tsconfig.base.json        Shared TypeScript config
+
+../refr-backend/            Django REST API, database models, migrations, tests
 ```
 
 ## Getting started
@@ -88,47 +69,41 @@ refr/
 ### Prerequisites
 
 - **Node.js** 20+ and npm
-- **Python** 3.12+
-- **PostgreSQL** 14+
 - **Expo CLI**: `npm install -g expo-cli`
 - iOS Simulator (macOS) or Android Emulator, or Expo Go on a physical device
+- Optional for full-stack local work: backend repo at `../refr-backend`
 
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url> && cd refr
-npm install                # installs frontend + shared package deps
+git clone <frontend-repo-url> Refer
+cd Refer/frontend
+npm install
 ```
 
-### 2. Set up the database
+### 2. Set up the backend repo
 
 ```bash
-createdb refr
-```
-
-### 3. Set up the backend
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
+cd ../refr-backend
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed_data   # populates test data
 ```
 
-### 4. Start the backend
+### 3. Start the backend
 
 ```bash
-cd backend
-source venv/bin/activate
+cd ../refr-backend
+source .venv/bin/activate
 python manage.py runserver 8000
 ```
 
-### 5. Start the frontend
+### 4. Start the frontend
 
 ```bash
-# from project root
+cd ../Refer/frontend
 npm run dev
 ```
 
@@ -146,90 +121,13 @@ npx expo start
 | Seeker | `danush@gmail.com` | `password123` |
 | Referrer | `nivrant@razorpay.com` | `password123` |
 
-## API reference
+## Backend API
 
-All authenticated endpoints require `Authorization: Bearer <token>`.
+Backend code, migrations, database models, API tests, and backend `.env` files
+belong only in `../refr-backend`.
 
-### Authentication
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/users/register/` | Register + create profile + return JWT |
-| POST | `/api/token/` | Sign in (returns tokens + user profile) |
-| POST | `/api/token/refresh/` | Refresh access token |
-
-### User profile
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/users/me/` | Fetch full profile |
-| PATCH | `/api/v1/users/me/` | Update profile fields |
-
-### Feed
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/feed?cursor=&limit=` | Ranked, cursor-paginated feed |
-| POST | `/api/v1/feed/events/batch` | Ingest up to 50 behavior events |
-
-### Referrals
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/v1/referrals/` | Create a referral request |
-| GET | `/api/v1/referrals/inbox/` | Referrer's incoming requests |
-| GET | `/api/v1/referrals/pipeline/` | Seeker's referral pipeline |
-| PATCH | `/api/v1/referrals/<id>/status/` | Advance referral state machine |
-
-### Chat
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/chat/<referralId>/` | Fetch conversation + messages |
-| POST | `/api/v1/chat/<conversationId>/messages/` | Send a message (1--4000 chars) |
-
-### Reputation
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/reputation/me/` | Endorser's Endorsement Score profile |
-| GET | `/api/v1/reputation/leaderboard/?companyId=` | Global or company leaderboard |
-
-## Data model
-
-Core entities and their relationships:
-
-```
-User (seeker | referrer)
-  |-- SeekerProfile   (skills, target companies/roles, resume)
-  |-- ReferrerProfile  (company, department, endorsement score [column: kingmaker_score], verification)
-
-Company (name, domain, logo)
-
-ContentCard (type: career_story | company_intel | referral_event | milestone | editorial)
-  |-- payload (JSONB, discriminated by type)
-
-Referral (8-state machine)
-  requested -> accepted -> submitted -> interviewing -> hired
-                                                     -> rejected
-                                     -> withdrawn (any active state)
-                          -> expired
-  |-- Conversation
-        |-- Message[]
-
-BehaviorEvent (feed analytics, fire-and-forget)
-```
-
-## Feed ranking (Phase 1, rule-based)
-
-The feed fetches an oversized candidate pool (5x requested limit, max 200 cards)
-and scores each card in-process:
-
-| Signal | Weight | Formula |
-|--------|--------|---------|
-| Recency | 0.45 | `2^(-age_hours / 12)` -- 12h half-life |
-| Relevance | 0.35 | Jaccard skill similarity (seekers) or company match (referrers) |
-| Popularity | 0.20 | `log(1 + min(reactions, 500)) / log(501)` |
+This frontend consumes the backend through `frontend/src/services/api.ts` and
+uses `EXPO_PUBLIC_API_BASE_URL` from `.env` when a non-default API URL is needed.
 
 ## Design system
 
@@ -265,29 +163,23 @@ Both roles share a `/chat` screen accessed via `router.push`.
 ### Available commands
 
 ```bash
-# Frontend
+cd frontend
 npm run dev              # Start Expo dev server
 npm run typecheck        # TypeScript type check
 
-# Backend (from backend/, with venv active)
+# Backend lives in ../refr-backend
+cd ../refr-backend
+source .venv/bin/activate
 python manage.py runserver 8000
 python manage.py migrate
 python manage.py seed_data
-python manage.py createsuperuser
 pytest -v                # Run backend tests
-```
-
-### Backend testing
-
-```bash
-cd backend
-source venv/bin/activate
-pytest -v
 ```
 
 ### Type checking
 
 ```bash
+cd frontend
 npm run typecheck
 ```
 

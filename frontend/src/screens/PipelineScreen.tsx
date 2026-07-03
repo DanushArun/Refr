@@ -16,6 +16,7 @@ import { layout, rhythm, spacing } from '../theme/spacing';
 import { referralsApi } from '../services/api';
 import type { SeekerPipelineItem, ReferralStatus } from '@refr/shared';
 import { PaperVoyageCard } from '../components/activity/PaperVoyageCard';
+import { displayEndorserName } from '../components/activity/referralCardShared';
 import { DotMatrixField } from '../components/common/DotMatrixField';
 import { Skeleton } from '../components/common/Skeleton';
 import { FilterBar, type FilterOption } from '../components/common/FilterBar';
@@ -299,7 +300,7 @@ const PipelineItem = React.memo(
         data={{
           companyName: item.companyName,
           role: item.referral.targetRole,
-          endorserName: item.referrerName,
+          endorserName: displayEndorserName(item.referrerName),
           status: item.referral.status,
           stageTimestamp: latestStageTimestamp(item),
         }}

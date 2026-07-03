@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PressableScale } from '../common/PressableScale';
 import type { SeekerPipelineItem } from '@refr/shared';
 import { Avatar } from '../common/Avatar';
-import { formatEndorserName } from '../activity/referralCardShared';
+import { displayEndorserName } from '../activity/referralCardShared';
 
 /**
  * Tier 1 — "New matches" horizontal carousel.
@@ -38,7 +38,7 @@ export function NewMatchesCarousel({ items, onPick }: Props) {
         // Avatars are small, momentum scroll feels right. Decel normal.
       >
         {items.map((item) => {
-          const name = formatEndorserName(item.referrerName) || item.referrerName;
+          const name = displayEndorserName(item.referrerName);
           const first = name.split(/\s+/)[0] ?? name;
           return (
             <PressableScale

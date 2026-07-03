@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import { colors } from '../../theme/colors';
 import { layout, rhythm, spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 
 export const profileStyles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: 'transparent' },
@@ -13,12 +13,12 @@ export const profileStyles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: layout.screenPaddingH,
-    paddingTop: rhythm.screenTop,
+    paddingTop: spacing[4],
     paddingBottom: rhythm.tabClearance + spacing[4],
-    gap: rhythm.sectionGap,
+    gap: spacing[3],
   },
   pageHeader: {
-    gap: spacing[1],
+    gap: spacing[0.5],
   },
   eyebrow: {
     ...typography.sectionEyebrow,
@@ -29,17 +29,17 @@ export const profileStyles = StyleSheet.create({
     color: colors.text,
   },
   hero: {
-    padding: spacing[5],
-    gap: spacing[5],
-    borderRadius: 28,
+    padding: spacing[4],
+    gap: spacing[4],
+    borderRadius: 24,
     backgroundColor: colors.profileCardSurface,
     borderWidth: 0,
     overflow: 'hidden',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.28,
-    shadowRadius: 26,
-    elevation: 14,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.24,
+    shadowRadius: 20,
+    elevation: 10,
   },
   profileCardSurface: {
     ...StyleSheet.absoluteFillObject,
@@ -49,30 +49,37 @@ export const profileStyles = StyleSheet.create({
   },
   heroTop: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[4],
+    alignItems: 'flex-start',
+    gap: spacing[3],
   },
   heroCopy: {
     flex: 1,
     minWidth: 0,
-    gap: spacing[1.5],
+    gap: spacing[1],
+    paddingTop: spacing[0.5],
   },
   displayName: {
-    ...typography.identityTitle,
+    fontFamily: fontFamilies.bodySemiBold,
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: 0,
     color: colors.text,
   },
   identityLine: {
-    ...typography.screenSubtitle,
-    color: colors.textSecondary,
+    fontFamily: fontFamilies.body,
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: colors.tagBlueText,
   },
   roleBadge: {
     alignSelf: 'flex-start',
-    minHeight: 26,
+    minHeight: 24,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[1],
-    paddingHorizontal: spacing[2.5],
-    borderRadius: 13,
+    paddingHorizontal: spacing[2],
+    borderRadius: 12,
     backgroundColor: colors.gold,
   },
   roleBadgeText: {
@@ -80,23 +87,35 @@ export const profileStyles = StyleSheet.create({
     color: colors.navyDeep,
   },
   snapshot: {
-    gap: spacing[4],
-    paddingTop: spacing[4],
+    gap: spacing[3],
+    paddingTop: 0,
     borderTopWidth: 0,
   },
+  heroScore: {
+    width: 86,
+    minHeight: 64,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
   scoreBlock: {
-    gap: spacing[1],
+    alignItems: 'flex-end',
+    gap: spacing[0.5],
   },
   scoreLabel: {
     ...typography.sectionEyebrow,
-    color: colors.textTertiary,
+    maxWidth: 86,
+    fontSize: 9,
+    lineHeight: 12,
+    color: colors.tagBlueText,
+    textAlign: 'right',
   },
   scoreValue: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 56,
-    lineHeight: 62,
+    fontFamily: fontFamilies.monoMedium,
+    fontSize: 40,
+    lineHeight: 44,
     color: colors.goldBright,
     letterSpacing: 0,
+    textAlign: 'right',
   },
   seekerHeadline: {
     ...typography.bodyLarge,
@@ -108,11 +127,11 @@ export const profileStyles = StyleSheet.create({
   },
   metric: {
     flex: 1,
-    minHeight: 64,
+    minHeight: 58,
     justifyContent: 'center',
     gap: spacing[0.5],
     paddingHorizontal: spacing[3],
-    borderRadius: 16,
+    borderRadius: 14,
     backgroundColor: colors.profileCardInset,
     borderWidth: 0,
     overflow: 'hidden',
@@ -123,20 +142,20 @@ export const profileStyles = StyleSheet.create({
   },
   metricLabel: {
     ...typography.sectionEyebrow,
-    color: colors.textTertiary,
+    color: colors.textSecondary,
   },
   section: {
-    gap: spacing[3],
+    gap: spacing[2.5],
     padding: spacing[4],
-    borderRadius: 20,
+    borderRadius: 18,
     backgroundColor: colors.profileCardSurface,
     borderWidth: 0,
     overflow: 'hidden',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.22,
-    shadowRadius: 22,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 8,
   },
   sectionTitle: {
     ...typography.sectionTitle,
@@ -173,7 +192,7 @@ export const profileStyles = StyleSheet.create({
   settingsValue: {
     flex: 1,
     ...typography.rowMeta,
-    color: colors.textSecondary,
+    color: colors.tagBlueText,
     textAlign: 'right',
   },
   settingsToggleValue: {

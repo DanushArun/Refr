@@ -19,6 +19,8 @@ export interface SeekerProfile extends BaseUser {
   skills: string[];
   yearsOfExperience: number;
   currentCompany?: string;     // May be unemployed
+  location?: string;
+  education?: string;
   targetCompanies: string[];   // Companies they want referrals to
   targetRoles: string[];       // "Backend Engineer", "Engineering Manager"
   resumeUrl?: string;

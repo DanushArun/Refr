@@ -58,6 +58,49 @@ export interface LeaderboardEntry {
   company: { id: string; name: string };
 }
 
+export interface CompanySearchItem {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  domain?: string;
+  employeeCountRange?: string;
+}
+
+export interface Opportunity {
+  id: string;
+  companyId: string;
+  companyName: string;
+  title: string;
+  function: string;
+  seniority: string;
+  location: string;
+  remotePolicy: 'onsite' | 'hybrid' | 'remote';
+  available: boolean;
+}
+
+export interface ProfileCompletion {
+  complete: boolean;
+  missingFields: string[];
+}
+
+export interface NotificationEvent {
+  id: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface CreateReferralRequest {
+  companyId?: string | number;
+  jobId?: string | number;
+  targetRole: string;
+  source?: 'specific' | 'browse';
+  seekerNote?: string;
+  feedCardId?: string;
+  card?: FeedCard;
+}
+
 // HTTP helpers
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const session = await getSession();
@@ -348,19 +391,14 @@ export interface SeekerSwipeInput {
 }
 
 export const referralsApi = {
-  createRequest: (payload: {
-    feedCardId?: string;
-    targetRole: string;
-    seekerNote?: string;
-    card?: FeedCard;
-  }): Promise<Referral> => {
+  createRequest: (payload: CreateReferralRequest): Promise<Referral> => {
     if (DEMO.enabled) {
       const referral = buildMockReferral(payload.targetRole, {
         feedCardId: payload.feedCardId,
         seekerNote: payload.seekerNote,
         card: payload.card,
       });
-      const referrer = referrerById(referral.referrerId);
+      const referrer = referral.referrerId ? referrerById(referral.referrerId) : undefined;
       MOCK_PIPELINE.unshift({
         referral,
         referrerName: referrer?.name ?? 'Endorsly Endorser',
@@ -368,11 +406,16 @@ export const referralsApi = {
       });
       return Promise.resolve(referral);
     }
+    if (!payload.companyId) {
+      return Promise.reject(new Error('companyId is required'));
+    }
     return request<{ data: Referral }>('/api/v1/referrals/', {
       method: 'POST',
       body: JSON.stringify({
-        feedCardId: payload.feedCardId,
+        companyId: payload.companyId,
+        jobId: payload.jobId,
         targetRole: payload.targetRole,
+        source: payload.source ?? 'specific',
         seekerNote: payload.seekerNote,
       }),
     }).then((r) => r.data);
@@ -408,8 +451,9 @@ export const referralsApi = {
     return request<{ data: Referral }>('/api/v1/referrals/', {
       method: 'POST',
       body: JSON.stringify({
+        companyId: endorser.companyId,
         targetRole: endorser.jobTitle,
-        referrerId: endorser.id,
+        source: 'browse',
         seekerNote,
       }),
     }).then((r) => r.data);
@@ -542,6 +586,47 @@ export const referralsApi = {
 };
 
 export const referralApi = referralsApi;
+
+export const companiesApi = {
+  search: (query: string): Promise<CompanySearchItem[]> => {
+    const qs = new URLSearchParams();
+    if (query) qs.set('q', query);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return request<{ data: CompanySearchItem[] }>(
+      `/api/v1/companies/search/${suffix}`,
+    ).then((r) => r.data);
+  },
+};
+
+export const opportunitiesApi = {
+  list: (params: { companyId?: string; q?: string } = {}): Promise<Opportunity[]> => {
+    const qs = new URLSearchParams();
+    if (params.companyId) qs.set('companyId', params.companyId);
+    if (params.q) qs.set('q', params.q);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return request<{ data: Opportunity[] }>(
+      `/api/v1/opportunities/${suffix}`,
+    ).then((r) => r.data);
+  },
+
+  browse: (params: {
+    function?: string;
+    seniority?: string;
+    location?: string;
+    remote?: boolean;
+  } = {}): Promise<Opportunity[]> => {
+    const qs = new URLSearchParams();
+    if (params.function) qs.set('function', params.function);
+    if (params.seniority) qs.set('seniority', params.seniority);
+    if (params.location) qs.set('location', params.location);
+    if (params.remote) qs.set('remote', 'true');
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return request<{ data: Opportunity[] }>(
+      `/api/v1/opportunities/browse/${suffix}`,
+    ).then((r) => r.data);
+  },
+};
+
 // Chat
 export interface ChatMessage {
   id: string;
@@ -616,6 +701,25 @@ export const profileApi = {
       method: 'PATCH',
       body: JSON.stringify(data),
     }).then((r) => r.data);
+  },
+  getCompletion: (): Promise<ProfileCompletion> => {
+    return request<{ data: ProfileCompletion }>(
+      '/api/v1/profile/completion/',
+    ).then((r) => r.data);
+  },
+};
+
+export const notificationsApi = {
+  list: (): Promise<NotificationEvent[]> => {
+    return request<{ data: NotificationEvent[] }>(
+      '/api/v1/notifications/',
+    ).then((r) => r.data);
+  },
+  markRead: (id: string): Promise<NotificationEvent> => {
+    return request<{ data: NotificationEvent }>(
+      `/api/v1/notifications/${id}/read/`,
+      { method: 'PATCH', body: JSON.stringify({}) },
+    ).then((r) => r.data);
   },
 };
 

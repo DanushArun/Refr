@@ -4,8 +4,10 @@ import type { ReferralStatus } from '../constants/status';
 export interface Referral {
   id: string;
   seekerId: string;
-  referrerId: string;
+  referrerId?: string | null;
   companyId: string;
+  opportunityId?: string | null;
+  jobId?: string | null;
   targetRole: string;
   status: ReferralStatus;
   matchScore: number;          // 0-100, rule-based scoring
@@ -16,12 +18,14 @@ export interface Referral {
   seekerNote?: string;         // Message from seeker when requesting
   referrerNote?: string;       // Internal note from referrer
   feedCardId?: string;         // Which feed card triggered this referral
+  source?: 'specific' | 'browse';
+  referrerName?: string | null;
 }
 
 /** Pipeline view for seeker: track all their referral requests */
 export interface SeekerPipelineItem {
   referral: Referral;
-  referrerName: string;
+  referrerName?: string | null;
   companyName: string;
   companyLogo?: string;
 }

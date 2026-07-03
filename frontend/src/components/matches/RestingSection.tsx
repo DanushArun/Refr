@@ -9,7 +9,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { SeekerPipelineItem } from '@refr/shared';
 import { hapticSelection } from '../../utils/haptics';
-import { latestStageTimestamp } from '../activity/referralCardShared';
+import {
+  displayEndorserName,
+  latestStageTimestamp,
+} from '../activity/referralCardShared';
 import { RestingLedgerRow } from './RestingLedgerRow';
 import { relativeLabel } from './matchTiering';
 
@@ -72,7 +75,7 @@ export function RestingSection({ items, onOpen }: Props) {
                 <RestingLedgerRow
                   data={{
                     id: item.referral.id,
-                    participantName: item.referrerName,
+                    participantName: displayEndorserName(item.referrerName),
                     companyName: item.companyName,
                     role: item.referral.targetRole,
                     status: item.referral.status,

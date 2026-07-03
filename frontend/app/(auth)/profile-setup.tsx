@@ -23,10 +23,14 @@ type SeekerForm = {
   displayName: string;
   email: string;
   password: string;
+  avatarUrl: string;
   headline: string;
   yearsOfExperience: string;
+  location: string;
+  education: string;
   skills: string;
   targetCompanies: string;
+  targetRoles: string;
   whyLooking: string;
 };
 
@@ -51,10 +55,14 @@ export default function ProfileSetupScreen() {
     displayName: '',
     email: '',
     password: '',
+    avatarUrl: '',
     headline: '',
     yearsOfExperience: '',
+    location: '',
+    education: '',
     skills: '',
     targetCompanies: '',
+    targetRoles: '',
     whyLooking: '',
   });
 
@@ -84,10 +92,14 @@ export default function ProfileSetupScreen() {
         displayName: seekerForm.displayName,
         email: seekerForm.email,
         password: seekerForm.password,
+        avatarUrl: seekerForm.avatarUrl,
         headline: seekerForm.headline,
         yearsOfExperience: parseInt(seekerForm.yearsOfExperience, 10),
+        location: seekerForm.location,
+        education: seekerForm.education,
         skills: seekerForm.skills.split(',').map((s) => s.trim()).filter(Boolean),
         targetCompanies: seekerForm.targetCompanies.split(',').map((s) => s.trim()).filter(Boolean),
+        targetRoles: seekerForm.targetRoles.split(',').map((s) => s.trim()).filter(Boolean),
         whyLooking: seekerForm.whyLooking,
       });
       // Auth hook handles navigation via session change
@@ -170,6 +182,14 @@ export default function ProfileSetupScreen() {
                 placeholder="At least 8 characters"
               />
               <Input
+                label="Photo URL"
+                name="avatarUrl"
+                value={seekerForm.avatarUrl}
+                onChangeValue={handleSeekerChange}
+                placeholder="https://example.com/photo.jpg"
+                autoCapitalize="none"
+              />
+              <Input
                 label="One-line headline"
                 name="headline"
                 value={seekerForm.headline}
@@ -186,6 +206,20 @@ export default function ProfileSetupScreen() {
                 keyboardType="numeric"
               />
               <Input
+                label="Location"
+                name="location"
+                value={seekerForm.location}
+                onChangeValue={handleSeekerChange}
+                placeholder="Bengaluru"
+              />
+              <Input
+                label="Education"
+                name="education"
+                value={seekerForm.education}
+                onChangeValue={handleSeekerChange}
+                placeholder="B.Tech Computer Science"
+              />
+              <Input
                 label="Skills (comma separated)"
                 name="skills"
                 value={seekerForm.skills}
@@ -198,6 +232,13 @@ export default function ProfileSetupScreen() {
                 value={seekerForm.targetCompanies}
                 onChangeValue={handleSeekerChange}
                 placeholder="Zepto, Razorpay, Swiggy"
+              />
+              <Input
+                label="Target roles"
+                name="targetRoles"
+                value={seekerForm.targetRoles}
+                onChangeValue={handleSeekerChange}
+                placeholder="Senior Backend Engineer, Platform Engineer"
               />
               <Input
                 label="Why are you looking?"

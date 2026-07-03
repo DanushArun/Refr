@@ -78,8 +78,8 @@ export const colors = {
   surfaceLevel1: alpha.parchment08,
   surfaceLevel2: alpha.parchment12,
   surfaceInset: 'rgba(0, 0, 0, 0.36)',
-  profileCardSurface: alpha.sage30,
-  profileCardInset: alpha.sage16,
+  profileCardSurface: alpha.velvetStrong,
+  profileCardInset: alpha.parchment08,
   conversationCardSurface: alpha.sage30,
   conversationCardBorder: 'rgba(157, 181, 164, 0.34)',
 

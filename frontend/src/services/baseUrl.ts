@@ -2,6 +2,10 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 function resolveBaseUrl(): string {
+  const publicEnvUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (publicEnvUrl) {
+    return publicEnvUrl;
+  }
   const configured = Constants.expoConfig?.extra?.apiBaseUrl;
   if (configured && configured !== 'http://127.0.0.1:8000') {
     return configured;
