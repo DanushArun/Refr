@@ -131,8 +131,8 @@ export const earningsScreenStyles = StyleSheet.create({
   },
   heroTileValue: {
     fontFamily: 'TechFont-Bold',
-    fontSize: 16,
-    lineHeight: 20,
+    fontSize: 18,
+    lineHeight: 22,
     letterSpacing: 0,
   },
   section: { gap: spacing[2] },
