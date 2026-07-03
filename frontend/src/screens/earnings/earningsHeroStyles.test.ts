@@ -35,3 +35,12 @@ test('test_earningsHeroStyles_whenPolished_removesExtraBevelEdges', (): void => 
 
   expect(roughEdgeStyles.filter((key) => key in styles)).toEqual([]);
 });
+
+test('test_earningsSectionCards_whenPolished_exposeSmoothSurfaceStyle', (): void => {
+  expect(styles.sectionCardSurface).toBeDefined();
+});
+
+test('test_earningsSectionRows_whenPolished_useHairlineSeparators', (): void => {
+  expect((styles.payoutRow as { borderBottomWidth?: number }).borderBottomWidth).toBe(0.5);
+  expect((styles.lbRow as { borderBottomWidth?: number }).borderBottomWidth).toBe(0.5);
+});

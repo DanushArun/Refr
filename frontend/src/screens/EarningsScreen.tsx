@@ -24,6 +24,7 @@ import {
   type ReputationData,
 } from '../services/api';
 import { colors } from '../theme/colors';
+import { layout } from '../theme/spacing';
 import { useWarmTabData } from '../hooks/useWarmTabData';
 
 const PAYOUT_PER_HIRE = 22000;
@@ -346,7 +347,10 @@ function DarkCard({
   padded?: boolean;
 }) {
   return (
-    <FrostedGlassSurface>
+    <FrostedGlassSurface
+      borderRadius={layout.cardBorderRadiusLarge}
+      style={styles.sectionCardSurface}
+    >
       <View style={padded ? styles.glassCardBody : undefined}>{children}</View>
     </FrostedGlassSurface>
   );

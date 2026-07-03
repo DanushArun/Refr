@@ -25,7 +25,7 @@ export function FrostedGlassSurface({
   style,
 }: FrostedGlassSurfaceProps): React.ReactElement {
   return (
-    <View style={[styles.surface, { borderRadius }, style]}>
+    <View style={[frostedGlassSurfaceStyles.surface, { borderRadius }, style]}>
       <BlurView
         blurReductionFactor={Platform.OS === 'android' ? 2 : undefined}
         experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
@@ -34,48 +34,37 @@ export function FrostedGlassSurface({
         tint={blurTint}
         style={StyleSheet.absoluteFillObject}
       />
-      <View pointerEvents="none" style={styles.frostTint} />
+      <View pointerEvents="none" style={frostedGlassSurfaceStyles.frostTint} />
       <LinearGradient
         colors={[
-          'rgba(255,255,255,0.14)',
-          'rgba(255,255,255,0.04)',
-          'rgba(0,0,0,0.26)',
+          'rgba(255,255,255,0.10)',
+          'rgba(255,255,255,0.035)',
+          'rgba(0,0,0,0.18)',
         ]}
-        locations={[0, 0.42, 1]}
+        locations={[0, 0.46, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         pointerEvents="none"
         style={StyleSheet.absoluteFillObject}
       />
-      <View pointerEvents="none" style={styles.topEdge} />
-      <View pointerEvents="none" style={styles.innerShade} />
       {children}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+export const frostedGlassSurfaceStyles = StyleSheet.create({
   surface: {
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.13)',
+    borderWidth: 0,
     backgroundColor: 'rgba(3, 7, 18, 0.60)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.24,
+    shadowRadius: 24,
+    elevation: 12,
   },
   frostTint: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255, 255, 255, 0.032)',
-  },
-  topEdge: {
-    position: 'absolute',
-    top: 0,
-    left: 14,
-    right: 14,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.30)',
-  },
-  innerShade: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.30)',
   },
 });

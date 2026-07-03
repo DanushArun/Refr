@@ -127,6 +127,9 @@ export const earningsScreenStyles = StyleSheet.create({
     letterSpacing: 0,
   },
   section: { gap: spacing[2] },
+  sectionCardSurface: {
+    backgroundColor: 'rgba(3, 7, 18, 0.58)',
+  },
   sectionHead: {
     minHeight: 44,
     flexDirection: 'row',
@@ -152,8 +155,8 @@ export const earningsScreenStyles = StyleSheet.create({
     gap: spacing[3],
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.095)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255, 255, 255, 0.065)',
   },
   payoutRowLast: { borderBottomWidth: 0 },
   payoutMeta: { flex: 1, gap: 2 },
@@ -186,8 +189,8 @@ export const earningsScreenStyles = StyleSheet.create({
     gap: spacing[3],
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.095)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255, 255, 255, 0.065)',
   },
   lbRowLast: { borderBottomWidth: 0 },
   lbRowYou: {

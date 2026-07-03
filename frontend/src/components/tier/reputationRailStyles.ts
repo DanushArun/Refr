@@ -13,6 +13,7 @@ export const reputationRailStyles = StyleSheet.create({
   },
   cardGlow: {
     ...StyleSheet.absoluteFillObject,
+    borderRadius: layout.cardBorderRadiusLarge,
   },
   header: {
     flexDirection: 'row',
@@ -43,8 +44,7 @@ export const reputationRailStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.055)',
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
+    borderWidth: 0,
   },
   rankValue: {
     fontFamily: 'JetBrainsMono-Medium',
@@ -62,8 +62,8 @@ export const reputationRailStyles = StyleSheet.create({
     padding: spacing[3],
     borderRadius: 18,
     backgroundColor: 'rgba(2, 6, 18, 0.78)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.075)',
+    borderWidth: 0,
+    overflow: 'hidden',
   },
   railField: {
     height: 76,
@@ -172,8 +172,7 @@ export const reputationRailStyles = StyleSheet.create({
     justifyContent: 'center',
     gap: 2,
     backgroundColor: 'rgba(255,255,255,0.055)',
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 0,
   },
   ruleValue: {
     fontFamily: 'JetBrainsMono-Medium',
