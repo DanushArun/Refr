@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../../theme/colors';
 
-export const EXPANDED_ACTION_SPACER_HEIGHT = 124;
+export const EXPANDED_ACTION_SPACER_HEIGHT = 93;
 
 interface ExpandedCardActionsProps {
   commitLabel: string;
@@ -30,16 +30,17 @@ export function ExpandedCardActions({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Skip"
-          hitSlop={6}
+          hitSlop={10}
           onPress={onPass}
           style={({ pressed }) => [styles.skipButton, pressed && styles.skipButtonPressed]}
         >
-          <Ionicons name="close" size={18} color={BLACK_55} />
+          <Ionicons name="close" size={14} color={colors.navyDeep} />
           <Text style={styles.skipText}>Skip</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={commitLabel}
+          hitSlop={10}
           onPress={onCommit}
           style={({ pressed }) => [
             styles.commitButton,
@@ -47,11 +48,11 @@ export function ExpandedCardActions({
           ]}
         >
           <LinearGradient
-            colors={['#102247', colors.navyDeep]}
+            colors={[colors.sage, colors.sage]}
             style={styles.commitFill}
           >
             <View style={styles.commitIcon}>
-              <Ionicons name="checkmark" size={15} color={colors.navyDeep} />
+              <Ionicons name="checkmark" size={12} color={colors.sage} />
             </View>
             <Text
               adjustsFontSizeToFit
@@ -68,10 +69,7 @@ export function ExpandedCardActions({
   );
 }
 
-const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
 const BLACK_16 = 'rgba(0, 0, 0, 0.16)';
-const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
-const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
 
 export const expandedActionStyles = StyleSheet.create({
   actionBar: {
@@ -92,50 +90,50 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   tray: {
-    minHeight: 86,
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 22,
+    minHeight: 65,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 17,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     backgroundColor: 'rgba(245, 241, 232, 0.98)',
   },
   skipButton: {
-    width: 82,
-    height: 50,
-    borderRadius: 18,
+    width: 62,
+    height: 38,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: BLACK_08,
-    backgroundColor: BLACK_05,
+    borderColor: colors.vermilion,
+    backgroundColor: colors.vermilion,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
   },
   skipButtonPressed: {
-    backgroundColor: BLACK_08,
+    opacity: 0.88,
     transform: [{ scale: 0.98 }],
   },
   skipText: {
     fontFamily: 'Outfit-SemiBold',
-    fontSize: 13,
-    color: BLACK_55,
+    fontSize: 12,
+    color: colors.navyDeep,
     letterSpacing: 0,
   },
   commitButton: {
     flex: 1,
     minWidth: 0,
-    height: 52,
-    borderRadius: 18,
+    height: 39,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.32)',
-    shadowColor: colors.navyDeep,
-    shadowOpacity: 0.34,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
+    borderColor: colors.sage,
+    shadowColor: colors.sage,
+    shadowOpacity: 0.26,
+    shadowRadius: 11,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   commitButtonPressed: {
     opacity: 0.92,
@@ -143,27 +141,27 @@ const styles = StyleSheet.create({
   },
   commitFill: {
     flex: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 11,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
   commitIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.goldBright,
+    backgroundColor: colors.navyDeep,
     borderWidth: 1,
     borderColor: BLACK_16,
   },
   commitText: {
     flexShrink: 1,
     fontFamily: 'Outfit-Bold',
-    fontSize: 14,
-    color: colors.cream,
+    fontSize: 13,
+    color: colors.navyDeep,
     letterSpacing: 0,
   },
 });
