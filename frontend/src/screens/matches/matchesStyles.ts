@@ -36,7 +36,9 @@ export const matchesStyles = StyleSheet.create({
     paddingBottom: rhythm.tabClearance + spacing[4],
     borderTopLeftRadius: 34,
     borderTopRightRadius: 34,
-    backgroundColor: colors.surfaceLevel1,
+    backgroundColor: 'rgba(244, 237, 221, 0.055)',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(244, 237, 221, 0.14)',
     overflow: 'hidden',
   },
   skelCarousel: {
@@ -87,12 +89,15 @@ export const matchesStyles = StyleSheet.create({
     color: colors.textTertiary,
   },
   activeStack: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(250, 250, 247, 0.10)',
+    gap: spacing[2],
   },
   filteredEmpty: {
-    paddingHorizontal: 4,
-    paddingVertical: 12,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    borderRadius: 18,
+    backgroundColor: 'rgba(244, 237, 221, 0.055)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(244, 237, 221, 0.14)',
   },
   filteredEmptyText: {
     ...typography.rowMeta,

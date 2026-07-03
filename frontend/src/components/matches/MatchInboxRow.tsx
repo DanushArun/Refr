@@ -8,10 +8,9 @@ import { formatEndorserName, statusMeta } from '../activity/referralCardShared';
 import { StageRail } from './StageRail';
 
 /**
- * Active conversation row — Endorsly-specific shape.
- *
- * This is a list item, not a boxed card. The parent list owns the top rule;
- * each row draws one bottom divider so conversations read as a clean ledger.
+ * Active conversation row — compact object treatment for live endorsement
+ * threads. It stays lighter than a card, but each row has its own rim so the
+ * list scans as touchable conversations instead of a flat ledger.
  */
 
 export interface MatchInboxRowData {
@@ -121,15 +120,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     minHeight: 76,
-    paddingLeft: 6,
-    paddingRight: 2,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(250, 250, 247, 0.10)',
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingVertical: 13,
+    borderRadius: 18,
+    backgroundColor: 'rgba(244, 237, 221, 0.045)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(244, 237, 221, 0.12)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 3,
   },
   rowUnread: {
-    backgroundColor: 'rgba(212, 167, 68, 0.045)',
-    borderBottomColor: 'rgba(212, 167, 68, 0.26)',
+    backgroundColor: 'rgba(212, 167, 68, 0.075)',
+    borderColor: 'rgba(212, 167, 68, 0.30)',
+    shadowColor: colors.gold,
+    shadowOpacity: 0.14,
   },
 
   middle: {

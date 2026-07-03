@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View,
-  Text,
-  StyleSheet,
-  
-  Modal,
-  Pressable,
-  TextInput,
+import {
   Alert,
-  Platform, } from 'react-native';
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFeed } from '../hooks/useFeed';
 import { FeedList } from '../components/feed/FeedList';
@@ -175,23 +176,30 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
     backgroundColor: colors.backgroundElevated,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(244, 237, 221, 0.16)',
     padding: layout.screenPaddingH,
     paddingTop: spacing[5],
     gap: spacing[4],
     paddingBottom: Platform.OS === 'ios' ? spacing[10] : spacing[6],
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 26,
+    elevation: 18,
   },
   modalHandle: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: colors.border,
+    backgroundColor: 'rgba(244, 237, 221, 0.20)',
     alignSelf: 'center',
     marginBottom: spacing[2],
   },
@@ -209,12 +217,15 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
   noteInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(244, 237, 221, 0.075)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(244, 237, 221, 0.16)',
+    borderRadius: 18,
     padding: spacing[4],
     color: colors.text,
     fontFamily: 'Outfit-Regular',
     fontSize: 15,
+    lineHeight: 21,
     minHeight: 90,
     textAlignVertical: 'top',
   },

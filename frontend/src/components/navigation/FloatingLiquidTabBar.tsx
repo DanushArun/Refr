@@ -3,25 +3,24 @@ import type {
   BottomTabNavigationOptions,
 } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
+import { BlurView, type BlurTint } from 'expo-blur';
 import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 import {
   Keyboard,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   View,
+  type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 
 import { colors } from '../../theme/colors';
-import { layout, spacing } from '../../theme/spacing';
+import { spacing } from '../../theme/spacing';
 import { hapticSelection } from '../../utils/haptics';
-import {
-  LIQUID_TAB_BAR_HEIGHT,
-  LIQUID_TAB_BAR_RADIUS,
-} from './tabBarOptions';
+import { floatingLiquidTabBarStyles as styles } from './FloatingLiquidTabBar.styles';
+import { LIQUID_TAB_BAR_ICON_SIZE } from './tabBarOptions';
 
 type TabRoute = BottomTabBarProps['state']['routes'][number];
 
@@ -31,6 +30,9 @@ interface TabItemProps {
   props: BottomTabBarProps;
   route: TabRoute;
 }
+
+const tabBarBlurTint: BlurTint =
+  Platform.OS === 'ios' ? 'systemUltraThinMaterialDark' : 'dark';
 
 function useKeyboardVisible(): boolean {
   const [visible, setVisible] = useState(false);
@@ -69,6 +71,20 @@ function barOffset(bottomInset: number): ViewStyle {
   return { marginBottom: Math.max(loweredInset, minimumClearance) };
 }
 
+function activePillStyle(index: number, routeCount: number, rowWidth: number): StyleProp<ViewStyle> {
+  if (rowWidth <= 0 || routeCount <= 0) return null;
+
+  const rowPadding = spacing[1.5];
+  const availableWidth = rowWidth - rowPadding * 2;
+  const cellWidth = availableWidth / routeCount;
+  const pillWidth = Math.min(cellWidth + spacing[4], availableWidth);
+  const centeredLeft = rowPadding + index * cellWidth + (cellWidth - pillWidth) / 2;
+  const maxLeft = rowWidth - rowPadding - pillWidth;
+  const left = Math.min(Math.max(centeredLeft, rowPadding), maxLeft);
+
+  return [styles.activePill, { left, width: pillWidth }];
+}
+
 function pressTab(props: BottomTabBarProps, route: TabRoute, focused: boolean): void {
   const event = props.navigation.emit({
     type: 'tabPress',
@@ -99,7 +115,7 @@ function renderIcon(
   focused: boolean,
   color: string,
 ): ReactNode {
-  return options.tabBarIcon?.({ focused, color, size: 23 }) ?? null;
+  return options.tabBarIcon?.({ focused, color, size: LIQUID_TAB_BAR_ICON_SIZE }) ?? null;
 }
 
 function renderBadge(badge: BottomTabNavigationOptions['tabBarBadge']): ReactNode {
@@ -124,9 +140,14 @@ function itemStyle(pressed: boolean, focused: boolean): StyleProp<ViewStyle> {
 
 function BarSurface(): ReactElement {
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <View style={styles.innerShade} />
-      <View style={styles.topHairline} />
+    <View pointerEvents="none" style={styles.surfaceStack}>
+      <BlurView
+        blurReductionFactor={Platform.OS === 'android' ? 2 : undefined}
+        experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
+        intensity={Platform.OS === 'android' ? 72 : 58}
+        tint={tabBarBlurTint}
+        style={styles.glassBlur}
+      />
     </View>
   );
 }
@@ -163,14 +184,23 @@ function TabItem({ focused, index, props, route }: TabItemProps): ReactElement {
 
 export function FloatingLiquidTabBar(props: BottomTabBarProps): ReactElement | null {
   const keyboardVisible = useKeyboardVisible();
+  const [rowWidth, setRowWidth] = useState(0);
 
   if (shouldHideBar(props, keyboardVisible)) return null;
+
+  function handleRowLayout(event: LayoutChangeEvent): void {
+    setRowWidth(event.nativeEvent.layout.width);
+  }
 
   return (
     <View pointerEvents="box-none" style={styles.overlay}>
       <View style={[styles.bar, barOffset(props.insets.bottom)]}>
         <BarSurface />
-        <View role="tablist" style={styles.row}>
+        <View onLayout={handleRowLayout} role="tablist" style={styles.row}>
+          <View
+            pointerEvents="none"
+            style={activePillStyle(props.state.index, props.state.routes.length, rowWidth)}
+          />
           {props.state.routes.map((route, index) => (
             <TabItem
               focused={props.state.index === index}
@@ -185,96 +215,3 @@ export function FloatingLiquidTabBar(props: BottomTabBarProps): ReactElement | n
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    zIndex: 50,
-  },
-  bar: {
-    alignSelf: 'stretch',
-    height: LIQUID_TAB_BAR_HEIGHT,
-    marginHorizontal: layout.screenPaddingH,
-    overflow: 'hidden',
-    borderRadius: LIQUID_TAB_BAR_RADIUS,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.backgroundElevated,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.38,
-    shadowRadius: 28,
-    elevation: 20,
-  },
-  innerShade: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(12, 31, 25, 0.56)',
-  },
-  topHairline: {
-    position: 'absolute',
-    top: 0,
-    left: spacing[5],
-    right: spacing[5],
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.goldDim,
-  },
-  row: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[1],
-    padding: spacing[2],
-  },
-  item: {
-    flex: 1,
-    minWidth: 0,
-    height: LIQUID_TAB_BAR_HEIGHT - spacing[4],
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[1],
-    overflow: 'hidden',
-    borderRadius: LIQUID_TAB_BAR_RADIUS,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  itemFocused: {
-    borderColor: colors.goldDim,
-    backgroundColor: colors.surfaceLevel2,
-  },
-  itemPressed: {
-    backgroundColor: colors.surfaceActive,
-  },
-  iconSlot: {
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    maxWidth: '100%',
-    fontFamily: 'Outfit-Bold',
-    fontSize: 11,
-    lineHeight: 14,
-    letterSpacing: 0,
-    textAlign: 'center',
-  },
-  badge: {
-    position: 'absolute',
-    top: -7,
-    right: -13,
-    minWidth: 19,
-    height: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing[1],
-    borderRadius: 9.5,
-    backgroundColor: colors.brass,
-  },
-  badgeText: {
-    fontFamily: 'JetBrainsMono-Medium',
-    fontSize: 10,
-    lineHeight: 13,
-    color: colors.navyDeep,
-    letterSpacing: 0,
-  },
-});

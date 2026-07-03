@@ -127,15 +127,20 @@ const styles = StyleSheet.create({
      reads as historical at a glance. Subtler rim, slightly inset on the
      left to differentiate the silhouette from active-pill rows. */
   list: {
-    backgroundColor: 'rgba(255, 255, 255, 0.025)',
-    borderRadius: 14,
+    backgroundColor: 'rgba(244, 237, 221, 0.04)',
+    borderRadius: 18,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 167, 68, 0.10)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(244, 237, 221, 0.12)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 3,
   },
   divider: {
     height: 1,
     marginLeft: 36, // align past the glyph slot
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: 'rgba(244, 237, 221, 0.055)',
   },
 });

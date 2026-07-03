@@ -117,8 +117,10 @@ function ChatBody({ controller }: { controller: ChatController }): React.ReactEl
             onLongPress={controller.openReactionPicker}
           />
         </View>
-        <QuickReplies controller={controller} />
-        <Composer controller={controller} />
+        <View style={styles.composerDock}>
+          <QuickReplies controller={controller} />
+          <Composer controller={controller} />
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
