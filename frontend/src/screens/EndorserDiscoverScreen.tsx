@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   SwipeDeck,
@@ -8,7 +9,10 @@ import {
 } from '../components/discover/SwipeDeck';
 import { SeekerCard as SeekerCardView } from '../components/discover/SeekerCard';
 import { ExpandedSeekerCard } from '../components/discover/ExpandedSeekerCard';
-import { MatchCelebration } from '../components/discover/MatchCelebration';
+import {
+  MatchRevealModal,
+  type MatchRevealData,
+} from '../components/discover/MatchRevealModal';
 import {
   buildSeekerCards,
   type SeekerCard,
@@ -16,6 +20,10 @@ import {
 import { Phrase } from '../utils/haptics';
 import { prefetchImages } from '../utils/prefetchImages';
 import { referralsApi } from '../services/api';
+import { DEMO, referrerById } from '../config/demo';
+import { useAuth } from '../hooks/useAuth';
+import { shouldShowMatchReveal } from '../lib/discover/matchReveal';
+import { navigateAfterPress } from '../utils/navigationAfterPress';
 import { colors } from '../theme/colors';
 import { layout, rhythm, spacing } from '../theme/spacing';
 import {
@@ -39,14 +47,17 @@ import {
  * stake my reputation on?".
  */
 export function EndorserDiscoverScreen(): React.ReactElement {
+  const { user } = useAuth();
   const [queueKey, setQueueKey] = useState(0);
   const allCards = useMemo(() => buildSeekerCards('2'), [queueKey]);
   const [index, setIndex] = useState(0);
   const [expandedCard, setExpandedCard] = useState<SeekerCard | null>(null);
-  // Trigger token: bumping this fires the celebration once. Null = idle.
-  const [celebrationTrigger, setCelebrationTrigger] = useState<number | null>(null);
+  const [matchReveal, setMatchReveal] = useState<MatchRevealData | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   const [expFilter, setExpFilter] = useState<ExpFilter>('all');
+  const queueEpochRef = useRef(0);
+  const demoReferrer = DEMO.enabled ? referrerById('2') : undefined;
+  const viewerName = demoReferrer?.name ?? user?.displayName ?? 'You';
 
   // Apply the experience filter to the queue. Resetting `index` to 0
   // whenever the active set changes keeps the top of the deck stable —
@@ -76,10 +87,8 @@ export function EndorserDiscoverScreen(): React.ReactElement {
 
   const commitSwipe = useCallback(
     (card: SeekerCard, direction: SwipeDirection) => {
+      const queueEpoch = queueEpochRef.current;
       if (direction === 'request') {
-        // Fire the celebration immediately on commit — the user's emotional
-        // payoff for choosing to endorse. Doesn't wait for the API.
-        setCelebrationTrigger(Date.now());
         void referralsApi
           .recordEndorserSwipe({
             id: card.id,
@@ -89,15 +98,29 @@ export function EndorserDiscoverScreen(): React.ReactElement {
             skills: card.skills,
             targetRole: card.targetRole,
           })
+          .then((result) => {
+            if (queueEpoch !== queueEpochRef.current) return;
+            if (!shouldShowMatchReveal(result)) return;
+            setMatchReveal({
+              referralId: result.referral.id,
+              seekerName: card.name,
+              seekerAvatar: card.photoUrl,
+              endorserName: viewerName,
+              endorserAvatar: user?.avatarUrl,
+              targetRole: result.referral.targetRole,
+            });
+          })
           .catch(reportEndorserSwipeError);
       }
       setIndex((i) => i + 1);
     },
-    [],
+    [user?.avatarUrl, viewerName],
   );
 
   const handleRefresh = useCallback(() => {
     Phrase.tap();
+    queueEpochRef.current += 1;
+    setMatchReveal(null);
     setQueueKey((k) => k + 1);
     setIndex(0);
   }, []);
@@ -116,12 +139,34 @@ export function EndorserDiscoverScreen(): React.ReactElement {
 
   const handleUndo = useCallback(() => {
     Phrase.tap();
+    queueEpochRef.current += 1;
     setIndex((i) => Math.max(0, i - 1));
-    setCelebrationTrigger(null);
+    setMatchReveal(null);
   }, []);
 
   const onPickExp = useCallback((next: ExpFilter) => {
+    queueEpochRef.current += 1;
+    setMatchReveal(null);
     setExpFilter(next);
+  }, []);
+
+  const handleKeepReviewing = useCallback(() => {
+    Phrase.tap();
+    setMatchReveal(null);
+  }, []);
+
+  const handleOpenChat = useCallback((match: MatchRevealData) => {
+    setMatchReveal(null);
+    navigateAfterPress(() => {
+      router.push({
+        pathname: '/chat',
+        params: {
+          referralId: match.referralId,
+          participantName: match.seekerName,
+          participantAvatar: match.seekerAvatar ?? '',
+        },
+      });
+    });
   }, []);
 
   const filterOptions = useMemo<readonly FilterOption<ExpFilter>[]>(
@@ -215,10 +260,11 @@ export function EndorserDiscoverScreen(): React.ReactElement {
         onCommit={() => handleExpandedCommit('request')}
       />
 
-      {/* Full-screen overlay celebration — sits above the safe area + tab bar.
-          Endorser-side swipe = accept, so the seal reads ACCEPTED (not the
-          seeker-side default of REQUESTED). */}
-      <MatchCelebration trigger={celebrationTrigger} label="ACCEPTED" />
+      <MatchRevealModal
+        match={matchReveal}
+        onKeepReviewing={handleKeepReviewing}
+        onOpenChat={handleOpenChat}
+      />
     </View>
   );
 }
