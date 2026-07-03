@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../../components/common/Avatar';
 import { colors } from '../../theme/colors';
 import { profileStyles as styles } from './profileStyles';
-import { InfoRow, Metric, Section } from './ProfilePrimitives';
+import { InfoRow, Metric, ProfileSurface, Section } from './ProfilePrimitives';
 import { formatExperience, formatStatus, getIdentityLine } from './profileUtils';
 import type { FullProfile, ReferrerProfile, SeekerProfile } from './profileTypes';
 
@@ -31,7 +31,7 @@ export function ProfileHero({
   const identityLine = getIdentityLine(profile, isReferrer);
 
   return (
-    <View style={styles.hero}>
+    <ProfileSurface variant="hero">
       <View style={styles.heroTop}>
         <Avatar
           uri={avatarUrl}
@@ -55,7 +55,7 @@ export function ProfileHero({
       {!isReferrer && profile?.seekerProfile ? (
         <SeekerSnapshot profile={profile.seekerProfile} />
       ) : null}
-    </View>
+    </ProfileSurface>
   );
 }
 
