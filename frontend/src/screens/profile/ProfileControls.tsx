@@ -74,7 +74,6 @@ export function AboutSection(): React.ReactElement {
   return (
     <Section title="About Endorsly">
       <InfoRow icon="phone-portrait-outline" label="Version" value="0.1.0" />
-      <InfoRow icon="location-outline" label="Market" value="India tech" />
     </Section>
   );
 }
