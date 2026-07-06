@@ -30,7 +30,7 @@ interface DemoConfig {
 
 export const DEMO: DemoConfig = {
   /** Master switch -- must be true for any mock data to activate */
-  enabled: false,
+  enabled: true,
 
   /** Which role to simulate: 'seeker' or 'referrer' */
   demoRole: 'seeker',

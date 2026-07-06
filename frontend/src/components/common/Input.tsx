@@ -89,6 +89,11 @@ export const Input = memo(function Input({
     outputRange: [colors.textTertiary, isFocused ? colors.accent : colors.textSecondary],
   });
 
+  const labelBgColor = labelAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', colors.background],
+  });
+
   const borderColor = error
     ? colors.error
     : isFocused
@@ -110,7 +115,8 @@ export const Input = memo(function Input({
                   outputRange: [0, -3] // Adjust horizontal position slightly due to scale anchor
                 })}
               ],
-              color: labelColor 
+              color: labelColor,
+              backgroundColor: labelBgColor,
             },
           ]}
           numberOfLines={1}
@@ -168,6 +174,7 @@ const styles = StyleSheet.create({
     left: spacing[4],
     fontFamily: 'Outfit-Regular',
     zIndex: 1,
+    paddingHorizontal: 4,
     backgroundColor: 'transparent',
   },
   input: {

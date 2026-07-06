@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -15,6 +15,7 @@ import {
 import { colors } from '../src/theme/colors';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { loadDemoRole } from '../src/services/demoRoleStorage';
+import { useAuth } from '../src/hooks/useAuth';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,6 +41,10 @@ const ROOT_STACK_SCREEN_OPTIONS = {
 
 export default function RootLayout(): React.ReactElement | null {
   const [demoRoleReady, setDemoRoleReady] = useState(false);
+  const { session, loading: authLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
   useEffect(() => {
     loadDemoRole().finally(() => setDemoRoleReady(true));
   }, []);
@@ -72,6 +77,16 @@ export default function RootLayout(): React.ReactElement | null {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError, demoRoleReady]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    const inAuthGroup = segments[0] === '(auth)';
+    
+    // If not signed in and trying to access a protected screen, send to login
+    if (!session && !inAuthGroup && segments[0] !== undefined) {
+      router.replace('/(auth)/login');
+    }
+  }, [session, authLoading, segments, router]);
 
   if ((!fontsLoaded && !fontError) || !demoRoleReady) return null;
 
