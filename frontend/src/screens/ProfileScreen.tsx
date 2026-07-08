@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { DEMO } from '../config/demo';
+import { DEMO } from '../demo/config';
 import { useAuth } from '../hooks/useAuth';
 import { useSensorySettings } from '../hooks/useSensorySettings';
 import { profileApi } from '../services/api';

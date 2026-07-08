@@ -5,7 +5,7 @@ import {
   DEMO,
   MOCK_SEEKER_SESSION,
   MOCK_REFERRER_SESSION,
-} from '../config/demo';
+} from '../demo/config';
 
 export interface User {
   id: string;

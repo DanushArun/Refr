@@ -12,10 +12,13 @@ export const profileStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    paddingHorizontal: layout.screenPaddingH,
+    alignItems: 'center',
     paddingTop: spacing[4],
     paddingBottom: rhythm.tabClearance + spacing[4],
+  },
+  contentPanel: {
     gap: spacing[3],
+    maxWidth: 440,
   },
   pageHeader: {
     flexDirection: 'row',

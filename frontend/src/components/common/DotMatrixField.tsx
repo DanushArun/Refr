@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   LayoutChangeEvent,
+  Platform,
   StyleProp,
   StyleSheet,
   View,
@@ -62,6 +63,9 @@ export function DotMatrixField({
   dotRadius = DEFAULT_DOT,
   style,
 }: DotMatrixFieldProps): React.ReactElement {
+  if (Platform.OS === 'web') {
+    return <View style={[styles.wrap, styles.webFallback, style]} />;
+  }
   const { size, onLayout } = useMeasuredSize();
   const { dimPath, litPath, points } = useDotMatrixPaths({
     size,
@@ -222,5 +226,10 @@ function resolvePalette(tone: DotMatrixTone): {
 const styles = StyleSheet.create({
   wrap: {
     overflow: 'hidden',
+  },
+  webFallback: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    opacity: 0.48,
   },
 });

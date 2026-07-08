@@ -8,7 +8,7 @@ const RADIUS_LG = 20;
 const RADIUS_SM = 6;
 
 export const chatStyles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'transparent' },
+  safe: { flex: 1, backgroundColor: colors.background },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   kav: { flex: 1 },
   header: {

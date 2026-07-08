@@ -179,7 +179,7 @@ function appendAutoReply(args: {
   setTyping: (typing: boolean) => void;
 }, reply: string): void {
   args.setTyping(false);
-  args.setMessages((prev) => [...prev, autoReply(args.participantName, reply)]);
+  args.setMessages((prev) => appendIfMissing(prev, autoReply(args.participantName, reply)));
 }
 
 function failSend(args: {
@@ -247,7 +247,13 @@ function autoReply(participantName: string, body: string): Message {
 }
 
 function replaceMessage(messages: Message[], tempId: string, sent: Message): Message[] {
-  return messages.map((message) => (message.id === tempId ? sent : message));
+  const replaceable = messages.filter((message) => {
+    if (message.id === tempId) return true;
+    return message.id !== sent.id;
+  });
+  const replaced = replaceable.map((message) => (message.id === tempId ? sent : message));
+  if (replaced.some((message) => message.id === sent.id)) return replaced;
+  return [...replaced, sent];
 }
 
 function replaceDeliveryKey(

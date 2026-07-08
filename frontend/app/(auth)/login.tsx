@@ -8,8 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  useWindowDimensions,
 } from 'react-native';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
@@ -23,9 +24,11 @@ type LoginForm = {
 };
 
 export default function LoginScreen() {
+  const { width } = useWindowDimensions();
   const [form, setForm] = useState<LoginForm>({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const panelWidth = Math.max(0, Math.min(440, width - spacing[10]));
 
   const handleChange = useCallback((name: string, value: string) => {
     setForm((f) => ({ ...f, [name]: value }));
@@ -89,62 +92,64 @@ export default function LoginScreen() {
           nestedScrollEnabled={true}
           keyboardDismissMode="interactive"
         >
-          <View style={styles.header}>
-            <Text style={styles.wordmark}>ENDORSLY</Text>
-            <Text style={styles.heading}>Welcome back</Text>
-            <Text style={styles.subheading}>
-              Sign in to your account to continue building your network.
-            </Text>
-          </View>
+          <View style={[styles.panel, { width: panelWidth }]}>
+            <View style={styles.header}>
+              <Text style={styles.wordmark}>ENDORSLY</Text>
+              <Text style={styles.heading}>Welcome back</Text>
+              <Text style={styles.subheading}>
+                Sign in to your account to continue building your network.
+              </Text>
+            </View>
 
-          <View style={styles.form}>
-            <Input
-              label="Email"
-              name="email"
-              value={form.email}
-              onChangeValue={handleChange}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              textContentType="emailAddress"
-            />
-            <Input
-              label="Password"
-              name="password"
-              value={form.password}
-              onChangeValue={handleChange}
-              secureTextEntry
-              autoComplete="current-password"
-              textContentType="password"
-            />
+            <View style={styles.form}>
+              <Input
+                label="Email"
+                name="email"
+                value={form.email}
+                onChangeValue={handleChange}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
+              />
+              <Input
+                label="Password"
+                name="password"
+                value={form.password}
+                onChangeValue={handleChange}
+                secureTextEntry
+                autoComplete="current-password"
+                textContentType="password"
+              />
 
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
-          </View>
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+            </View>
 
-          <View style={styles.actions}>
-            <Button
-              label="Sign In"
-              onPress={handleSignIn}
-              variant="primary"
-              size="large"
-              fullWidth
-              loading={loading}
-              disabled={loading}
-            />
-          </View>
+            <View style={styles.actions}>
+              <Button
+                label="Sign In"
+                onPress={handleSignIn}
+                variant="primary"
+                size="large"
+                fullWidth
+                loading={loading}
+                disabled={loading}
+              />
+            </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerLabel}>Don't have an account?</Text>
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/role-selection')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.footerLink}>Create account</Text>
-            </TouchableOpacity>
+            <View style={styles.footer}>
+              <Text style={styles.footerLabel}>Don't have an account?</Text>
+              <TouchableOpacity
+                onPress={() => router.push('/(auth)/role-selection')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.footerLink}>Create account</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -155,21 +160,25 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.background,
   },
   kav: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   scroll: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: layout.screenPaddingH,
-    paddingTop: spacing[10],
-    paddingBottom: spacing[12],
-    gap: spacing[8],
     justifyContent: 'center',
+    paddingBottom: spacing[12],
+    paddingTop: spacing[10],
+  },
+  panel: {
+    alignSelf: 'center',
+    gap: spacing[8],
   },
   header: {
     gap: spacing[2],

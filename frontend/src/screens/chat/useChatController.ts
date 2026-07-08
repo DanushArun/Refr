@@ -241,7 +241,7 @@ function useSendMessage(args: {
 
     args.setSending(true);
     args.setDraft('');
-    args.setMessages((prev) => [...prev, temp]);
+    args.setMessages((prev) => appendIfMissing(prev, temp));
     args.setDeliveryStates((prev) => ({ ...prev, [temp.id]: 'sending' }));
 
     await sendWithOptimism({ ...args, body, simulatedReplyFired, temp });

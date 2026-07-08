@@ -21,16 +21,20 @@ export const SYSTEM_SENDER_ID = '__endorsly_system__';
 export const REACTION_EMOJIS = ['❤️', '👍', '😂', '😮', '🙏', '🎉'];
 
 let chatUidCounter = 0;
+const CHAT_UID_SEED = Math.random().toString(36).slice(2, 10);
 
 export function chatUid(prefix: string): string {
   chatUidCounter += 1;
-  return `${prefix}-${Date.now()}-${chatUidCounter}`;
+  return `${prefix}-${Date.now()}-${CHAT_UID_SEED}-${chatUidCounter}`;
 }
 
 export function groupMessages(messages: Message[]): GroupedMessage[] {
   const groups: GroupedMessage[] = [];
+  const seen = new Set<string>();
 
   for (const message of messages) {
+    if (seen.has(message.id)) continue;
+    seen.add(message.id);
     const isSystem = message.sender.id === SYSTEM_SENDER_ID;
     const last = groups[groups.length - 1];
     const withinWindow = isWithinGroupWindow(message, last);

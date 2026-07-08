@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEMO } from '../config/demo';
+import { DEMO } from '../demo/config';
 
 /**
  * Persists the reviewer's chosen demo role across app launches.

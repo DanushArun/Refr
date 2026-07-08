@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { DiscoverScreen } from '../../src/screens/DiscoverScreen';
+import { RoleDiscoverScreen } from '../../src/features/discovery/screens/RoleDiscoverScreen';
 
 export default function DiscoverRoute(): ReactElement {
-  return <DiscoverScreen />;
+  return <RoleDiscoverScreen />;
 }

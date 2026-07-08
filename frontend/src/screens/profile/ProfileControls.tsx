@@ -3,7 +3,7 @@ import { Alert, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Button } from '../../components/common/Button';
-import { MOCK_REFERRER_SESSION, MOCK_SEEKER_SESSION } from '../../config/demo';
+import { MOCK_REFERRER_SESSION, MOCK_SEEKER_SESSION } from '../../demo/config';
 import { useSensorySettings } from '../../hooks/useSensorySettings';
 import { notifyAuthChange } from '../../services/auth';
 import { saveDemoRole, type DemoRole } from '../../services/demoRoleStorage';

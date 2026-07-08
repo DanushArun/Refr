@@ -5,12 +5,14 @@ import {
   Alert,
   RefreshControl,
   ScrollView,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/common/Button';
 import { useSensorySettings } from '../../hooks/useSensorySettings';
 import { colors } from '../../theme/colors';
+import { layout } from '../../theme/spacing';
 import { AboutSection, AccountSection, SensorySettingsSection } from './ProfileControls';
 import { ProfileHeader, ProfileHero, RoleDetails } from './ProfileHero';
 import { getErrorMessage } from './profileUtils';
@@ -32,6 +34,8 @@ type ProfileContentProps = {
 
 export function ProfileContent(props: ProfileContentProps): React.ReactElement {
   const scrollRef = useRef<ScrollView>(null);
+  const { width } = useWindowDimensions();
+  const panelWidth = Math.max(0, Math.min(440, width - layout.screenPaddingH * 2));
   useScrollToTop(scrollRef);
 
   return (
@@ -48,7 +52,9 @@ export function ProfileContent(props: ProfileContentProps): React.ReactElement {
           />
         }
       >
-        <ProfileBody {...props} />
+        <View style={[styles.contentPanel, { width: panelWidth }]}>
+          <ProfileBody {...props} />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

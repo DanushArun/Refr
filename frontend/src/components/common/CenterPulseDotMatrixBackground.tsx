@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, Platform, StyleSheet, View } from 'react-native';
 import {
   Easing,
   type DerivedValue,
@@ -49,6 +49,7 @@ const SIGNAL_POSITIONS = [0.66, 0.84, 1];
 export function CenterPulseDotMatrixBackground({
   cellSize = 16,
 }: CenterPulseDotMatrixBackgroundProps): React.ReactElement {
+  if (Platform.OS === 'web') return <View style={styles.webFallback} />;
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const onLayout = (event: LayoutChangeEvent): void => {
@@ -150,3 +151,11 @@ function SignalBand({
     </Path>
   );
 }
+
+
+const styles = StyleSheet.create({
+  webFallback: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(212, 167, 68, 0.04)',
+  },
+});

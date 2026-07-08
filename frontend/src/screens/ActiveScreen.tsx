@@ -19,7 +19,7 @@ import { colors } from '../theme/colors';
 import { playSensoryEvent } from '../utils/haptics';
 import { navigateAfterPress } from '../utils/navigationAfterPress';
 import { useWarmTabData } from '../hooks/useWarmTabData';
-import { DEMO_PAYOUT_PER_HIRE, getCurrentDemoCompanyName } from '../config/demoWorld';
+import { DEMO_PAYOUT_PER_HIRE, getCurrentDemoCompanyName } from '../demo/world';
 import { activeStyles as styles } from './active/activeStyles';
 import { NoticePill } from './active/ActiveSummary';
 import { EmptyState, ErrorState, LoadingState } from './active/ActiveStates';

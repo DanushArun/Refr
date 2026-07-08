@@ -1,37 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { Redirect } from 'expo-router';
+import { router } from 'expo-router';
 import { useAuth } from '../src/hooks/useAuth';
 import { WelcomeScreen } from '../src/screens/WelcomeScreen';
 import { hasPickedRole } from '../src/services/demoRoleStorage';
-import { DEMO } from '../src/config/demo';
+import { DEMO } from '../src/demo/config';
 import { colors } from '../src/theme/colors';
+
+function targetRouteFor(role: string | undefined): string {
+  return role === 'referrer'
+    ? '/(referrer-tabs)/discover'
+    : '/(seeker-tabs)/discover';
+}
 
 export default function Index(): React.ReactElement {
   const { session, user, loading } = useAuth();
   const pickedDemoRole = hasPickedRole();
 
-  if (loading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (loading) return;
+    if (DEMO.enabled && !pickedDemoRole) return;
+    if (!session || !user) {
+      router.replace('/(auth)/login');
+      return;
+    }
+    router.replace(targetRouteFor(user.role));
+  }, [loading, pickedDemoRole, session, user]);
 
-  // Demo mode: show branded welcome until the reviewer taps Get started
-  if (DEMO.enabled && !pickedDemoRole) {
-    return <WelcomeScreen />;
-  }
+  if (loading) return <LoadingScreen />;
+  if (DEMO.enabled && !pickedDemoRole) return <WelcomeScreen />;
+  return <LoadingScreen />;
+}
 
-  if (!session || !user) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
-  if (user.role === 'seeker') {
-    return <Redirect href="/(seeker-tabs)/discover" />;
-  }
-  return <Redirect href="/(referrer-tabs)/discover" />;
+function LoadingScreen(): React.ReactElement {
+  return (
+    <View style={styles.loading}>
+      <ActivityIndicator size="large" color={colors.accent} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

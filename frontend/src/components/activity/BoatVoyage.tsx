@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { LayoutChangeEvent, Platform, StyleSheet, Text, View } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import Animated, {
   useAnimatedStyle,
@@ -60,6 +60,7 @@ interface Props {
 }
 
 export function BoatVoyage({ current, tone = 'paper', active = true }: Props) {
+  if (Platform.OS === 'web') return <WebBoatVoyage current={current} tone={tone} />;
   const [size, setSize] = useState({ w: 0, h: 0 });
   const isDark = tone === 'dark';
 
@@ -259,6 +260,33 @@ export function BoatVoyage({ current, tone = 'paper', active = true }: Props) {
   );
 }
 
+function WebBoatVoyage({ current, tone }: Pick<Props, 'current' | 'tone'>) {
+  const isDark = tone === 'dark';
+  return (
+    <View style={styles.container}>
+      <View style={styles.webRail}>
+        {STAGE_LABELS.map((label, index) => {
+          const isActive = index <= current;
+          return (
+            <View key={label} style={styles.webStage}>
+              <View
+                style={[
+                  styles.webDot,
+                  isActive && styles.webDotActive,
+                  isDark && !isActive && styles.webDotDark,
+                ]}
+              />
+              <Text style={[styles.stageLabel, isDark && styles.stageLabelDark]}>
+                {label}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 function Yacht({ tone }: { tone: NonNullable<Props['tone']> }) {
   const hullColor = tone === 'dark' ? TEXT_DARK : NAVY;
   const hullCabin = useMemo(() => {
@@ -349,5 +377,28 @@ const styles = StyleSheet.create({
   yachtCanvas: {
     width: SHIP_W,
     height: SHIP_H,
+  },
+  webRail: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+  },
+  webStage: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  webDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: BLACK_38,
+  },
+  webDotActive: {
+    backgroundColor: GOLD_BRIGHT,
+  },
+  webDotDark: {
+    backgroundColor: TEXT_DARK_38,
   },
 });

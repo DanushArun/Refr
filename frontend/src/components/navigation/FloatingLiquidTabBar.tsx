@@ -18,9 +18,12 @@ import {
 
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
+import { useAuth } from '../../hooks/useAuth';
 import { hapticSelection } from '../../utils/haptics';
 import { activePillMetrics } from './FloatingLiquidTabBar.geometry';
 import { floatingLiquidTabBarStyles as styles } from './FloatingLiquidTabBar.styles';
+import { type AppRole } from './roleTabs';
+import { visibleRoleRoutes } from './visibleTabRoutes';
 
 type TabRoute = BottomTabBarProps['state']['routes'][number];
 
@@ -29,6 +32,7 @@ interface TabItemProps {
   index: number;
   props: BottomTabBarProps;
   route: TabRoute;
+  routeCount: number;
 }
 
 const tabBarBlurTint: BlurTint =
@@ -72,6 +76,7 @@ function barOffset(bottomInset: number): ViewStyle {
 }
 
 function activePillStyle(index: number, routeCount: number, rowWidth: number): StyleProp<ViewStyle> {
+  if (index < 0) return null;
   const metrics = activePillMetrics(index, routeCount, rowWidth);
   if (!metrics) return null;
 
@@ -123,6 +128,13 @@ function renderBadge(badge: BottomTabNavigationOptions['tabBarBadge']): ReactNod
   );
 }
 
+export function visibleTabRoutes(
+  props: Pick<BottomTabBarProps, 'descriptors' | 'state'>,
+  role?: AppRole,
+): TabRoute[] {
+  return visibleRoleRoutes(props.state.routes, props.descriptors, role);
+}
+
 function itemStyle(pressed: boolean, focused: boolean): StyleProp<ViewStyle> {
   return [
     styles.item,
@@ -145,14 +157,14 @@ function BarSurface(): ReactElement {
   );
 }
 
-function TabItem({ focused, index, props, route }: TabItemProps): ReactElement {
+function TabItem({ focused, index, props, route, routeCount }: TabItemProps): ReactElement {
   const descriptor = props.descriptors[route.key];
   const color = focused ? colors.goldBright : colors.textSecondary;
   const label = labelFor(descriptor.options, route.name);
 
   return (
     <Pressable
-      accessibilityLabel={`${label}, tab, ${index + 1} of ${props.state.routes.length}`}
+      accessibilityLabel={`${label}, tab, ${index + 1} of ${routeCount}`}
       accessibilityRole="button"
       accessibilityState={{ selected: focused }}
       onLongPress={() => longPressTab(props, route)}
@@ -176,10 +188,15 @@ function TabItem({ focused, index, props, route }: TabItemProps): ReactElement {
 }
 
 export function FloatingLiquidTabBar(props: BottomTabBarProps): ReactElement | null {
+  const { user } = useAuth();
   const keyboardVisible = useKeyboardVisible();
   const [rowWidth, setRowWidth] = useState(0);
+  const routes = visibleTabRoutes(props, user?.role);
+  const activeRoute = props.state.routes[props.state.index];
+  const activeIndex = routes.findIndex((route) => route.key === activeRoute?.key);
 
   if (shouldHideBar(props, keyboardVisible)) return null;
+  if (routes.length === 0) return null;
 
   function handleRowLayout(event: LayoutChangeEvent): void {
     setRowWidth(event.nativeEvent.layout.width);
@@ -192,15 +209,16 @@ export function FloatingLiquidTabBar(props: BottomTabBarProps): ReactElement | n
         <View onLayout={handleRowLayout} role="tablist" style={styles.row}>
           <View
             pointerEvents="none"
-            style={activePillStyle(props.state.index, props.state.routes.length, rowWidth)}
+            style={activePillStyle(activeIndex, routes.length, rowWidth)}
           />
-          {props.state.routes.map((route, index) => (
+          {routes.map((route, index) => (
             <TabItem
-              focused={props.state.index === index}
+              focused={route.key === activeRoute?.key}
               index={index}
               key={route.key}
               props={props}
               route={route}
+              routeCount={routes.length}
             />
           ))}
         </View>

@@ -54,3 +54,9 @@ test('test_profileNestedCards_whenPolished_avoidHardBorders', (): void => {
     expect((styles[key] as { borderWidth?: number }).borderWidth ?? 0).toBe(0);
   }
 });
+
+test('test_profileContent_whenMobileWeb_centersConstrainedColumn', (): void => {
+  expect((styles.content as { alignItems?: string }).alignItems).toBe('center');
+  expect(styles.contentPanel).toBeDefined();
+  expect((styles.contentPanel as { maxWidth?: number }).maxWidth).toBe(440);
+});

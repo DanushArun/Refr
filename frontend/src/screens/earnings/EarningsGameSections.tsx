@@ -10,7 +10,7 @@ import Animated, {
 import { Avatar } from '../../components/common/Avatar';
 import { RollingNumber } from '../../components/common/RollingNumber';
 import type { LeaderboardEntry } from '../../services/api';
-import type { DemoPayout } from '../../config/demoWorld';
+import type { DemoPayout } from '../../demo/world';
 import { playSensoryEvent } from '../../utils/haptics';
 import { earningsStyles as styles } from './earningsStyles';
 import { formatINR, shortDate } from './earningsLogic';

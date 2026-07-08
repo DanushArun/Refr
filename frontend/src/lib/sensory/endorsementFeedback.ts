@@ -1,11 +1,11 @@
-import type { SwipeDirection } from '../../components/discover/SwipeDeck';
+type EndorsementDecision = 'request' | 'pass';
 
 type EndorsementFeedback = {
   toast: string | null;
 };
 
 export function feedbackForEndorsementDecision(
-  direction: SwipeDirection,
+  direction: EndorsementDecision,
   seekerName?: string,
 ): EndorsementFeedback {
   if (direction !== 'request') {
