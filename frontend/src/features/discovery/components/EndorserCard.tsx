@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Pressable, View } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -10,61 +10,27 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from '../../../components/common/Avatar';
-import { BrandPhotoGrade } from '../../../components/common/BrandPhotoGrade';
 import { Phrase } from '../../../utils/haptics';
-import { getCompanyBrand } from './companyBrand';
-import { officeImageFor } from '../../../components/activity/companyOffices';
 import { colors } from '../../../theme/colors';
 import { SwipeStamp } from './SwipeStamp';
-import { DISCOVER_CARD_HEIGHT, discoverCardLayout } from './discoverCardLayout';
-import type {
-  EntryFrom,
-  SwipeCommand,
-  SwipeDirection,
-} from './SwipeDeck';
-import type { EndorserCard as EndorserCardData } from './endorserCardData';
-
-const { width: WINDOW_WIDTH } = Dimensions.get('window');
-const COMMIT_THRESHOLD = WINDOW_WIDTH * 0.32;
-const FLY_OFF_X = WINDOW_WIDTH * 1.4;
-const SWIPE_OUT_MS = 220;
-const ENTRY_IN_MS = 320;
-
-// Caps vertical drift so a panicked diagonal drag can't fling the card off
-// the deck plane. We let the user see ±90px of vertical motion at most;
-// beyond that the drag damps asymptotically toward this ceiling.
-const MAX_DRIFT_Y = 90;
-
-// How far the back card "rises" toward the top slot at peak drag — the
-// deck-of-cards reactive depth signal.
-const BACK_RISE_TRANSLATE_Y = 8;
-const BACK_RISE_SCALE = 0.025;
-
-interface EndorserCardProps {
-  card: EndorserCardData;
-  isTop: boolean;
-  stackIndex: number;
-  headProgress: SharedValue<number>;
-  entryFrom: EntryFrom;
-  /** Retained for deck accounting. The count is intentionally not rendered. */
-  swipesRemaining: number;
-  /** When true and this is the top card, render the undo affordance as a
-   *  circular button attached to the left edge of the swipes-left pill. */
-  canUndo?: boolean;
-  onUndo?: () => void;
-  /** Fires the moment a swipe commits (start of fly-off). Lets the parent
-   *  fire reactions (celebration, etc.) in lock-step with the card's exit. */
-  onCommitStart?: (direction: SwipeDirection) => void;
-  onSwiped: (direction: SwipeDirection) => void;
-  onTap?: () => void;
-  registerSwipe?: (cmd: SwipeCommand) => void;
-}
+import { EndorserCardContent, EndorserStackPreview } from './EndorserCardContent';
+import { styles } from './EndorserCard.styles';
+import type { SwipeDirection } from './SwipeDeck';
+import {
+  BACK_RISE_SCALE,
+  BACK_RISE_TRANSLATE_Y,
+  COMMIT_THRESHOLD,
+  ENTRY_IN_MS,
+  FLY_OFF_X,
+  MAX_DRIFT_Y,
+  SWIPE_OUT_MS,
+  WINDOW_WIDTH,
+  type EndorserCardProps,
+} from './endorserCardConfig';
 
 export function EndorserCard({
   card,
@@ -379,7 +345,7 @@ export function EndorserCard({
             )}
 
             <Pressable onPress={isTop ? handleTap : undefined} style={styles.tapArea}>
-              {isTop ? <TopCardContent card={card} /> : <StackPreview />}
+              {isTop ? <EndorserCardContent card={card} /> : <EndorserStackPreview />}
             </Pressable>
 
             {/* Subtle diagonal sheen only — no hard 1px bevel lines on the
@@ -421,246 +387,3 @@ export function EndorserCard({
     </GestureDetector>
   );
 }
-
-function TopCardContent({ card }: { card: EndorserCardData }) {
-  const brand = getCompanyBrand(card.companyId);
-  const officeImage = useMemo(() => officeImageFor(card.companyName), [card.companyName]);
-  const proofLine = `${card.name} can endorse this role.`;
-  const metaLine = `${card.hires} hires · ${card.responseTime} reply`;
-
-  return (
-    <View style={styles.fullMediaCard}>
-      <View style={[styles.officeFallback, { backgroundColor: brand.tint }]} />
-      {officeImage && <Image source={officeImage} style={styles.officeImage} resizeMode="cover" />}
-      <BrandPhotoGrade />
-      <LinearGradient
-        colors={[
-          'rgba(12, 31, 25, 0)',
-          'rgba(12, 31, 25, 0.52)',
-          'rgba(12, 31, 25, 0.86)',
-          'rgba(12, 31, 25, 0.98)',
-        ]}
-        locations={[0.44, 0.58, 0.76, 1]}
-        style={styles.bottomScrim}
-        pointerEvents="none"
-      />
-
-      <View style={styles.overlayContent}>
-        <View style={styles.overlayTitleRow}>
-          <Text
-            adjustsFontSizeToFit
-            minimumFontScale={0.84}
-            numberOfLines={1}
-            style={styles.companyTitle}
-          >
-            {card.companyName}
-          </Text>
-          <View style={styles.verifiedChip}>
-            <Text style={styles.verifiedChipText}>VERIFIED</Text>
-          </View>
-        </View>
-
-        <Text
-          adjustsFontSizeToFit
-          minimumFontScale={0.82}
-          numberOfLines={2}
-          style={styles.companyRole}
-        >
-          {card.jobTitle}
-        </Text>
-
-        <View style={styles.endorserProofRow}>
-          <Avatar
-            displayName={card.name}
-            size="sm"
-            uri={card.avatarUrl}
-            verificationRing
-          />
-          <Text numberOfLines={2} style={styles.endorserProofText}>
-            {proofLine}
-          </Text>
-        </View>
-
-        <Text numberOfLines={1} style={styles.endorserMetaLine}>
-          {metaLine}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-function StackPreview() {
-  // Intentionally NO identity content: back-of-deck cards must read as
-  // anonymous velvet plates so the next candidate isn't pre-revealed before
-  // the user has even committed to the current swipe.
-  return <View style={styles.stackPlate} />;
-}
-
-const styles = StyleSheet.create({
-  cardWrapper: {
-    position: 'absolute',
-    left: discoverCardLayout.inset,
-    right: discoverCardLayout.inset,
-    top: 0,
-    height: DISCOVER_CARD_HEIGHT,
-  },
-  cardInner: {
-    flex: 1,
-  },
-  ambientShadow: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000000',
-    borderRadius: discoverCardLayout.radius,
-    opacity: 0.50,
-    transform: [{ translateY: 28 }],
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 30 },
-    shadowOpacity: 0.6,
-    shadowRadius: 44,
-  },
-  surface: {
-    flex: 1,
-    borderRadius: discoverCardLayout.radius,
-    overflow: 'hidden',
-    backgroundColor: colors.cardSurface,
-    // Drop shadow gives the card the "lifted credit card" feel
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.30,
-    shadowRadius: 22,
-    elevation: 14,
-  },
-  tapArea: { flex: 1 },
-
-  /* Subtle diagonal sheen — the only material overlay on the swipe card */
-  materialSheen: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: discoverCardLayout.radius,
-  },
-
-  /* Reactive ambient overlay — vermilion for "endorse," sage for "pass."
-     Sits above the surface but below the stamp so it reads as a mood, not
-     a sticker. */
-  reactiveGlow: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: discoverCardLayout.radius,
-    zIndex: 4,
-  },
-
-  fullMediaCard: {
-    flex: 1,
-    backgroundColor: colors.navy,
-  },
-  officeImage: {
-    width: '100%',
-    height: '100%',
-  },
-  officeFallback: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  bottomScrim: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  overlayContent: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: discoverCardLayout.overlayPaddingHorizontal,
-    paddingBottom: discoverCardLayout.overlayPaddingBottom,
-    gap: discoverCardLayout.overlayGap,
-  },
-  overlayTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: discoverCardLayout.titleRowGap,
-  },
-  companyTitle: {
-    flex: 1,
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 36,
-    lineHeight: 40,
-    color: colors.cream,
-    textShadowColor: 'rgba(0, 0, 0, 0.45)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  verifiedChip: {
-    minWidth: 88,
-    height: discoverCardLayout.chipHeight,
-    borderRadius: discoverCardLayout.chipRadius,
-    borderWidth: 1,
-    borderColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: discoverCardLayout.chipPaddingHorizontal,
-    backgroundColor: 'rgba(3, 7, 18, 0.42)',
-  },
-  verifiedChipText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 11,
-    letterSpacing: 0.9,
-    color: colors.goldBright,
-  },
-  companyRole: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 16,
-    lineHeight: 21,
-    color: 'rgba(245, 241, 232, 0.78)',
-  },
-  endorserProofRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 2,
-  },
-  endorserProofText: {
-    flex: 1,
-    fontFamily: 'Outfit-Medium',
-    fontSize: 15,
-    lineHeight: 20,
-    color: 'rgba(245, 241, 232, 0.82)',
-  },
-  endorserMetaLine: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 15,
-    lineHeight: 20,
-    color: 'rgba(245, 241, 232, 0.72)',
-  },
-
-  /* Stack preview — anonymous plate, no identity content. Muted velvet
-     so back-of-deck cards read as warm trim against the midnight page, while the
-     top card's brand zone stays the visual focus. */
-  stackPlate: {
-    flex: 1,
-    backgroundColor: colors.backgroundElevated,
-  },
-
-  /* Undo affordance anchored to the card. */
-  clipMount: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: -14,
-    alignItems: 'center',
-  },
-  undoCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.backgroundElevated,
-    borderWidth: 1,
-    borderColor: colors.goldDim,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  undoCirclePressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.94 }],
-  },
-});

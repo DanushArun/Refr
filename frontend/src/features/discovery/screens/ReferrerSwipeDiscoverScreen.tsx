@@ -124,7 +124,7 @@ export function ReferrerSwipeDiscoverScreen(): React.ReactElement {
           })
           .then((result) => {
             if (queueEpoch !== queueEpochRef.current) return;
-            if (!shouldShowMatchReveal(result)) return;
+            if (!result.referral || !shouldShowMatchReveal(result)) return;
             setMatchReveal({
               referralId: result.referral.id,
               seekerName: card.name,

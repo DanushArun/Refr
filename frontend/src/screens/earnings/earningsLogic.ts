@@ -28,3 +28,7 @@ export function calculateRankPosition(
 ): number {
   return leaderboard.findIndex((entry) => entry.user.displayName === viewerName) + 1;
 }
+
+export function selectPayoutRows<T>(isDemo: boolean, demoRows: T[]): T[] {
+  return isDemo ? demoRows : [];
+}

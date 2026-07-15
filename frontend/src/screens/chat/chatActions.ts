@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert } from 'react-native';
 
 import type { PipelineStage } from '../../components/activity/PipelineStepper';
+import { isDemoScreen } from '../../demo/config';
 import { Phrase, playSensoryEvent } from '../../utils/haptics';
 import { chatApi, referralsApi } from '../../services/api';
 import {
@@ -57,8 +58,9 @@ export async function sendWithOptimism(args: {
 }): Promise<void> {
   try {
     const sent = await chatApi.sendMessage(args.conversationId!, args.body);
-    replaceOptimistic(args, sent as Message);
-    maybeScheduleReply(args);
+    const simulateActivity = isDemoScreen('chat');
+    replaceOptimistic(args, sent as Message, simulateActivity);
+    if (simulateActivity) maybeScheduleReply(args);
     void Phrase.messageSent();
   } catch (err) {
     failSend(args, err);
@@ -142,9 +144,10 @@ function replaceOptimistic(args: {
   setDeliveryStates: React.Dispatch<React.SetStateAction<Record<string, DeliveryState>>>;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   temp: Message;
-}, sent: Message): void {
+}, sent: Message, simulateActivity: boolean): void {
   args.setMessages((prev) => replaceMessage(prev, args.temp.id, sent));
   args.setDeliveryStates((prev) => replaceDeliveryKey(prev, args.temp.id, sent.id));
+  if (!simulateActivity) return;
   setTimeout(() => markDelivered(args, sent.id), 700);
   setTimeout(() => markRead(args, sent.id), 1800);
 }

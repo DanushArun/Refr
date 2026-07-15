@@ -4,6 +4,7 @@ import {
   estimateInFlight,
   formatINR,
   formatINRFull,
+  selectPayoutRows,
 } from './earningsLogic';
 
 describe('earningsLogic', () => {
@@ -25,5 +26,9 @@ describe('earningsLogic', () => {
 
   test('calculateRankPosition_whenViewerMissing_returnsZero', () => {
     expect(calculateRankPosition('Asha', [{ user: { displayName: 'Nivrant' } }])).toBe(0);
+  });
+
+  test('selectPayoutRows_when_live_expected_no_demo_rows', () => {
+    expect(selectPayoutRows(false, [{ id: 'fictional-payout' }])).toEqual([]);
   });
 });

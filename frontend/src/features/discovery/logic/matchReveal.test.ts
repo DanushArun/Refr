@@ -1,11 +1,15 @@
 import { shouldShowMatchReveal } from './matchReveal';
 
 describe('shouldShowMatchReveal', () => {
-  it('returns_true_when_swipe_result_is_mutual', (): void => {
-    expect(shouldShowMatchReveal({ mutual: true })).toBe(true);
+  it('test_should_show_match_reveal_when_mutual_with_referral_expected_true', (): void => {
+    expect(shouldShowMatchReveal({ mutual: true, referral: { id: 'referral-1' } })).toBe(true);
   });
 
-  it('returns_false_when_swipe_result_is_not_mutual', (): void => {
-    expect(shouldShowMatchReveal({ mutual: false })).toBe(false);
+  it('test_should_show_match_reveal_when_not_mutual_expected_false', (): void => {
+    expect(shouldShowMatchReveal({ mutual: false, referral: null })).toBe(false);
+  });
+
+  it('test_should_show_match_reveal_when_mutual_without_referral_expected_false', (): void => {
+    expect(shouldShowMatchReveal({ mutual: true, referral: null })).toBe(false);
   });
 });

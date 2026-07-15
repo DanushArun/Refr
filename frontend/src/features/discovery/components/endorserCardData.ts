@@ -12,10 +12,10 @@ export interface EndorserCard {
   companyName: string;
   location: string;
   trustScore: number;        // 0 – 100 integer, same scale as Endorsement Score
-  acceptanceRate: number;    // 0 – 100%, derived from hires / referrals
+  acceptanceRate?: number;   // present only when supplied by a trusted source
   avatarUrl?: string;         // optional demo portrait for compact proof rows
-  responseTime: string;      // e.g. "~2hr"
-  hires: number;             // raw successful hires
+  responseTime?: string;     // present only when supplied by a trusted source
+  hires?: number;            // present only when supplied by a trusted source
   skills: string[];           // 3 skills inferred from job title
   matchPercent: number;       // 70 – 94, stable per viewer+endorser pair
   opportunityId?: string;

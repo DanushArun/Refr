@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
 import {
-  Dimensions,
   Image,
   Modal,
   Pressable,
@@ -27,39 +26,28 @@ import { Avatar } from '../../../components/common/Avatar';
 import { getCompanyBrand } from './companyBrand';
 import { officeImageFor } from '../../../components/activity/companyOffices';
 import { Phrase } from '../../../utils/haptics';
-import { colors } from '../../../theme/colors';
-import type { EndorserCard as EndorserCardData } from './endorserCardData';
+import {
+  endorserAboutText,
+  endorserActivityLine,
+  endorserReasonText,
+} from './endorserCardPresentation';
+import { styles } from './ExpandedEndorserCard.styles';
+import {
+  CARD_HEIGHT,
+  CARD_LEFT,
+  CARD_TOP_FROM_SCREEN,
+  CARD_WIDTH,
+  EXPANDED_LEFT,
+  EXPANDED_MIN_EDGE,
+  EXPANDED_SAFE_GAP,
+  EXPANDED_WIDTH,
+  SCREEN_HEIGHT,
+  type ExpandedEndorserCardProps,
+} from './expandedEndorserCardConfig';
 import {
   ExpandedCardActions,
   expandedActionStyles,
 } from './ExpandedCardActions';
-
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
-
-// These constants must match EndorserCard's swipe-deck position so the
-// expansion springs out of the EXACT card the user tapped.
-const CARD_LEFT = 20;
-const CARD_WIDTH = SCREEN_W - 40;
-const CARD_HEIGHT = Math.min(580, Math.round(SCREEN_H * 0.62));
-// The deck starts roughly below the header (60) + filter row (54) + a 8px
-// breathing gap. Adjust if those header heights change in swipe discovery screen.
-const CARD_TOP_FROM_SCREEN = 60 + 54 + 8;
-const EXPANDED_LEFT = 14;
-const EXPANDED_MIN_EDGE = 34;
-const EXPANDED_SAFE_GAP = 10;
-const EXPANDED_WIDTH = SCREEN_W - EXPANDED_LEFT * 2;
-
-const BLACK = '#000000';
-const BLACK_50 = 'rgba(0, 0, 0, 0.50)';
-const BLACK_08 = 'rgba(0, 0, 0, 0.08)';
-const BLACK_05 = 'rgba(0, 0, 0, 0.05)';
-
-interface ExpandedEndorserCardProps {
-  card: EndorserCardData | null;
-  onClose: () => void;
-  onPass: () => void;
-  onCommit: () => void;
-}
 
 /**
  * Card-to-expanded container transform.
@@ -95,7 +83,7 @@ export function ExpandedEndorserCard({
   const insets = useSafeAreaInsets();
   const expandedTop = Math.max(EXPANDED_MIN_EDGE, insets.top + EXPANDED_SAFE_GAP);
   const expandedBottom = Math.max(EXPANDED_MIN_EDGE, insets.bottom + EXPANDED_SAFE_GAP);
-  const expandedHeight = SCREEN_H - expandedTop - expandedBottom;
+  const expandedHeight = SCREEN_HEIGHT - expandedTop - expandedBottom;
 
   useEffect(() => {
     if (!card) return;
@@ -249,7 +237,7 @@ export function ExpandedEndorserCard({
 
   const brand = getCompanyBrand(safe.companyId);
   const officeImage = officeImageFor(safe.companyName);
-  const metaLine = `${safe.hires} hires · ${safe.responseTime} reply`;
+  const metaLine = endorserActivityLine(safe);
 
   return (
     <Modal
@@ -340,9 +328,11 @@ export function ExpandedEndorserCard({
               </Text>
             </View>
 
-            <Text style={styles.endorserMetaLine} numberOfLines={1}>
-              {metaLine}
-            </Text>
+            {metaLine && (
+              <Text style={styles.endorserMetaLine} numberOfLines={1}>
+                {metaLine}
+              </Text>
+            )}
           </View>
 
           <View style={styles.creamZone}>
@@ -350,13 +340,7 @@ export function ExpandedEndorserCard({
             <Animated.View style={[styles.extras, extrasStyle]}>
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>ABOUT</Text>
-                <Text style={styles.about}>
-                  Works at <Text style={styles.aboutAccent}>{safe.companyName}</Text> as
-                  a {safe.jobTitle}. Typical response time is {safe.responseTime}.
-                  Has endorsed {safe.hires} successful hire{safe.hires === 1 ? '' : 's'}
-                  {' '}to date. Selects {safe.acceptanceRate}% of incoming requests
-                  and prioritizes strong context over volume.
-                </Text>
+                <Text style={styles.about}>{endorserAboutText(safe)}</Text>
               </View>
 
               <View style={styles.section}>
@@ -372,12 +356,7 @@ export function ExpandedEndorserCard({
 
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>WHY THIS ENDORSER</Text>
-                <Text style={styles.about}>
-                  {safe.name.split(' ')[0]} works at{' '}
-                  <Text style={styles.aboutAccent}>{safe.companyName}</Text>, endorses
-                  for {safe.skills.slice(0, 2).join(' and ')}, and has {safe.hires}
-                  {' '}confirmed hire{safe.hires === 1 ? '' : 's'}.
-                </Text>
+                <Text style={styles.about}>{endorserReasonText(safe)}</Text>
               </View>
             </Animated.View>
 
@@ -407,199 +386,3 @@ export function ExpandedEndorserCard({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(7, 12, 28, 0.85)',
-  },
-  surface: {
-    backgroundColor: colors.cardSurface,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 24 },
-    shadowOpacity: 0.5,
-    shadowRadius: 40,
-    elevation: 24,
-  },
-  scroll: {
-    paddingBottom: 0,
-  },
-
-  /* Hero image zone — full-bleed office photograph at the top of the
-     expanded sheet. Aspect-ratio sized so the entire image renders cleanly
-     without zooming in further during the card → modal morph. Same visual
-     weight as the swipe-card image; the rest of the screen is for content. */
-  heroImageZone: {
-    width: '100%',
-    aspectRatio: 1.12,
-    backgroundColor: '#0A1F44',
-    overflow: 'hidden',
-  },
-  heroImageFallback: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  heroImageShade: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  summaryPanel: {
-    marginTop: -42,
-    marginHorizontal: 14,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    backgroundColor: colors.navyDeep,
-    paddingHorizontal: 28,
-    paddingTop: 26,
-    paddingBottom: 22,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 241, 232, 0.08)',
-  },
-  heroTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  companyTitle: {
-    flex: 1,
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 40,
-    lineHeight: 45,
-    color: colors.cream,
-    textShadowColor: 'rgba(0, 0, 0, 0.45)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  verifiedChip: {
-    minWidth: 96,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(3, 7, 18, 0.42)',
-  },
-  verifiedChipText: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 12,
-    letterSpacing: 0.9,
-    color: colors.goldBright,
-  },
-  companyRole: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 30,
-    lineHeight: 35,
-    color: colors.cream,
-  },
-  endorserProofRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 4,
-  },
-  endorserProofText: {
-    flex: 1,
-    fontFamily: 'Outfit-Medium',
-    fontSize: 15,
-    lineHeight: 20,
-    color: 'rgba(245, 241, 232, 0.82)',
-  },
-  endorserMetaLine: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 16,
-    lineHeight: 21,
-    color: 'rgba(245, 241, 232, 0.76)',
-  },
-
-  /* Pill grabber — swipe-down dismiss affordance, sits in the safe area
-     above the brand zone */
-  grabberRow: {
-    position: 'absolute',
-    top: 14,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 5,
-  },
-  grabber: {
-    width: 44,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(245, 241, 232, 0.55)',
-  },
-
-  /* Cream zone wrapper */
-  creamZone: { flex: 1 },
-
-  /* Generic section — used by ABOUT, SKILLS, WHY THIS MATCH */
-  section: {
-    paddingHorizontal: 24,
-    paddingTop: 18,
-    paddingBottom: 18,
-    gap: 12,
-  },
-  sectionLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 10,
-    color: BLACK_50,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-
-  /* Extras wrapper — fades in when surface is mostly expanded */
-  extras: {
-    borderTopWidth: 1,
-    borderTopColor: BLACK_08,
-  },
-
-  /* Extras */
-  about: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 15,
-    color: BLACK,
-    lineHeight: 24,
-  },
-  aboutAccent: {
-    fontFamily: 'Outfit-SemiBold',
-    color: '#0A1F44',
-  },
-  skillsExtras: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  skillExtraChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: BLACK_05,
-  },
-  skillExtraText: {
-    fontFamily: 'Outfit-Medium',
-    fontSize: 13,
-    color: BLACK,
-  },
-
-  /* Close button — top-right floating, fades with surface */
-  closeWrap: {
-    position: 'absolute',
-    top: 56,
-    right: 18,
-  },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.30)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-});

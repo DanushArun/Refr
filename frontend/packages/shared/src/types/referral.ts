@@ -19,6 +19,8 @@ export interface Referral {
   referrerNote?: string;       // Internal note from referrer
   feedCardId?: string;         // Which feed card triggered this referral
   source?: 'specific' | 'browse';
+  requestKind?: 'advice' | 'introduction' | 'referral_review';
+  sharedFields?: string[];
   referrerName?: string | null;
 }
 
@@ -32,9 +34,11 @@ export interface SeekerPipelineItem {
 
 /** Inbox item for referrer: incoming referral requests */
 export interface ReferrerInboxItem {
+  companyName: string;
   referral: Referral;
   seekerName: string;
   seekerHeadline: string;
   seekerAvatar?: string;
   matchScore: number;
+  sharedProfile?: Record<string, unknown>;
 }

@@ -11,6 +11,7 @@ import {
   StatusPill,
   statusMeta,
 } from './referralCardShared';
+import { payoutLabel } from './payoutPresentation';
 
 /**
  * Endorser Voyage card.
@@ -26,8 +27,6 @@ import {
  */
 
 type ActionKind = 'submit' | 'interviewing' | 'outcome' | 'view';
-
-const PAYOUT_PER_HIRE = 22000;
 
 export interface EndorserVoyageCardData {
   id: string;
@@ -86,12 +85,6 @@ function actionForStage(
   }
 }
 
-function formatINR(amount: number): string {
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
-  if (amount >= 1000) return `₹${Math.round(amount / 1000)}K`;
-  return `₹${amount}`;
-}
-
 export function EndorserVoyageCard({
   data,
   onAction,
@@ -104,7 +97,7 @@ export function EndorserVoyageCard({
   const current = stageIndex(data.status);
   const isHired = data.status === 'hired';
   const display = formatEndorserName(data.seekerName) || data.seekerName;
-  const payoutAmount = data.payoutAmount ?? PAYOUT_PER_HIRE;
+  const payout = payoutLabel(data.payoutAmount);
 
   return (
     <View style={[styles.card, isHired && styles.cardHired]}>
@@ -128,29 +121,31 @@ export function EndorserVoyageCard({
               <StatusPill meta={meta} tone="dark" />
             </View>
           </View>
-          <View
-            style={[
-              styles.payoutChip,
-              isHired ? styles.payoutChipPaid : styles.payoutChipPending,
-            ]}
-          >
-            <Text
+          {payout && (
+            <View
               style={[
-                styles.payoutLabel,
-                isHired ? styles.payoutLabelPaid : styles.payoutLabelPending,
+                styles.payoutChip,
+                isHired ? styles.payoutChipPaid : styles.payoutChipPending,
               ]}
             >
-              {isHired ? 'PAID' : 'PAYOUT'}
-            </Text>
-            <Text
-              style={[
-                styles.payoutValue,
-                isHired ? styles.payoutValuePaid : styles.payoutValuePending,
-              ]}
-            >
-              {formatINR(payoutAmount)}
-            </Text>
-          </View>
+              <Text
+                style={[
+                  styles.payoutLabel,
+                  isHired ? styles.payoutLabelPaid : styles.payoutLabelPending,
+                ]}
+              >
+                {isHired ? 'PAID' : 'PAYOUT'}
+              </Text>
+              <Text
+                style={[
+                  styles.payoutValue,
+                  isHired ? styles.payoutValuePaid : styles.payoutValuePending,
+                ]}
+              >
+                {payout}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Action row sits above the voyage. */}

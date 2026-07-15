@@ -14,7 +14,7 @@ export interface SeekerCard {
   targetCompanies: string[];  // shown as chips
   matchPercent: number;       // 0-100 against viewer's company
   currentSignal: string;      // e.g. "Ex-Amazon Pay · 6y" — derived from story+YOE
-  photoUrl: string;           // curated portrait for the identity hero
+  photoUrl?: string;          // only a real profile portrait; UI falls back to its base surface
   opportunityId?: string;
   opportunityTitle?: string;
 }

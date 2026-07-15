@@ -5,10 +5,6 @@ import type {
 import type { EndorserCard } from './components/endorserCardData';
 import type { SeekerCard } from './components/seekerCardData';
 
-const FALLBACK_PHOTO_URL =
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330' +
-  '?w=320&q=80&auto=format&fit=crop&crop=faces';
-
 function clampPercent(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(100, Math.round(value)));
@@ -55,10 +51,7 @@ export function referrerRecommendationToEndorserCard(
     companyName: item.companyName,
     location: nonEmpty(item.roleLevel, nonEmpty(item.department, 'Verified')),
     trustScore: clampPercent(item.endorsementScore),
-    acceptanceRate: clampPercent(item.matchScore),
     avatarUrl: item.avatarUrl ?? undefined,
-    responseTime: item.wideningLevel > 0 ? '~1d' : '~4hr',
-    hires: 0,
     skills: referrerSkills(item),
     matchPercent: clampPercent(item.matchScore),
     opportunityId: item.opportunityId,
@@ -87,7 +80,7 @@ export function seekerRecommendationToSeekerCard(
     targetCompanies: item.targetCompanies.slice(0, 3),
     matchPercent: clampPercent(item.matchScore),
     currentSignal: `${item.yearsOfExperience} years experience`,
-    photoUrl: item.avatarUrl ?? FALLBACK_PHOTO_URL,
+    photoUrl: item.avatarUrl ?? undefined,
     opportunityId: item.opportunityId,
     opportunityTitle: item.opportunityTitle,
   };

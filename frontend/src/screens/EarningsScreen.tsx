@@ -18,6 +18,13 @@ import { ReputationRail } from '../components/tier/ReputationRail';
 import { FrostedGlassSurface } from '../components/common/FrostedGlassSurface';
 import { LinearGradient } from 'expo-linear-gradient';
 import { earningsScreenStyles as styles } from './earnings/earningsScreenStyles';
+import { selectPayoutRows } from './earnings/earningsLogic';
+import { isDemoScreen } from '../demo/config';
+import {
+  buildDemoPayouts,
+  DEMO_PAYOUT_PER_HIRE,
+  type DemoPayout,
+} from '../demo/world';
 import {
   referralsApi,
   type LeaderboardEntry,
@@ -26,8 +33,6 @@ import {
 import { colors } from '../theme/colors';
 import { layout } from '../theme/spacing';
 import { useWarmTabData } from '../hooks/useWarmTabData';
-
-const PAYOUT_PER_HIRE = 22000;
 
 /**
  * Earnings — the endorser's financial + reputation dashboard.
@@ -42,6 +47,7 @@ const PAYOUT_PER_HIRE = 22000;
  * reputation multiplier that appears secondary to the ₹ story.
  */
 export function EarningsScreen() {
+  const demoEarnings = isDemoScreen('earnings');
   const isFocused = useIsFocused();
   const hasLoadedRef = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
@@ -70,7 +76,13 @@ export function EarningsScreen() {
   useWarmTabData(load);
   useScrollToTop(scrollRef);
 
-  const payouts = useMemo(() => buildMockPayouts(reputation?.successfulHires ?? 0), [reputation]);
+  const payouts = useMemo(
+    () => selectPayoutRows(
+      demoEarnings,
+      buildDemoPayouts(reputation?.successfulHires ?? 0),
+    ),
+    [demoEarnings, reputation],
+  );
 
   if (loading || !reputation) {
     return (
@@ -80,14 +92,16 @@ export function EarningsScreen() {
     );
   }
 
-  const lifetime = reputation.successfulHires * PAYOUT_PER_HIRE;
+  const lifetime = demoEarnings
+    ? reputation.successfulHires * DEMO_PAYOUT_PER_HIRE
+    : null;
   // In-flight count: referrals still pending. For the mock we estimate based
   // on totalReferrals – successfulHires clamped to a sensible display range.
   const inFlight = Math.max(
     0,
     reputation.totalReferrals - reputation.successfulHires,
   );
-  const pending = inFlight * PAYOUT_PER_HIRE;
+  const pending = demoEarnings ? inFlight * DEMO_PAYOUT_PER_HIRE : null;
 
   const rankPosition = leaderboard.findIndex(
     (e) => e.user.displayName === reputation.user.displayName,
@@ -135,12 +149,20 @@ export function EarningsScreen() {
           </View>
 
           <Text style={styles.heroValue} numberOfLines={1} adjustsFontSizeToFit>
-            {formatINRFull(lifetime)}
+            {lifetime === null ? 'Not available' : formatINRFull(lifetime)}
           </Text>
 
           <View style={styles.heroSplits}>
-            <HeroTile label="Pending" value={formatINR(pending)} accent={pending > 0} />
-            <HeroTile label="Earned" value={formatINR(lifetime)} muted />
+            <HeroTile
+              label="Pending"
+              value={pending === null ? '-' : formatINR(pending)}
+              accent={pending !== null && pending > 0}
+            />
+            <HeroTile
+              label="Earned"
+              value={lifetime === null ? '-' : formatINR(lifetime)}
+              muted
+            />
             <HeroTile label="In flight" value={String(inFlight)} muted />
           </View>
         </View>
@@ -178,7 +200,9 @@ export function EarningsScreen() {
           {payouts.length === 0 ? (
             <DarkCard>
               <Text style={styles.emptyText}>
-                No hires yet. Submit matched candidates from Activity to start earning.
+                {demoEarnings
+                  ? 'No hires yet. Submit matched candidates from Activity to start earning.'
+                  : 'Payout history is not available from the service yet.'}
               </Text>
             </DarkCard>
           ) : payoutsExpanded ? (
@@ -268,33 +292,6 @@ function formatINRFull(n: number): string {
   return `₹${n.toLocaleString('en-IN')}`;
 }
 
-interface Payout {
-  id: string;
-  candidateName: string;
-  companyName: string;
-  role: string;
-  dateISO: string;
-  amount: number;
-}
-
-function buildMockPayouts(hires: number): Payout[] {
-  const base = [
-    { candidateName: 'Shreya Nair', role: 'Sr Full-stack Engineer', daysAgo: 6 },
-    { candidateName: 'Neha Kulkarni', role: 'Sr Data Engineer', daysAgo: 23 },
-    { candidateName: 'Karthik Ramesh', role: 'Sr Backend Engineer', daysAgo: 48 },
-    { candidateName: 'Aditi Sharma', role: 'Senior PM', daysAgo: 74 },
-    { candidateName: 'Nikhil Rao', role: 'ML Engineer', daysAgo: 105 },
-  ];
-  return base.slice(0, hires).map((b, i) => ({
-    id: `payout-${i}`,
-    candidateName: b.candidateName,
-    companyName: 'Razorpay',
-    role: b.role,
-    dateISO: new Date(Date.now() - b.daysAgo * 86_400_000).toISOString(),
-    amount: PAYOUT_PER_HIRE,
-  }));
-}
-
 function shortDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
@@ -320,7 +317,7 @@ function HeroTile({
   );
 }
 
-function PayoutRow({ payout, isLast }: { payout: Payout; isLast?: boolean }) {
+function PayoutRow({ payout, isLast }: { payout: DemoPayout; isLast?: boolean }) {
   return (
     <View style={[styles.payoutRow, isLast && styles.payoutRowLast]}>
       <Avatar displayName={payout.candidateName} size="sm" />

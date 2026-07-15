@@ -47,6 +47,16 @@ export interface CreateReferralRequest {
   targetRole: string;
   source?: 'specific' | 'browse';
   seekerNote?: string;
+  requestKind?: 'advice' | 'introduction' | 'referral_review';
+  sharedFields?: Array<
+    | 'headline'
+    | 'careerStory'
+    | 'skills'
+    | 'yearsOfExperience'
+    | 'currentCompany'
+    | 'location'
+    | 'education'
+  >;
   feedCardId?: string;
   card?: FeedCard;
 }
@@ -68,6 +78,11 @@ export interface SeekerSwipeInput {
   skills: string[];
   targetRole: string;
   opportunityId?: string;
+}
+
+export interface EndorserSwipeResult {
+  referral: Referral | null;
+  mutual: boolean;
 }
 
 function targetReferrerForCard(card?: FeedCard): { id: string; companyId: string } {
@@ -256,6 +271,8 @@ export const referralsApi = {
         targetRole: payload.targetRole,
         source: payload.source ?? 'specific',
         seekerNote: payload.seekerNote,
+        requestKind: payload.requestKind,
+        sharedFields: payload.sharedFields,
       }),
     }).then((r) => r.data);
   },
@@ -279,16 +296,22 @@ export const referralsApi = {
 
   recordEndorserSwipe: (
     seeker: SeekerSwipeInput,
-  ): Promise<{ referral: Referral; mutual: boolean }> => {
+  ): Promise<EndorserSwipeResult> => {
     if (DEMO.enabled) return Promise.resolve(createDemoEndorserSwipe(seeker));
-    return request<{ data: Referral }>('/api/v1/referrals/', {
+    return request<{
+      data: Referral | null;
+      meta?: { mutual?: boolean };
+    }>('/api/v1/referrals/', {
       method: 'POST',
       body: JSON.stringify({
         seekerId: seeker.id,
         jobId: seeker.opportunityId,
         targetRole: seeker.targetRole,
       }),
-    }).then((r) => ({ referral: r.data, mutual: false }));
+    }).then((response) => ({
+      referral: response.data,
+      mutual: response.meta?.mutual ?? false,
+    }));
   },
 
   getInbox: (): Promise<ReferrerInboxItem[]> => {

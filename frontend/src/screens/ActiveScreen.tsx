@@ -20,6 +20,7 @@ import { playSensoryEvent } from '../utils/haptics';
 import { navigateAfterPress } from '../utils/navigationAfterPress';
 import { useWarmTabData } from '../hooks/useWarmTabData';
 import { DEMO_PAYOUT_PER_HIRE, getCurrentDemoCompanyName } from '../demo/world';
+import { isDemoScreen } from '../demo/config';
 import { activeStyles as styles } from './active/activeStyles';
 import { NoticePill } from './active/ActiveSummary';
 import { EmptyState, ErrorState, LoadingState } from './active/ActiveStates';
@@ -300,7 +301,7 @@ const ActiveItem = React.memo(function ActiveItem({
         companyName,
         status: item.referral.status,
         stageTimestamp: latestStageTimestamp(item.referral),
-        payoutAmount: DEMO_PAYOUT_PER_HIRE,
+        payoutAmount: isDemoScreen('earnings') ? DEMO_PAYOUT_PER_HIRE : undefined,
       }}
       pending={pending}
       active={active}

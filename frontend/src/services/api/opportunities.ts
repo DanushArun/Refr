@@ -1,18 +1,38 @@
 import { request } from './http';
 
+export type EmploymentType = 'full_time' | 'contract' | 'internship';
+export type OpportunitySource = 'manual' | 'company_intel' | 'import' | 'admin';
+
 export interface Opportunity {
   id: string;
   companyId: string;
   companyName: string;
+  companyLogo: string | null;
   title: string;
+  department: string;
+  employmentType: EmploymentType;
   function: string;
   seniority: string;
   location: string;
   remotePolicy: 'onsite' | 'hybrid' | 'remote';
+  requiredSkills: string[];
+  preferredSkills: string[];
+  minYearsExperience: number;
+  maxYearsExperience: number | null;
+  source: OpportunitySource;
+  postedAt: string | null;
+  expiresAt: string | null;
   available: boolean;
 }
 
 export const opportunitiesApi = {
+  get: (id: string): Promise<Opportunity> => {
+    const safeId = encodeURIComponent(id);
+    return request<{ data: Opportunity }>(
+      `/api/v1/opportunities/${safeId}/`,
+    ).then((response) => response.data);
+  },
+
   list: (params: { companyId?: string; q?: string } = {}): Promise<Opportunity[]> => {
     const qs = new URLSearchParams();
     if (params.companyId) qs.set('companyId', params.companyId);
