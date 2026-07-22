@@ -26,6 +26,7 @@ function item(
     seekerName: `Candidate ${id}`,
     seekerHeadline: '4y backend',
     matchScore: 80,
+    companyName: 'Razorpay',
   };
 }
 

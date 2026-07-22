@@ -1,0 +1,1572 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-15",
+  "screenCount": 98,
+  "screens": [
+    {
+      "id": "shared-launch-seeker",
+      "role": "shared",
+      "title": "Launch — seeker",
+      "route": "/",
+      "state": "launch",
+      "sourceImage": "0.png",
+      "sourcePanel": 1,
+      "components": [
+        "LaunchArtwork",
+        "BrandWordmark",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "shared-launch-endorser",
+      "role": "shared",
+      "title": "Launch — endorser",
+      "route": "/",
+      "state": "launch",
+      "sourceImage": "0.png",
+      "sourcePanel": 1,
+      "components": [
+        "LaunchArtwork",
+        "BrandWordmark",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-01-entry-intent-choice",
+      "role": "seeker",
+      "title": "Choose participation",
+      "route": "/auth/participation",
+      "state": "entry-intent-choice",
+      "sourceImage": "1.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "HeroPortrait",
+        "ChoiceCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-01-entry-phone",
+      "role": "seeker",
+      "title": "Phone entry",
+      "route": "/auth/phone",
+      "state": "entry-phone",
+      "sourceImage": "1.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "PhoneInput",
+        "PrivacyNote",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-01-entry-otp",
+      "role": "seeker",
+      "title": "Verify phone number",
+      "route": "/auth/otp",
+      "state": "entry-otp",
+      "sourceImage": "1.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "OtpInput",
+        "PasteCodeCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-01-entry-welcome",
+      "role": "seeker",
+      "title": "Welcome",
+      "route": "/discover?state=welcome",
+      "state": "entry-welcome",
+      "sourceImage": "1.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "ProfilePortrait",
+        "VerificationBenefitList",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-02-identity-basics",
+      "role": "seeker",
+      "title": "Profile basics",
+      "route": "/onboarding/basics",
+      "state": "identity-basics",
+      "sourceImage": "2.png",
+      "sourcePanel": 1,
+      "components": [
+        "ProgressStepper",
+        "AvatarPicker",
+        "Input",
+        "SelectField",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-02-identity-current-role",
+      "role": "seeker",
+      "title": "Current role",
+      "route": "/onboarding/current-role",
+      "state": "identity-current-role",
+      "sourceImage": "2.png",
+      "sourcePanel": 2,
+      "components": [
+        "ProgressStepper",
+        "CompanyCard",
+        "Input",
+        "SelectField",
+        "VerificationCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-02-identity-career-history",
+      "role": "seeker",
+      "title": "Career history",
+      "route": "/onboarding/career-history",
+      "state": "identity-career-history",
+      "sourceImage": "2.png",
+      "sourcePanel": 3,
+      "components": [
+        "ProgressStepper",
+        "CareerHistoryCard",
+        "SecondaryButton",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-02-identity-education",
+      "role": "seeker",
+      "title": "Education",
+      "route": "/onboarding/education",
+      "state": "identity-education",
+      "sourceImage": "2.png",
+      "sourcePanel": 4,
+      "components": [
+        "ProgressStepper",
+        "EducationCard",
+        "Input",
+        "SelectField",
+        "VerificationCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-03-intent-skills",
+      "role": "seeker",
+      "title": "Skills",
+      "route": "/onboarding/skills",
+      "state": "intent-skills",
+      "sourceImage": "3.png",
+      "sourcePanel": 1,
+      "components": [
+        "SelectableList",
+        "VerificationBadge",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-03-intent-impact",
+      "role": "seeker",
+      "title": "Impact highlights",
+      "route": "/onboarding/impact",
+      "state": "intent-impact",
+      "sourceImage": "3.png",
+      "sourcePanel": 2,
+      "components": [
+        "ProgressStepper",
+        "AchievementCard",
+        "SecondaryButton",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-03-intent-target-role",
+      "role": "seeker",
+      "title": "Target role",
+      "route": "/onboarding/target-role",
+      "state": "intent-target-role",
+      "sourceImage": "3.png",
+      "sourcePanel": 3,
+      "components": [
+        "ProgressStepper",
+        "RoleChoiceCard",
+        "DisclosureField",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-03-intent-preferences",
+      "role": "seeker",
+      "title": "Work preferences",
+      "route": "/onboarding/preferences",
+      "state": "intent-preferences",
+      "sourceImage": "3.png",
+      "sourcePanel": 4,
+      "components": [
+        "ProgressStepper",
+        "PreferenceRow",
+        "ChoiceCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-04-profile-ready-resume-upload",
+      "role": "seeker",
+      "title": "Resume upload",
+      "route": "/onboarding/resume",
+      "state": "profile-ready-resume-upload",
+      "sourceImage": "4.png",
+      "sourcePanel": 1,
+      "components": [
+        "UploadCard",
+        "ProgressBar",
+        "PrivacyCard",
+        "SecondaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-04-profile-ready-verification-status",
+      "role": "seeker",
+      "title": "Verification status",
+      "route": "/onboarding/verification",
+      "state": "profile-ready-verification-status",
+      "sourceImage": "4.png",
+      "sourcePanel": 2,
+      "components": [
+        "VerificationList",
+        "PrivacyCard"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-04-profile-ready-visibility",
+      "role": "seeker",
+      "title": "Visibility controls",
+      "route": "/onboarding/visibility",
+      "state": "profile-ready-visibility",
+      "sourceImage": "4.png",
+      "sourcePanel": 3,
+      "components": [
+        "PrivacyTable",
+        "Switch",
+        "PrivacyCard"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-04-profile-ready-profile-ready",
+      "role": "seeker",
+      "title": "Profile ready",
+      "route": "/discover",
+      "state": "profile-ready-profile-ready",
+      "sourceImage": "4.png",
+      "sourcePanel": 4,
+      "components": [
+        "ProfileHero",
+        "SkillChip",
+        "VerificationGrid",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-05-discover-tutorial",
+      "role": "seeker",
+      "title": "Discover tutorial",
+      "route": "/discover?state=tutorial",
+      "state": "discover-tutorial",
+      "sourceImage": "5.png",
+      "sourcePanel": 1,
+      "components": [
+        "SwipeDeckTutorial",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-05-discover-role-card",
+      "role": "seeker",
+      "title": "Discover role card",
+      "route": "/discover",
+      "state": "discover-role-card",
+      "sourceImage": "5.png",
+      "sourcePanel": 2,
+      "components": [
+        "OpportunityCard",
+        "FitSummary",
+        "EndorserAvailabilityRow",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-05-discover-fit-sheet",
+      "role": "seeker",
+      "title": "Fit explained sheet",
+      "route": "/discover?sheet=fit",
+      "state": "discover-fit-sheet",
+      "sourceImage": "5.png",
+      "sourcePanel": 3,
+      "components": [
+        "OpportunityCard",
+        "FitExplanationSheet",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-05-discover-saved",
+      "role": "seeker",
+      "title": "Saved opportunity",
+      "route": "/discover?state=saved",
+      "state": "discover-saved",
+      "sourceImage": "5.png",
+      "sourcePanel": 4,
+      "components": [
+        "Toast",
+        "SavedOpportunityCard",
+        "OpportunityCard",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-06-opportunity-overview",
+      "role": "seeker",
+      "title": "Opportunity overview",
+      "route": "/opportunity/razorpay-spm",
+      "state": "opportunity-overview",
+      "sourceImage": "6.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "FitSummary",
+        "AvailabilityCard",
+        "PrimaryButton",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-06-opportunity-responsibilities",
+      "role": "seeker",
+      "title": "Opportunity responsibilities",
+      "route": "/opportunity/razorpay-spm?tab=role",
+      "state": "opportunity-responsibilities",
+      "sourceImage": "6.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "CheckList",
+        "RequirementProgress",
+        "SkillChip",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-06-opportunity-company",
+      "role": "seeker",
+      "title": "Company context",
+      "route": "/opportunity/razorpay-spm?tab=company",
+      "state": "opportunity-company",
+      "sourceImage": "6.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "ValueList",
+        "CompanyImage",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-06-opportunity-endorsers",
+      "role": "seeker",
+      "title": "Eligible endorsers",
+      "route": "/opportunity/razorpay-spm?tab=endorsers",
+      "state": "opportunity-endorsers",
+      "sourceImage": "6.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "EndorserCard",
+        "EligibilityNotice",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-07-request-endorser-profile",
+      "role": "seeker",
+      "title": "Endorser profile",
+      "route": "/endorser/arjun-menon",
+      "state": "request-endorser-profile",
+      "sourceImage": "7.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "ProfileHero",
+        "VerificationCard",
+        "StatRow",
+        "PrimaryButton",
+        "SecondaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-07-request-question",
+      "role": "seeker",
+      "title": "Ask endorser a question",
+      "route": "/endorser/arjun-menon/question",
+      "state": "request-question",
+      "sourceImage": "7.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "ReferenceCard",
+        "MultilineInput",
+        "PrivacyNote",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-07-request-intro-form",
+      "role": "seeker",
+      "title": "Request introduction",
+      "route": "/endorser/arjun-menon/request",
+      "state": "request-intro-form",
+      "sourceImage": "7.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "RecipientRow",
+        "MultilineInput",
+        "FitChecklist",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-07-request-sent",
+      "role": "seeker",
+      "title": "Request sent",
+      "route": "/request/razorpay-spm/sent",
+      "state": "request-sent",
+      "sourceImage": "7.png",
+      "sourcePanel": 4,
+      "components": [
+        "SuccessIllustration",
+        "ProfilePortrait",
+        "SecondaryButton",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-08-connect-confirmed",
+      "role": "seeker",
+      "title": "Connection confirmed",
+      "route": "/connection/arjun-menon",
+      "state": "connect-confirmed",
+      "sourceImage": "8.png",
+      "sourcePanel": 1,
+      "components": [
+        "ConnectionIllustration",
+        "OpportunityCard",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-08-connect-inbox",
+      "role": "seeker",
+      "title": "Inbox",
+      "route": "/inbox",
+      "state": "connect-inbox",
+      "sourceImage": "8.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "ConnectionCarousel",
+        "ConversationList",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-08-connect-filter",
+      "role": "seeker",
+      "title": "Inbox filter",
+      "route": "/inbox?sheet=filter",
+      "state": "connect-filter",
+      "sourceImage": "8.png",
+      "sourcePanel": 3,
+      "components": [
+        "FilterSheet",
+        "FilterOption",
+        "PrimaryButton",
+        "SecondaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-08-connect-chat",
+      "role": "seeker",
+      "title": "Conversation",
+      "route": "/chat?referralId=razorpay-spm",
+      "state": "connect-chat",
+      "sourceImage": "8.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "ConversationHeader",
+        "ChatMessages",
+        "ChatComposer",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-09-handoff-conversation",
+      "role": "seeker",
+      "title": "Referral details request",
+      "route": "/chat?referralId=razorpay-spm",
+      "state": "handoff-conversation",
+      "sourceImage": "9.png",
+      "sourcePanel": 1,
+      "components": [
+        "ConversationHeader",
+        "ChatMessages",
+        "ChatComposer",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-09-handoff-details-request",
+      "role": "seeker",
+      "title": "Requested referral details",
+      "route": "/handoff/razorpay-spm",
+      "state": "handoff-details-request",
+      "sourceImage": "9.png",
+      "sourcePanel": 2,
+      "components": [
+        "HandoffCard",
+        "VerificationList",
+        "ChatComposer",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-09-handoff-share-details",
+      "role": "seeker",
+      "title": "Share secure details",
+      "route": "/handoff/razorpay-spm/share",
+      "state": "handoff-share-details",
+      "sourceImage": "9.png",
+      "sourcePanel": 3,
+      "components": [
+        "VerificationList",
+        "DisabledButton",
+        "ConsentNotice",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-09-handoff-review-consent",
+      "role": "seeker",
+      "title": "Review and confirm",
+      "route": "/handoff/razorpay-spm/confirm",
+      "state": "handoff-review-consent",
+      "sourceImage": "9.png",
+      "sourcePanel": 4,
+      "components": [
+        "RecipientRow",
+        "SharedDetailTable",
+        "ConsentCheckbox",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-10-track-package-shared",
+      "role": "seeker",
+      "title": "Secure package shared",
+      "route": "/handoff/razorpay-spm/shared",
+      "state": "track-package-shared",
+      "sourceImage": "10.png",
+      "sourcePanel": 1,
+      "components": [
+        "SuccessPanel",
+        "PrivacyNote",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-10-track-submitted",
+      "role": "seeker",
+      "title": "Referral submitted",
+      "route": "/application/razorpay-spm/submitted",
+      "state": "track-submitted",
+      "sourceImage": "10.png",
+      "sourcePanel": 2,
+      "components": [
+        "SuccessIllustration",
+        "ApplicationSummary",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-10-track-overview",
+      "role": "seeker",
+      "title": "Activity overview",
+      "route": "/activity",
+      "state": "track-overview",
+      "sourceImage": "10.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "ApplicationCard",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-10-track-timeline",
+      "role": "seeker",
+      "title": "Application timeline",
+      "route": "/application/razorpay-spm",
+      "state": "track-timeline",
+      "sourceImage": "10.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "Timeline",
+        "OwnerRow",
+        "Switch",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-11-interview-review",
+      "role": "seeker",
+      "title": "Recruiter review",
+      "route": "/application/razorpay-spm",
+      "state": "interview-review",
+      "sourceImage": "11.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "Timeline",
+        "StatusPanel",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-11-interview-invitation",
+      "role": "seeker",
+      "title": "Interview invitation",
+      "route": "/application/razorpay-spm/interview",
+      "state": "interview-invitation",
+      "sourceImage": "11.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "InterviewDetailsCard",
+        "CalloutCard",
+        "PrimaryButton",
+        "TextButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-11-interview-time",
+      "role": "seeker",
+      "title": "Choose interview time",
+      "route": "/application/razorpay-spm/interview/time",
+      "state": "interview-time",
+      "sourceImage": "11.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "RadioList",
+        "WarningCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-11-interview-preparation",
+      "role": "seeker",
+      "title": "Interview preparation",
+      "route": "/application/razorpay-spm/interview/prep",
+      "state": "interview-preparation",
+      "sourceImage": "11.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "AdviceCard",
+        "Checklist",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-12-offer-pending",
+      "role": "seeker",
+      "title": "Interview completed",
+      "route": "/application/razorpay-spm/decision",
+      "state": "offer-pending",
+      "sourceImage": "12.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "StatusPanel",
+        "MessageCard",
+        "InfoCard",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-12-offer-received",
+      "role": "seeker",
+      "title": "Offer received",
+      "route": "/application/razorpay-spm/offer",
+      "state": "offer-received",
+      "sourceImage": "12.png",
+      "sourcePanel": 2,
+      "components": [
+        "OfferIllustration",
+        "OfferSummary",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-12-offer-review",
+      "role": "seeker",
+      "title": "Review offer",
+      "route": "/application/razorpay-spm/offer/review",
+      "state": "offer-review",
+      "sourceImage": "12.png",
+      "sourcePanel": 3,
+      "components": [
+        "OfferDetailsCard",
+        "ConsentCheckbox",
+        "ConfirmationSheet",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-12-offer-accepted",
+      "role": "seeker",
+      "title": "Offer accepted",
+      "route": "/application/razorpay-spm/offer/accepted",
+      "state": "offer-accepted",
+      "sourceImage": "12.png",
+      "sourcePanel": 4,
+      "components": [
+        "CelebrationPortrait",
+        "ThankYouCard",
+        "ChecklistRow",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-13-profile-overview",
+      "role": "seeker",
+      "title": "Profile overview",
+      "route": "/profile",
+      "state": "profile-overview",
+      "sourceImage": "13.png",
+      "sourcePanel": 1,
+      "components": [
+        "ProfileHero",
+        "FitList",
+        "PrimaryButton",
+        "DisclosureRow",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-13-profile-documents",
+      "role": "seeker",
+      "title": "Documents and verification",
+      "route": "/profile/documents",
+      "state": "profile-documents",
+      "sourceImage": "13.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "DocumentList",
+        "VerificationBadge",
+        "PrivacyCard",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-13-profile-preferences",
+      "role": "seeker",
+      "title": "Career preferences",
+      "route": "/profile/preferences",
+      "state": "profile-preferences",
+      "sourceImage": "13.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "DisclosureList",
+        "SwitchList",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "seeker-13-profile-privacy",
+      "role": "seeker",
+      "title": "Privacy and account",
+      "route": "/profile/privacy",
+      "state": "profile-privacy",
+      "sourceImage": "13.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "SettingsList",
+        "DestructiveActionRow",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-01-verify-participation",
+      "role": "endorser",
+      "title": "Participation choice",
+      "route": "/auth/participation",
+      "state": "verify-participation",
+      "sourceImage": "1.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "HeroPortrait",
+        "ChoiceCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-01-verify-work-identity",
+      "role": "endorser",
+      "title": "Verify work identity",
+      "route": "/endorser-onboarding/work",
+      "state": "verify-work-identity",
+      "sourceImage": "1.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "Input",
+        "VerificationCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-01-verify-checking",
+      "role": "endorser",
+      "title": "Verifying work identity",
+      "route": "/endorser-onboarding/work?state=checking",
+      "state": "verify-checking",
+      "sourceImage": "1.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "VerificationTimeline",
+        "PrivacyCard"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-01-verify-verified",
+      "role": "endorser",
+      "title": "Endorser verified",
+      "route": "/endorser-onboarding/verified",
+      "state": "verify-verified",
+      "sourceImage": "1.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "CelebrationPortrait",
+        "VerificationCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-02-setup-roles",
+      "role": "endorser",
+      "title": "Referral roles",
+      "route": "/endorser-onboarding/roles",
+      "state": "setup-roles",
+      "sourceImage": "2.png",
+      "sourcePanel": 1,
+      "components": [
+        "RoleChoiceList",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-02-setup-scope",
+      "role": "endorser",
+      "title": "Referral scope",
+      "route": "/endorser-onboarding/scope",
+      "state": "setup-scope",
+      "sourceImage": "2.png",
+      "sourcePanel": 2,
+      "components": [
+        "ChoiceList",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-02-setup-capacity",
+      "role": "endorser",
+      "title": "Capacity and availability",
+      "route": "/endorser-onboarding/capacity",
+      "state": "setup-capacity",
+      "sourceImage": "2.png",
+      "sourcePanel": 3,
+      "components": [
+        "StepperRow",
+        "SwitchRow",
+        "RadioList",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-02-setup-ready",
+      "role": "endorser",
+      "title": "Referral desk ready",
+      "route": "/endorser/discover",
+      "state": "setup-ready",
+      "sourceImage": "2.png",
+      "sourcePanel": 4,
+      "components": [
+        "ProfilePortrait",
+        "SummaryList",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-03-discover-tutorial",
+      "role": "endorser",
+      "title": "Candidate discovery tutorial",
+      "route": "/endorser/discover?state=tutorial",
+      "state": "discover-tutorial",
+      "sourceImage": "3.png",
+      "sourcePanel": 1,
+      "components": [
+        "SwipeDeckTutorial",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-03-discover-candidate",
+      "role": "endorser",
+      "title": "Candidate card",
+      "route": "/endorser/discover",
+      "state": "discover-candidate",
+      "sourceImage": "3.png",
+      "sourcePanel": 2,
+      "components": [
+        "CandidateCard",
+        "VerificationChip",
+        "PrimaryButton",
+        "SecondaryButton",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-03-discover-fit",
+      "role": "endorser",
+      "title": "Candidate fit explanation",
+      "route": "/endorser/discover?sheet=fit",
+      "state": "discover-fit",
+      "sourceImage": "3.png",
+      "sourcePanel": 3,
+      "components": [
+        "FitExplanationSheet",
+        "BottomNavigation",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-03-discover-passed",
+      "role": "endorser",
+      "title": "Candidate passed",
+      "route": "/endorser/discover?state=passed",
+      "state": "discover-passed",
+      "sourceImage": "3.png",
+      "sourcePanel": 4,
+      "components": [
+        "Toast",
+        "CandidateCard",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-04-evidence-profile",
+      "role": "endorser",
+      "title": "Candidate profile",
+      "route": "/candidate/priya-nair",
+      "state": "evidence-profile",
+      "sourceImage": "4.png",
+      "sourcePanel": 1,
+      "components": [
+        "ProfileHero",
+        "FitSummary",
+        "VerificationList",
+        "PrimaryButton",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-04-evidence-impact",
+      "role": "endorser",
+      "title": "Candidate impact",
+      "route": "/candidate/priya-nair?tab=impact",
+      "state": "evidence-impact",
+      "sourceImage": "4.png",
+      "sourcePanel": 2,
+      "components": [
+        "MetricList",
+        "CareerTimeline",
+        "SkillChip",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-04-evidence-resume",
+      "role": "endorser",
+      "title": "Candidate resume",
+      "route": "/candidate/priya-nair/resume",
+      "state": "evidence-resume",
+      "sourceImage": "4.png",
+      "sourcePanel": 3,
+      "components": [
+        "DocumentPreview",
+        "VerificationList",
+        "PrivacyCard",
+        "SecondaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-04-evidence-trust",
+      "role": "endorser",
+      "title": "Trust and context",
+      "route": "/candidate/priya-nair/trust",
+      "state": "evidence-trust",
+      "sourceImage": "4.png",
+      "sourcePanel": 4,
+      "components": [
+        "AvatarStack",
+        "VerificationList",
+        "PrimaryButton",
+        "SecondaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-05-match-message",
+      "role": "endorser",
+      "title": "Send connection",
+      "route": "/candidate/priya-nair/connect",
+      "state": "match-message",
+      "sourceImage": "5.png",
+      "sourcePanel": 1,
+      "components": [
+        "CandidateSummary",
+        "MultilineInput",
+        "QuestionList",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-05-match-sent",
+      "role": "endorser",
+      "title": "Connection sent",
+      "route": "/candidate/priya-nair/connect/sent",
+      "state": "match-sent",
+      "sourceImage": "5.png",
+      "sourcePanel": 2,
+      "components": [
+        "SuccessIllustration",
+        "CandidateSummary",
+        "WaitCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-05-match-mutual",
+      "role": "endorser",
+      "title": "Mutual connection",
+      "route": "/connection/priya-nair",
+      "state": "match-mutual",
+      "sourceImage": "5.png",
+      "sourcePanel": 3,
+      "components": [
+        "ConnectionIllustration",
+        "OpportunityCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-05-match-inbox",
+      "role": "endorser",
+      "title": "Endorser inbox",
+      "route": "/endorser/inbox",
+      "state": "match-inbox",
+      "sourceImage": "5.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "ConnectionList",
+        "ConversationList",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-06-chat-handoff-chat",
+      "role": "endorser",
+      "title": "Candidate conversation",
+      "route": "/chat?referralId=priya-razo",
+      "state": "chat-handoff-chat",
+      "sourceImage": "6.png",
+      "sourcePanel": 1,
+      "components": [
+        "ConversationHeader",
+        "ChatMessages",
+        "ChatComposer",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-06-chat-handoff-details",
+      "role": "endorser",
+      "title": "Request vetted details",
+      "route": "/endorser/handoff/priya-razo",
+      "state": "chat-handoff-details",
+      "sourceImage": "6.png",
+      "sourcePanel": 2,
+      "components": [
+        "HandoffCard",
+        "DetailList",
+        "DisabledButton",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-06-chat-handoff-received",
+      "role": "endorser",
+      "title": "Secure package received",
+      "route": "/endorser/handoff/priya-razo/received",
+      "state": "chat-handoff-received",
+      "sourceImage": "6.png",
+      "sourcePanel": 3,
+      "components": [
+        "VerificationList",
+        "VisibilityCard",
+        "PrivacyNote",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-06-chat-handoff-ready",
+      "role": "endorser",
+      "title": "Referral ready",
+      "route": "/endorser/referral/priya-razo",
+      "state": "chat-handoff-ready",
+      "sourceImage": "6.png",
+      "sourcePanel": 4,
+      "components": [
+        "SuccessIllustration",
+        "ReferralSummary",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-07-refer-role",
+      "role": "endorser",
+      "title": "Confirm role",
+      "route": "/endorser/referral/priya-razo",
+      "state": "refer-role",
+      "sourceImage": "7.png",
+      "sourcePanel": 1,
+      "components": [
+        "CandidateSummary",
+        "RoleSummary",
+        "FitSummary",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-07-refer-consent",
+      "role": "endorser",
+      "title": "Review candidate consent",
+      "route": "/endorser/referral/priya-razo/consent",
+      "state": "refer-consent",
+      "sourceImage": "7.png",
+      "sourcePanel": 2,
+      "components": [
+        "CandidateSummary",
+        "ConsentCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-07-refer-note",
+      "role": "endorser",
+      "title": "Add endorsement note",
+      "route": "/endorser/referral/priya-razo/note",
+      "state": "refer-note",
+      "sourceImage": "7.png",
+      "sourcePanel": 3,
+      "components": [
+        "MultilineInput",
+        "SubmissionSummary",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-07-refer-submitted",
+      "role": "endorser",
+      "title": "Referral submitted",
+      "route": "/endorser/referral/priya-razo/submitted",
+      "state": "refer-submitted",
+      "sourceImage": "7.png",
+      "sourcePanel": 4,
+      "components": [
+        "SuccessIllustration",
+        "ReferralSummary",
+        "NextStepCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-08-pipeline-list",
+      "role": "endorser",
+      "title": "Candidate pipeline",
+      "route": "/endorser/candidates",
+      "state": "pipeline-list",
+      "sourceImage": "8.png",
+      "sourcePanel": 1,
+      "components": [
+        "StatRow",
+        "FilterBar",
+        "CandidateList",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-08-pipeline-review",
+      "role": "endorser",
+      "title": "Recruiter review",
+      "route": "/endorser/candidates/priya-razo",
+      "state": "pipeline-review",
+      "sourceImage": "8.png",
+      "sourcePanel": 2,
+      "components": [
+        "CandidateHeader",
+        "Timeline",
+        "OwnerRow",
+        "InfoCard"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-08-pipeline-interview",
+      "role": "endorser",
+      "title": "Interview scheduled",
+      "route": "/endorser/candidates/priya-razo?stage=interview",
+      "state": "pipeline-interview",
+      "sourceImage": "8.png",
+      "sourcePanel": 3,
+      "components": [
+        "CandidateHeader",
+        "Timeline",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-08-pipeline-decision",
+      "role": "endorser",
+      "title": "Interview complete",
+      "route": "/endorser/candidates/priya-razo?stage=decision",
+      "state": "pipeline-decision",
+      "sourceImage": "8.png",
+      "sourcePanel": 4,
+      "components": [
+        "CandidateHeader",
+        "Timeline",
+        "MessageRow"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-09-join-offer",
+      "role": "endorser",
+      "title": "Candidate offer received",
+      "route": "/endorser/candidates/priya-razo?stage=offer",
+      "state": "join-offer",
+      "sourceImage": "9.png",
+      "sourcePanel": 1,
+      "components": [
+        "CandidateIllustration",
+        "StatusCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-09-join-accepted",
+      "role": "endorser",
+      "title": "Candidate offer accepted",
+      "route": "/endorser/candidates/priya-razo?stage=accepted",
+      "state": "join-accepted",
+      "sourceImage": "9.png",
+      "sourcePanel": 2,
+      "components": [
+        "CelebrationIllustration",
+        "StatusCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-09-join-joined",
+      "role": "endorser",
+      "title": "Candidate joined",
+      "route": "/endorser/candidates/priya-razo?stage=joined",
+      "state": "join-joined",
+      "sourceImage": "9.png",
+      "sourcePanel": 3,
+      "components": [
+        "CandidateIllustration",
+        "RewardCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-09-join-verification",
+      "role": "endorser",
+      "title": "60-day verification",
+      "route": "/endorser/candidates/priya-razo?stage=verification",
+      "state": "join-verification",
+      "sourceImage": "9.png",
+      "sourcePanel": 4,
+      "components": [
+        "ProgressCard",
+        "EligibilityList",
+        "PayoutCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-10-reward-earnings",
+      "role": "endorser",
+      "title": "Earnings",
+      "route": "/endorser/earnings",
+      "state": "reward-earnings",
+      "sourceImage": "10.png",
+      "sourcePanel": 1,
+      "components": [
+        "AppHeader",
+        "RewardStatCard",
+        "PayoutList",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-10-reward-detail",
+      "role": "endorser",
+      "title": "Reward detail",
+      "route": "/endorser/earnings/priya-razo",
+      "state": "reward-detail",
+      "sourceImage": "10.png",
+      "sourcePanel": 2,
+      "components": [
+        "CandidateSummary",
+        "Timeline",
+        "TermsCard",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-10-reward-scheduled",
+      "role": "endorser",
+      "title": "Payout scheduled",
+      "route": "/endorser/earnings/priya-razo/payout",
+      "state": "reward-scheduled",
+      "sourceImage": "10.png",
+      "sourcePanel": 3,
+      "components": [
+        "PayoutCard",
+        "Timeline",
+        "HelpRow",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-10-reward-paid",
+      "role": "endorser",
+      "title": "Payout paid",
+      "route": "/endorser/earnings/priya-razo/paid",
+      "state": "reward-paid",
+      "sourceImage": "10.png",
+      "sourcePanel": 4,
+      "components": [
+        "SuccessIllustration",
+        "PaymentReceipt",
+        "ThankYouCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-11-profile-overview",
+      "role": "endorser",
+      "title": "Endorser profile",
+      "route": "/endorser/profile",
+      "state": "profile-overview",
+      "sourceImage": "11.png",
+      "sourcePanel": 1,
+      "components": [
+        "ProfileHero",
+        "VerificationCard",
+        "StatRow",
+        "QuoteCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-11-profile-preferences",
+      "role": "endorser",
+      "title": "Referral preferences",
+      "route": "/endorser/profile/preferences",
+      "state": "profile-preferences",
+      "sourceImage": "11.png",
+      "sourcePanel": 2,
+      "components": [
+        "AppHeader",
+        "DisclosureList",
+        "SwitchRow",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-11-profile-payouts",
+      "role": "endorser",
+      "title": "Payouts and tax",
+      "route": "/endorser/profile/payouts",
+      "state": "profile-payouts",
+      "sourceImage": "11.png",
+      "sourcePanel": 3,
+      "components": [
+        "AppHeader",
+        "SettingsList",
+        "PrivacyCard",
+        "PrimaryButton"
+      ],
+      "referenceStatus": "source-export-required"
+    },
+    {
+      "id": "endorser-11-profile-privacy",
+      "role": "endorser",
+      "title": "Privacy, security, and help",
+      "route": "/endorser/profile/privacy",
+      "state": "profile-privacy",
+      "sourceImage": "11.png",
+      "sourcePanel": 4,
+      "components": [
+        "AppHeader",
+        "SettingsList",
+        "DestructiveActionRow",
+        "BottomNavigation"
+      ],
+      "referenceStatus": "source-export-required"
+    }
+  ]
+}

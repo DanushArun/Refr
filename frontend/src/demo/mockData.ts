@@ -935,6 +935,7 @@ function inboxFromSeeker(seekerId: string, overrides: {
     seekerAvatar: s.photoUrl,
     seekerHeadline: seekerHeadline(s),
     matchScore: overrides.matchScore,
+    companyName: COMPANY.razorpay.name,
   };
 }
 

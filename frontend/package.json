@@ -12,6 +12,9 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "catalogue:build": "node ../scripts/catalogue/build-reference.mjs",
+    "catalogue:check": "node ../scripts/catalogue/validate.mjs --allow-source-gate",
+    "catalogue:validate": "node ../scripts/catalogue/validate.mjs",
     "contract:types": "openapi-typescript contracts/endorsly.v1.yaml -o src/services/api/generated/endorsly.d.ts"
   },
   "dependencies": {

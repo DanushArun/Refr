@@ -252,6 +252,7 @@ function createDemoEndorserSwipe(
     seekerAvatar: demoSeeker?.photoUrl,
     seekerHeadline: headline,
     matchScore: 85,
+    companyName: getCurrentDemoCompanyName(),
   });
   MOCK_REPUTATION.totalReferrals += 1;
   MOCK_REPUTATION.endorsementScore += POINTS_PER_REFERRAL;

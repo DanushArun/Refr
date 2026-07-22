@@ -27,6 +27,7 @@ function item(
     seekerName: `Seeker ${id}`,
     seekerHeadline: 'Backend engineer',
     matchScore: 90,
+    companyName: 'Razorpay',
   };
 }
 
