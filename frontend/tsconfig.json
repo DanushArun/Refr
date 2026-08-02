@@ -12,8 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@refr/shared": ["./packages/shared/src/index.ts"]
-    },
-    "baseUrl": "."
+    }
   },
   "include": [
     "**/*.ts",

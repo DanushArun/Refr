@@ -1,9 +1,12 @@
 import { useState, type ReactElement } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { saveDemoRole, type DemoRole } from '../services/demoRoleStorage';
 import { lightJourney } from '../theme/lightJourney';
+import { launchContentFor } from './launchPresentation';
 
 interface RoleChoiceProps {
   body: string;
@@ -19,7 +22,7 @@ function LaunchArtwork(): ReactElement {
       accessibilityLabel="Interwoven threads representing trusted connections"
       fadeDuration={0}
       resizeMode="cover"
-      source={require('../../assets/launch-threads.png')}
+      source={require('../../assets/launch-common.png')}
       style={styles.launchArtwork}
     />
   );
@@ -60,21 +63,54 @@ async function chooseRole(role: DemoRole): Promise<void> {
 
 export function WelcomeScreen(): ReactElement {
   const [isChoosingRole, setIsChoosingRole] = useState(false);
+  const launch = launchContentFor('seeker');
 
   if (!isChoosingRole) {
     return (
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.launchSafe}>
         <LaunchArtwork />
+        <LinearGradient
+          colors={[
+            'rgba(252,249,244,0)',
+            'rgba(252,249,244,0.96)',
+            '#FCF9F4',
+          ]}
+          locations={[0, 0.42, 0.62]}
+          pointerEvents="none"
+          style={styles.launchFade}
+        />
         <View style={styles.launchOverlay}>
           <Text style={styles.launchWordmark}>Endorsly</Text>
-          <Pressable
-            accessibilityLabel="Get started"
-            accessibilityRole="button"
-            onPress={() => setIsChoosingRole(true)}
-            style={({ pressed }) => [styles.launchAction, pressed && styles.launchActionPressed]}
-          >
-            <Text style={styles.launchActionText}>Get started</Text>
-          </Pressable>
+          <View style={styles.launchFooter}>
+            <Text accessibilityRole="header" style={styles.launchHeading}>
+              {launch.headline}
+            </Text>
+            <Text style={styles.launchSubheading}>{launch.subheading}</Text>
+            <Pressable
+              accessibilityLabel="Get started"
+              accessibilityRole="button"
+              onPress={() => setIsChoosingRole(true)}
+              style={({ pressed }) => [styles.launchAction, pressed && styles.launchActionPressed]}
+            >
+              <Ionicons color="#FFFFFF" name="phone-portrait-outline" size={23} />
+              <Text style={styles.launchActionText}>Continue with phone</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Sign in"
+              accessibilityRole="button"
+              onPress={() => router.push('/(auth)/login')}
+              style={styles.signInAction}
+            >
+              <Text style={styles.signInCopy}>
+                Already have an account? <Text style={styles.signInLink}>Sign in</Text>
+              </Text>
+            </Pressable>
+            <Text style={styles.legalCopy}>
+              By continuing, you agree to Endorsly’s{' '}
+              <Text style={styles.legalLink}>Terms of Use</Text>{'\n'}and{' '}
+              <Text style={styles.legalLink}>Privacy Policy</Text>
+            </Text>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -121,24 +157,56 @@ const styles = StyleSheet.create({
     width: '100%',
     zIndex: 0,
   },
-  launchOverlay: { flex: 1, justifyContent: 'space-between', padding: 24, zIndex: 1 },
+  launchFade: { bottom: 0, height: 480, left: 0, position: 'absolute', right: 0, zIndex: 1 },
+  launchOverlay: { flex: 1, paddingHorizontal: 24, paddingTop: 63, zIndex: 2 },
   launchWordmark: {
     color: lightJourney.ink,
     fontFamily: 'IBMPlexSerif-Medium',
-    fontSize: 30,
+    fontSize: 31,
+    textAlign: 'center',
+  },
+  launchFooter: { marginTop: 'auto', paddingBottom: 18 },
+  launchHeading: {
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 37,
+    letterSpacing: -1,
+    lineHeight: 42,
+    textAlign: 'center',
+  },
+  launchSubheading: {
+    color: '#5E6570',
+    fontFamily: 'TikTokSans-Regular',
+    fontSize: 16,
+    lineHeight: 23,
+    marginTop: 14,
     textAlign: 'center',
   },
   launchAction: {
     alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: lightJourney.ink,
-    borderRadius: 28,
+    backgroundColor: '#1359D5',
+    borderRadius: 18,
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 28,
     minHeight: 56,
-    paddingHorizontal: 28,
+    width: '100%',
   },
   launchActionPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
   launchActionText: { color: '#FFFFFF', fontFamily: 'TikTokSans-Semibold', fontSize: 16 },
+  signInAction: { alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 8 },
+  signInCopy: { color: '#626873', fontFamily: 'TikTokSans-Regular', fontSize: 14 },
+  signInLink: { color: lightJourney.blue, fontFamily: 'TikTokSans-Semibold' },
+  legalCopy: {
+    color: '#626873',
+    fontFamily: 'TikTokSans-Regular',
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 9,
+    textAlign: 'center',
+  },
+  legalLink: { color: lightJourney.blue, fontFamily: 'TikTokSans-Medium' },
   safe: { backgroundColor: lightJourney.background, flex: 1 },
   page: { flex: 1, justifyContent: 'space-between', padding: 24 },
   wordmark: {
