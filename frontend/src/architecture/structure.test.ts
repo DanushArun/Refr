@@ -110,16 +110,16 @@ describe('frontend architecture structure', () => {
     expect(exists('src/features/discovery/mappers.ts')).toBe(true);
   });
 
-  it('routes seeker discovery through the role-aware discover screen', () => {
+  it('routes seeker discovery through the light journey screen', () => {
     const route = fs.readFileSync(path.join(frontendRoot, 'app/(seeker-tabs)/discover.tsx'));
 
-    expect(route.includes('RoleDiscoverScreen')).toBe(true);
+    expect(route.includes('LightJourneyScreen')).toBe(true);
   });
 
-  it('routes referrer discovery through the role-aware discover screen', () => {
+  it('routes referrer discovery through the light journey screen', () => {
     const route = fs.readFileSync(path.join(frontendRoot, 'app/(referrer-tabs)/discover.tsx'));
 
-    expect(route.includes('RoleDiscoverScreen')).toBe(true);
+    expect(route.includes('LightJourneyScreen')).toBe(true);
   });
 
   it('role-aware discovery screen chooses both swipe surfaces', () => {

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { ActiveScreen } from '../../src/screens/ActiveScreen';
+import { LightJourneyScreen } from '../../src/screens/LightJourneyScreen';
 
 export default function ActiveRoute(): ReactElement {
-  return <ActiveScreen />;
+  return <LightJourneyScreen role="endorser" surface="candidates" />;
 }

@@ -5,10 +5,10 @@
     "version": "0.1.0",
     "scheme": "refr",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "platforms": ["ios", "android", "web"],
     "splash": {
-      "backgroundColor": "#05070D",
+      "backgroundColor": "#FCF9F4",
       "resizeMode": "contain"
     },
     "ios": {
@@ -35,9 +35,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#05070D",
+          "backgroundColor": "#FCF9F4",
           "dark": {
-            "backgroundColor": "#05070D"
+            "backgroundColor": "#FCF9F4"
           }
         }
       ]

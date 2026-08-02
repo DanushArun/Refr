@@ -8,12 +8,9 @@ import {
   type TextStyle,
   type StyleProp,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { afterHoursBrand } from '../../theme/afterHours';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
 import { layout } from '../../theme/spacing';
 import { hapticImpact, playSensoryEvent, type SensoryEvent } from '../../utils/haptics';
+import { lightJourney } from '../../theme/lightJourney';
 
 type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger';
 type ButtonSize = 'small' | 'medium' | 'large';
@@ -45,12 +42,7 @@ const fontSizeMap: Record<ButtonSize, number> = {
 };
 
 /**
- * Button — three-variant button system.
- *
- * primary  — vermilion, used for endorsement/primary commitment actions
- * secondary — glass surface with border, used for secondary actions
- * text      — no background, used for tertiary / destructive-soft actions
- * danger    — red tinted glass, used for destructive confirmations
+ * Button — shared light journey action control.
  */
 export function Button({
   label,
@@ -93,16 +85,10 @@ export function Button({
         disabled={isDisabled}
         hitSlop={size === 'small' ? { top: 4, bottom: 4, left: 4, right: 4 } : undefined}
         activeOpacity={0.8}
-        style={[baseContainer, { overflow: 'hidden' }, style]}
+        style={[baseContainer, styles.primaryContainer, style]}
         >
-        <LinearGradient
-          colors={afterHoursBrand.fills.vermilionDetonation}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[StyleSheet.absoluteFill, { borderRadius: height / 2 }]}
-        />
         {loading ? (
-          <ActivityIndicator color={colors.text} size="small" />
+          <ActivityIndicator color="#FFFFFF" size="small" />
         ) : (
           <Text style={[styles.label, { fontSize }, labelStyle]}>{label}</Text>
         )}
@@ -122,7 +108,7 @@ export function Button({
         style={[baseContainer, styles.secondaryContainer, style]}
       >
         {loading ? (
-          <ActivityIndicator color={colors.accent} size="small" />
+          <ActivityIndicator color={lightJourney.blue} size="small" />
         ) : (
           <Text style={[styles.label, styles.secondaryLabel, { fontSize }, labelStyle]}>
             {label}
@@ -144,7 +130,7 @@ export function Button({
         style={[baseContainer, styles.dangerContainer, style]}
       >
         {loading ? (
-          <ActivityIndicator color={colors.error} size="small" />
+          <ActivityIndicator color={lightJourney.error} size="small" />
         ) : (
           <Text style={[styles.label, styles.dangerLabel, { fontSize }, labelStyle]}>
             {label}
@@ -179,32 +165,35 @@ export function Button({
 
 const styles = StyleSheet.create({
   label: {
-    fontFamily: 'Outfit-SemiBold',
-    color: colors.text,
+    color: '#FFFFFF',
+    fontFamily: 'TikTokSans-Semibold',
     letterSpacing: 0,
   },
+  primaryContainer: {
+    backgroundColor: lightJourney.blue,
+  },
   secondaryContainer: {
-    backgroundColor: colors.surface,
+    backgroundColor: lightJourney.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: lightJourney.border,
   },
   secondaryLabel: {
-    color: colors.text,
+    color: lightJourney.ink,
   },
   dangerContainer: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: '#FFF0F0',
     borderWidth: 1,
-    borderColor: colors.error,
+    borderColor: lightJourney.error,
   },
   dangerLabel: {
-    color: colors.error,
+    color: lightJourney.error,
   },
   textContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   textLabel: {
-    fontFamily: 'Outfit-Medium',
-    color: colors.textSecondary,
+    color: lightJourney.blue,
+    fontFamily: 'TikTokSans-Medium',
   },
 });

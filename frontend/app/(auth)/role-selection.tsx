@@ -7,9 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { router } from 'expo-router';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
-import { spacing, layout } from '../../src/theme/spacing';
+import { lightJourney } from '../../src/theme/lightJourney';
 
 type Role = 'seeker' | 'referrer';
 
@@ -20,13 +18,13 @@ const ROLES: Array<{
 }> = [
   {
     id: 'seeker',
-    title: 'I want endorsements',
-    description: 'Find verified employees who can endorse you for the right role',
+    title: 'I’m seeking an introduction',
+    description: 'Find the right person to make a warm referral for your next role.',
   },
   {
     id: 'referrer',
-    title: 'I can endorse people',
-    description: 'Back qualified candidates and track every endorsement in one place',
+    title: 'I refer great people',
+    description: 'Back exceptional candidates with context your hiring team can trust.',
   },
 ];
 
@@ -42,9 +40,8 @@ export default function RoleSelectionScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>
-            How do you want{'\n'}to use Endorsly?
-          </Text>
+          <Text style={styles.eyebrow}>CHOOSE YOUR PATH</Text>
+          <Text style={styles.title}>How will you move opportunity forward?</Text>
         </View>
 
         <View style={styles.cards}>
@@ -56,7 +53,9 @@ export default function RoleSelectionScreen() {
                 style={[styles.card, isSelected && styles.cardSelected]}
                 onPress={() => setSelected(role.id)}
               >
-                <View style={styles.iconPlaceholder} />
+                <View style={styles.roleNumber}>
+                  <Text style={styles.roleNumberText}>{role.id === 'seeker' ? '01' : '02'}</Text>
+                </View>
                 <Text style={styles.cardTitle}>{role.title}</Text>
                 <Text style={styles.cardDescription}>{role.description}</Text>
               </Pressable>
@@ -81,67 +80,80 @@ export default function RoleSelectionScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: lightJourney.background,
   },
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 80,
+    paddingTop: 42,
     paddingBottom: 40,
     alignItems: 'center',
   },
   header: {
     width: '100%',
-    marginBottom: 48,
-    alignItems: 'center',
+    marginBottom: 34,
   },
   title: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 28,
-    lineHeight: 36,
-    color: colors.text,
-    textAlign: 'center',
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 34,
+    letterSpacing: -0.7,
+    lineHeight: 40,
+  },
+  eyebrow: {
+    color: lightJourney.blue,
+    fontFamily: 'TikTokSans-Semibold',
+    fontSize: 11,
+    letterSpacing: 1.1,
+    marginBottom: 10,
   },
   cards: {
     width: '100%',
-    gap: 20,
+    gap: 12,
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 16,
+    backgroundColor: lightJourney.surface,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 24,
-    paddingVertical: 28,
+    borderColor: lightJourney.border,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
     gap: 12,
     alignItems: 'flex-start',
   },
   cardSelected: {
     borderWidth: 2,
-    borderColor: colors.accent,
-    shadowColor: colors.accent,
+    backgroundColor: lightJourney.blueSoft,
+    borderColor: lightJourney.blue,
+    shadowColor: lightJourney.blue,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 24,
     elevation: 8,
   },
-  iconPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: colors.goldGlow,
-    marginBottom: 4, // 12px gap minus standard 8px from gap if it wasn't flex
+  roleNumber: {
+    alignItems: 'center',
+    backgroundColor: lightJourney.surfaceMuted,
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
+    width: 32,
+  },
+  roleNumberText: {
+    color: lightJourney.blue,
+    fontFamily: 'TikTokSans-Semibold',
+    fontSize: 11,
   },
   cardTitle: {
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 20,
-    color: colors.text,
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 22,
   },
   cardDescription: {
-    ...typography.bodySmall,
     fontSize: 14,
     lineHeight: 22,
-    color: '#a1a1ab',
+    color: lightJourney.textMuted,
+    fontFamily: 'TikTokSans-Regular',
   },
   flexSpacer: {
     flex: 1,
@@ -150,18 +162,18 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 52,
-    backgroundColor: colors.accent,
-    borderRadius: 12,
+    backgroundColor: lightJourney.blue,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonDisabled: {
-    backgroundColor: colors.surfaceActive,
+    backgroundColor: lightJourney.border,
     opacity: 0.7,
   },
   buttonText: {
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'TikTokSans-Semibold',
     fontSize: 16,
-    color: colors.text,
+    color: '#FFFFFF',
   },
 });

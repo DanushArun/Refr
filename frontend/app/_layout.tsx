@@ -12,7 +12,7 @@ import {
   IBMPlexSerif_400Regular_Italic,
   IBMPlexSerif_500Medium,
 } from '@expo-google-fonts/ibm-plex-serif';
-import { colors } from '../src/theme/colors';
+import { lightJourney } from '../src/theme/lightJourney';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import { loadDemoRole } from '../src/services/demoRoleStorage';
 import { useAuth } from '../src/hooks/useAuth';
@@ -33,7 +33,7 @@ const ROOT_STACK_ANIMATION = Platform.OS === 'android' ? 'ios_from_right' : 'def
 
 const ROOT_STACK_SCREEN_OPTIONS = {
   headerShown: false,
-  contentStyle: { backgroundColor: 'transparent' },
+  contentStyle: { backgroundColor: lightJourney.background },
   animation: ROOT_STACK_ANIMATION,
   gestureEnabled: true,
   gestureDirection: 'horizontal',
@@ -94,8 +94,8 @@ export default function RootLayout(): React.ReactElement | null {
     <ErrorBoundary>
       <GestureHandlerRootView style={styles.appRoot}>
         <SafeAreaProvider style={styles.safeAreaProvider}>
-          <SystemBars style="light" hidden={false} />
-          <StatusBar style="light" backgroundColor="transparent" translucent />
+          <SystemBars style="dark" hidden={false} />
+          <StatusBar style="dark" backgroundColor="transparent" translucent />
           <View style={styles.backgroundLayer} pointerEvents="none" />
           <View style={styles.routeLayer}>
             <Stack screenOptions={ROOT_STACK_SCREEN_OPTIONS} />
@@ -109,15 +109,15 @@ export default function RootLayout(): React.ReactElement | null {
 const styles = StyleSheet.create({
   appRoot: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: lightJourney.background,
   },
   safeAreaProvider: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: lightJourney.background,
   },
   backgroundLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.background,
+    backgroundColor: lightJourney.background,
     zIndex: 0,
   },
   routeLayer: {

@@ -11,12 +11,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing, layout } from '../../src/theme/spacing';
 import { Button } from '../../src/components/common/Button';
 import { Input } from '../../src/components/common/Input';
 import { signInWithEmail } from '../../src/services/auth';
+import { lightJourney } from '../../src/theme/lightJourney';
 
 type LoginForm = {
   email: string;
@@ -94,10 +93,11 @@ export default function LoginScreen() {
         >
           <View style={[styles.panel, { width: panelWidth }]}>
             <View style={styles.header}>
-              <Text style={styles.wordmark}>ENDORSLY</Text>
-              <Text style={styles.heading}>Welcome back</Text>
+              <Text style={styles.wordmark}>Endorsly</Text>
+              <Text style={styles.eyebrow}>WELCOME BACK</Text>
+              <Text style={styles.heading}>Pick up where your introductions left off.</Text>
               <Text style={styles.subheading}>
-                Sign in to your account to continue building your network.
+                Your referrals, conversations, and career momentum are waiting.
               </Text>
             </View>
 
@@ -160,15 +160,15 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: lightJourney.background,
   },
   kav: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: lightJourney.background,
   },
   scroll: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: lightJourney.background,
   },
   content: {
     flexGrow: 1,
@@ -182,36 +182,49 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: spacing[2],
+    paddingHorizontal: 2,
   },
   wordmark: {
-    ...typography.h3,
-    color: colors.accent,
-    letterSpacing: 0,
-    marginBottom: spacing[4],
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 30,
+    letterSpacing: -0.4,
+    marginBottom: spacing[5],
+  },
+  eyebrow: {
+    color: lightJourney.blue,
+    fontFamily: 'TikTokSans-Semibold',
+    fontSize: 11,
+    letterSpacing: 1.1,
   },
   heading: {
-    ...typography.h2,
-    color: colors.text,
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 34,
+    letterSpacing: -0.7,
+    lineHeight: 39,
   },
   subheading: {
-    ...typography.body,
-    color: colors.textSecondary,
+    color: lightJourney.textMuted,
+    fontFamily: 'TikTokSans-Regular',
+    fontSize: 15,
     lineHeight: 24,
   },
   form: {
     gap: spacing[4],
   },
   errorContainer: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: '#FFF0F0',
     borderWidth: 1,
-    borderColor: colors.error,
+    borderColor: lightJourney.error,
     borderRadius: 10,
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[3],
   },
   errorText: {
-    ...typography.bodySmall,
-    color: colors.error,
+    color: lightJourney.error,
+    fontFamily: 'TikTokSans-Regular',
+    fontSize: 13,
   },
   actions: {
     gap: spacing[3],
@@ -224,12 +237,13 @@ const styles = StyleSheet.create({
     paddingTop: spacing[2],
   },
   footerLabel: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    color: lightJourney.textMuted,
+    fontFamily: 'TikTokSans-Regular',
+    fontSize: 13,
   },
   footerLink: {
-    ...typography.bodySmall,
-    color: colors.accent,
-    fontFamily: 'Outfit-SemiBold',
+    color: lightJourney.blue,
+    fontFamily: 'TikTokSans-Semibold',
+    fontSize: 13,
   },
 });

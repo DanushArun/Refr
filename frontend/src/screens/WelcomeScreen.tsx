@@ -1,212 +1,184 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated,
-  Easing,
-  
-  StyleSheet,
-  Text,
-  View, } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { PressableScale } from '../components/common/PressableScale';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Phrase } from '../utils/haptics';
+import { useState, type ReactElement } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { afterHoursBrand } from '../theme/afterHours';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { spacing, layout } from '../theme/spacing';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { saveDemoRole, type DemoRole } from '../services/demoRoleStorage';
+import { lightJourney } from '../theme/lightJourney';
 
-/**
- * Bespoke opening page — Endorsly's first impression.
- *
- * Formula borrowed from Apple / Linear / Raycast / Revolut welcome screens:
- *   1. Wordmark is the hero: letter-spaced, display weight, vertically centred
- *   2. Two-line promise below: emotional + functional
- *   3. ONE primary CTA pinned near the bottom, accent gradient
- *   4. Flat brand background, no decorative imagery
- *   5. Zero competing decisions (no "sign in / sign up" split)
- *   6. Staggered fade-in motion (300ms / 600ms / 900ms)
- *
- * Reviewer taps Get started → default role is set and the app opens.
- * Role can be switched anytime from Profile.
- */
-export function WelcomeScreen() {
-  // Staggered entry animation
-  const wordmarkOpacity = useRef(new Animated.Value(0)).current;
-  const wordmarkTranslate = useRef(new Animated.Value(16)).current;
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
-  const ctaOpacity = useRef(new Animated.Value(0)).current;
-  const ctaTranslate = useRef(new Animated.Value(20)).current;
+interface RoleChoiceProps {
+  body: string;
+  label: string;
+  onPress: () => void;
+  role: DemoRole;
+}
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(wordmarkOpacity, {
-        toValue: 1,
-        duration: 500,
-        delay: 100,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(wordmarkTranslate, {
-        toValue: 0,
-        duration: 500,
-        delay: 100,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(taglineOpacity, {
-        toValue: 1,
-        duration: 500,
-        delay: 500,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(ctaOpacity, {
-        toValue: 1,
-        duration: 500,
-        delay: 900,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(ctaTranslate, {
-        toValue: 0,
-        duration: 500,
-        delay: 900,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [wordmarkOpacity, wordmarkTranslate, taglineOpacity, ctaOpacity, ctaTranslate]);
+function LaunchArtwork(): ReactElement {
+  return (
+    <Image
+      accessibilityIgnoresInvertColors
+      accessibilityLabel="Interwoven threads representing trusted connections"
+      fadeDuration={0}
+      resizeMode="cover"
+      source={require('../../assets/launch-threads.png')}
+      style={styles.launchArtwork}
+    />
+  );
+}
 
-  const handleGetStarted = async () => {
-    Phrase.tap();
-    // Watch the galaxy form before choosing a side
-    router.push('/(auth)/onboarding');
-  };
+function RoleChoice({ body, label, onPress, role }: RoleChoiceProps): ReactElement {
+  const isSeeker = role === 'seeker';
+
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.roleChoice,
+        isSeeker ? styles.seekerChoice : styles.endorserChoice,
+        pressed && styles.roleChoicePressed,
+      ]}
+    >
+      <Text style={isSeeker ? styles.seekerChoiceTitle : styles.endorserChoiceTitle}>
+        {label}
+      </Text>
+      <Text style={isSeeker ? styles.seekerChoiceBody : styles.endorserChoiceBody}>
+        {body}
+      </Text>
+    </Pressable>
+  );
+}
+
+function routeFor(role: DemoRole): '/(seeker-tabs)/discover' | '/(referrer-tabs)/discover' {
+  return role === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/discover';
+}
+
+async function chooseRole(role: DemoRole): Promise<void> {
+  await saveDemoRole(role);
+  router.replace(routeFor(role));
+}
+
+export function WelcomeScreen(): ReactElement {
+  const [isChoosingRole, setIsChoosingRole] = useState(false);
+
+  if (!isChoosingRole) {
+    return (
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.launchSafe}>
+        <LaunchArtwork />
+        <View style={styles.launchOverlay}>
+          <Text style={styles.launchWordmark}>Endorsly</Text>
+          <Pressable
+            accessibilityLabel="Get started"
+            accessibilityRole="button"
+            onPress={() => setIsChoosingRole(true)}
+            style={({ pressed }) => [styles.launchAction, pressed && styles.launchActionPressed]}
+          >
+            <Text style={styles.launchActionText}>Get started</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-      <View style={styles.container}>
-        {/* Hero block — vertically centred in the upper 2/3 */}
+      <View style={styles.page}>
+        <Text style={styles.wordmark}>Endorsly</Text>
         <View style={styles.hero}>
-          <Animated.Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-            style={[
-              styles.wordmark,
-              {
-                opacity: wordmarkOpacity,
-                transform: [{ translateY: wordmarkTranslate }],
-              },
-            ]}
-          >
-            ENDORSLY
-          </Animated.Text>
-
-          <Animated.View style={{ opacity: taglineOpacity }}>
-            <Text style={styles.tagline}>The room where referrals happen.</Text>
-            <Text style={styles.descriptor}>
-              Swipe through the people who can refer you.{'\n'}
-              Match. Chat. Get hired.
-            </Text>
-          </Animated.View>
-        </View>
-
-        {/* Bottom — CTA + legal micro-copy */}
-        <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: ctaOpacity,
-              transform: [{ translateY: ctaTranslate }],
-            },
-          ]}
-        >
-          <PressableScale
-            onPress={handleGetStarted}
-            pressedScale={0.94}
-            style={styles.ctaWrap}
-          >
-            <LinearGradient
-              colors={afterHoursBrand.fills.vermilionDetonation}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.cta}
-            >
-              <Text style={styles.ctaText}>Get started</Text>
-            </LinearGradient>
-          </PressableScale>
-
-          <Text style={styles.legal}>
-            Preview build · Switch between Seeker and Endorser view anytime from Profile
+          <Text style={styles.eyebrow}>CAREERS MOVE THROUGH PEOPLE</Text>
+          <Text accessibilityRole="header" style={styles.heading}>
+            A warm introduction changes everything.
           </Text>
-        </Animated.View>
+          <Text style={styles.body}>
+            Build trusted career momentum with people who have seen the work.
+          </Text>
+        </View>
+        <View style={styles.choices}>
+          <RoleChoice
+            body="Find the right person for your next opportunity."
+            label="I’m seeking an introduction"
+            onPress={() => void chooseRole('seeker')}
+            role="seeker"
+          />
+          <RoleChoice
+            body="Back exceptional people with a referral that matters."
+            label="I refer great people"
+            onPress={() => void chooseRole('referrer')}
+            role="referrer"
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  container: {
-    flex: 1,
-    paddingHorizontal: layout.screenPaddingH,
-    justifyContent: 'space-between',
+  launchSafe: { backgroundColor: lightJourney.background, flex: 1 },
+  launchArtwork: {
+    ...StyleSheet.absoluteFillObject,
+    height: '100%',
+    opacity: 1,
+    width: '100%',
+    zIndex: 0,
   },
-  hero: {
-    flex: 1,
+  launchOverlay: { flex: 1, justifyContent: 'space-between', padding: 24, zIndex: 1 },
+  launchWordmark: {
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 30,
+    textAlign: 'center',
+  },
+  launchAction: {
     alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: lightJourney.ink,
+    borderRadius: 28,
     justifyContent: 'center',
-    gap: spacing[4],
+    minHeight: 56,
+    paddingHorizontal: 28,
   },
+  launchActionPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  launchActionText: { color: '#FFFFFF', fontFamily: 'TikTokSans-Semibold', fontSize: 16 },
+  safe: { backgroundColor: lightJourney.background, flex: 1 },
+  page: { flex: 1, justifyContent: 'space-between', padding: 24 },
   wordmark: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 44,
-    color: colors.cream,
-    letterSpacing: 4,
-    textAlign: 'center',
-    alignSelf: 'stretch',
-  },
-  tagline: {
-    fontFamily: 'InstrumentSerif-Regular',
-    fontSize: 24,
-    color: colors.text,
-    letterSpacing: 0,
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 29,
     textAlign: 'center',
   },
-  descriptor: {
-    ...typography.body,
-    color: colors.textSecondary,
+  hero: { alignItems: 'center', flex: 1, justifyContent: 'center', paddingBottom: 24 },
+  eyebrow: {
+    color: lightJourney.blue,
+    fontFamily: 'TikTokSans-Semibold',
+    fontSize: 11,
+    letterSpacing: 1.1,
+  },
+  heading: {
+    color: lightJourney.ink,
+    fontFamily: 'IBMPlexSerif-Medium',
+    fontSize: 35,
+    letterSpacing: -0.8,
+    lineHeight: 41,
+    marginTop: 14,
     textAlign: 'center',
-    lineHeight: 22,
-    marginTop: spacing[3],
   },
-
-  footer: {
-    paddingBottom: spacing[4],
-    gap: spacing[3],
-  },
-  ctaWrap: {
-    borderRadius: 28,
-    overflow: 'hidden',
-  },
-  cta: {
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 28,
-  },
-  ctaText: {
-    fontFamily: 'Outfit-Bold',
+  body: {
+    color: lightJourney.textMuted,
+    fontFamily: 'TikTokSans-Regular',
     fontSize: 16,
-    color: '#ffffff',
-    letterSpacing: 0.3,
-  },
-  legal: {
-    ...typography.caption,
-    color: colors.textTertiary,
+    lineHeight: 24,
+    marginTop: 14,
+    maxWidth: 330,
     textAlign: 'center',
-    paddingHorizontal: spacing[4],
-    lineHeight: 16,
   },
+  choices: { gap: 12, paddingBottom: 8 },
+  roleChoice: { borderRadius: 18, minHeight: 86, paddingHorizontal: 18, paddingVertical: 15 },
+  roleChoicePressed: { transform: [{ scale: 0.98 }] },
+  seekerChoice: { backgroundColor: lightJourney.blue },
+  endorserChoice: { backgroundColor: lightJourney.surface, borderColor: lightJourney.border, borderWidth: 1 },
+  seekerChoiceTitle: { color: '#FFFFFF', fontFamily: 'TikTokSans-Semibold', fontSize: 16 },
+  endorserChoiceTitle: { color: lightJourney.ink, fontFamily: 'TikTokSans-Semibold', fontSize: 16 },
+  seekerChoiceBody: { color: '#DBE9FF', fontFamily: 'TikTokSans-Regular', fontSize: 13, marginTop: 4 },
+  endorserChoiceBody: { color: lightJourney.textMuted, fontFamily: 'TikTokSans-Regular', fontSize: 13, marginTop: 4 },
 });

@@ -5,7 +5,7 @@ import { useAuth } from '../src/hooks/useAuth';
 import { WelcomeScreen } from '../src/screens/WelcomeScreen';
 import { hasPickedRole } from '../src/services/demoRoleStorage';
 import { DEMO } from '../src/demo/config';
-import { colors } from '../src/theme/colors';
+import { lightJourney } from '../src/theme/lightJourney';
 
 function targetRouteFor(role: string | undefined): string {
   return role === 'referrer'
@@ -35,7 +35,7 @@ export default function Index(): React.ReactElement {
 function LoadingScreen(): React.ReactElement {
   return (
     <View style={styles.loading}>
-      <ActivityIndicator size="large" color={colors.accent} />
+      <ActivityIndicator size="large" color={lightJourney.blue} />
     </View>
   );
 }
@@ -43,7 +43,7 @@ function LoadingScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   loading: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: lightJourney.background,
     flex: 1,
     justifyContent: 'center',
   },

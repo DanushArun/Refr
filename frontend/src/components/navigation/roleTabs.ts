@@ -7,7 +7,7 @@ export interface RoleTab {
 
 const SEEKER_TABS: readonly RoleTab[] = [
   { name: 'discover', title: 'Discover' },
-  { name: 'matches', title: 'Matches' },
+  { name: 'matches', title: 'Inbox' },
   { name: 'pipeline', title: 'Activity' },
   { name: 'profile', title: 'Profile' },
 ];
@@ -15,17 +15,17 @@ const SEEKER_TABS: readonly RoleTab[] = [
 const REFERRER_TABS: readonly RoleTab[] = [
   { name: 'discover', title: 'Discover' },
   { name: 'inbox', title: 'Inbox' },
-  { name: 'active', title: 'Active' },
+  { name: 'active', title: 'Candidates' },
   { name: 'earnings', title: 'Earnings' },
   { name: 'profile', title: 'Profile' },
 ];
 
 export const ALL_ROLE_TABS: readonly RoleTab[] = [
   { name: 'discover', title: 'Discover' },
-  { name: 'matches', title: 'Matches' },
+  { name: 'matches', title: 'Inbox' },
   { name: 'pipeline', title: 'Activity' },
   { name: 'inbox', title: 'Inbox' },
-  { name: 'active', title: 'Active' },
+  { name: 'active', title: 'Candidates' },
   { name: 'earnings', title: 'Earnings' },
   { name: 'profile', title: 'Profile' },
 ];

@@ -10,9 +10,8 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
 import { spacing, layout } from '../../theme/spacing';
+import { lightJourney } from '../../theme/lightJourney';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   label: string;
@@ -26,7 +25,7 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
 }
 
 /**
- * Input — dark themed text input with animated floating label.
+ * Input — light themed text input with an animated floating label.
  *
  * The label lifts to a small caption above the field when focused or filled.
  * Error state renders a red border and error message below.
@@ -86,19 +85,22 @@ export const Input = memo(function Input({
 
   const labelColor = labelAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.textTertiary, isFocused ? colors.accent : colors.textSecondary],
+    outputRange: [
+      lightJourney.textMuted,
+      isFocused ? lightJourney.blue : lightJourney.textMuted,
+    ],
   });
 
   const labelBgColor = labelAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['transparent', colors.background],
+    outputRange: ['transparent', lightJourney.background],
   });
 
   const borderColor = error
-    ? colors.error
+    ? lightJourney.error
     : isFocused
-    ? colors.accent
-    : colors.border;
+    ? lightJourney.blue
+    : lightJourney.border;
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -133,8 +135,8 @@ export const Input = memo(function Input({
           onBlur={handleBlur}
           style={[styles.input, isActive && styles.inputActive]}
           placeholderTextColor="transparent"
-          selectionColor={colors.accent}
-          cursorColor={colors.accent}
+          selectionColor={lightJourney.blue}
+          cursorColor={lightJourney.blue}
         />
 
         {clearable && hasValue && (
@@ -162,9 +164,9 @@ const styles = StyleSheet.create({
   },
   field: {
     height: layout.inputHeight,
-    backgroundColor: colors.surface,
+    backgroundColor: lightJourney.surface,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: spacing[4],
     justifyContent: 'center',
     position: 'relative',
@@ -172,15 +174,15 @@ const styles = StyleSheet.create({
   floatingLabel: {
     position: 'absolute',
     left: spacing[4],
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'TikTokSans-Regular',
     zIndex: 1,
     paddingHorizontal: 4,
     backgroundColor: 'transparent',
   },
   input: {
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'TikTokSans-Regular',
     fontSize: 15,
-    color: colors.text,
+    color: lightJourney.text,
     paddingTop: 10,
     paddingBottom: 2,
   },
@@ -196,21 +198,21 @@ const styles = StyleSheet.create({
   },
   clearIcon: {
     fontSize: 20,
-    color: colors.textTertiary,
-    fontFamily: 'Outfit-Regular',
+    color: lightJourney.textMuted,
+    fontFamily: 'TikTokSans-Regular',
     lineHeight: 24,
   },
   errorText: {
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'TikTokSans-Regular',
     fontSize: 12,
-    color: colors.error,
+    color: lightJourney.error,
     marginTop: spacing[1],
     marginLeft: spacing[1],
   },
   hintText: {
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'TikTokSans-Regular',
     fontSize: 12,
-    color: colors.textTertiary,
+    color: lightJourney.textMuted,
     marginTop: spacing[1],
     marginLeft: spacing[1],
   },

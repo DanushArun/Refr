@@ -1,0 +1,18 @@
+export const lightJourney = {
+  background: '#FCF9F4',
+  surface: '#FFFFFF',
+  surfaceMuted: '#F4EFE7',
+  border: '#E6DED2',
+  ink: '#10264D',
+  text: '#1F2937',
+  textMuted: '#667085',
+  blue: '#1359D5',
+  bluePressed: '#0D46AC',
+  blueSoft: '#EAF1FF',
+  green: '#168653',
+  greenSoft: '#EAF6EE',
+  orange: '#D9663F',
+  orangeSoft: '#FFF0E9',
+  error: '#C43636',
+  shadow: 'rgba(42, 48, 60, 0.10)',
+} as const;
