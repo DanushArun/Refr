@@ -40,3 +40,7 @@ export function tabIsVisibleForRole(
 ): boolean {
   return tabsForRole(role).some((tab) => tab.name === tabName);
 }
+
+export function routeForRole(role: AppRole): '/seeker/discover' | '/referrer/discover' {
+  return role === 'referrer' ? '/referrer/discover' : '/seeker/discover';
+}

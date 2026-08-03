@@ -29,6 +29,7 @@ gcp-credentials.json
 *.swp
 *.swo
 *~
+app-design/
 
 # OS
 .DS_Store
@@ -36,20 +37,11 @@ Thumbs.db
 
 # Documentation and planning files (keep out of repo)
 *.md
-!README.md
 *.pdf
 *.doc
 *.docx
 docs/
 India-Job-Referral-Market-Research/
-
-# Catalogue contracts are source code for the replacement interface.
-!AGENTS.md
-!design-reference/
-!design-reference/**/*.md
-!docs/
-docs/plans/*
-!docs/plans/2026-07-15-catalogue-expo-rebuild-implementation.md
 
 # Claude Code config
 CLAUDE.md

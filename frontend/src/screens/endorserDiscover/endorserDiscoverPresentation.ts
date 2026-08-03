@@ -10,6 +10,9 @@ export interface EndorserCandidatePresentation {
   fitLabel: string;
   opportunityId: string;
   reasons: string[];
+  yearsOfExperience: number;
+  skills: string[];
+  targetRole: string;
 }
 
 const reasonLabels: Record<string, string> = {
@@ -50,5 +53,8 @@ export function presentEndorserCandidate(
     fitLabel: fitLabel(recommendation.matchScore),
     opportunityId: recommendation.opportunityId,
     reasons: readableReasons(recommendation.reasonCodes),
+    yearsOfExperience: recommendation.yearsOfExperience,
+    skills: recommendation.skills,
+    targetRole,
   };
 }

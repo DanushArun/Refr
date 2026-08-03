@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -10,7 +11,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { recommendationsApi, type SeekerRecommendation } from '../services/api/recommendations';
+import { recommendationsApi } from '../services/api/recommendations';
+import { referralsApi } from '../services/api/referrals';
+import { SwipeDeck } from '../features/discovery/SwipeDeck';
+import { persistSavedCard } from '../features/discovery/savedCards';
 import { lightJourney } from '../theme/lightJourney';
 import type { EndorserDiscoverState } from './endorserDiscover/endorserDiscoverModel';
 import {
@@ -20,37 +24,21 @@ import {
 
 type CandidateLoad =
   | { status: 'loading' }
-  | { status: 'ready'; candidate: EndorserCandidatePresentation }
+  | { status: 'ready'; candidates: EndorserCandidatePresentation[] }
   | { status: 'empty' }
   | { status: 'error'; message: string };
 
-const tutorialCandidate: EndorserCandidatePresentation = {
-  id: 'tutorial-priya',
-  name: 'Priya Nair',
-  headline: 'Senior Product Manager at CRED',
-  meta: 'Bengaluru · 7 years · IIT Bombay',
-  target: 'Looking for: Senior Product Manager at Razorpay',
-  score: 92,
-  fitLabel: 'Great fit',
-  opportunityId: 'tutorial-role',
-  reasons: [
-    'Payments expertise and consumer-fintech context',
-    'Product scale across cross-functional teams',
-    'Trusted work and education verification',
-  ],
-};
-
-function useCandidate(): [CandidateLoad, () => void] {
+function useCandidates(): [CandidateLoad, () => void] {
   const [load, setLoad] = useState<CandidateLoad>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let isCurrent = true;
-    recommendationsApi.getSeekers({ limit: 1 })
+    recommendationsApi.getSeekers({ limit: 20 })
       .then((items) => {
         if (!isCurrent) return;
-        const item = items[0];
-        setLoad(item ? { status: 'ready', candidate: presentEndorserCandidate(item) } : { status: 'empty' });
+        const candidates = items.map(presentEndorserCandidate);
+        setLoad(candidates.length ? { status: 'ready', candidates } : { status: 'empty' });
       })
       .catch((error: unknown) => {
         if (!isCurrent) return;
@@ -68,9 +56,9 @@ function Header(): ReactElement {
     <View style={styles.header}>
       <View style={styles.headerIcon} />
       <Text style={styles.wordmark}>Endorsly</Text>
-      <View style={styles.headerIcon}>
-        <Ionicons color={lightJourney.ink} name="shield-checkmark-outline" size={21} />
-      </View>
+      <Pressable accessibilityLabel="Saved candidates" accessibilityRole="button" onPress={() => router.push('/referrer/saved' as never)} style={styles.headerIcon}>
+        <Ionicons color={lightJourney.ink} name="bookmark-outline" size={21} />
+      </Pressable>
     </View>
   );
 }
@@ -105,7 +93,7 @@ function Tutorial(): ReactElement {
       <View style={styles.stack}>
         <View style={styles.backCard} />
         <View style={styles.backCardTwo} />
-        <CandidateCard candidate={tutorialCandidate} />
+        <View style={styles.card} />
       </View>
       <View style={styles.actions}>
         <Text style={styles.pass}>←{`\n`}Pass</Text>
@@ -117,28 +105,48 @@ function Tutorial(): ReactElement {
   );
 }
 
-function Candidate({ candidate }: { candidate: EndorserCandidatePresentation }): ReactElement {
+function Candidate({
+  candidate,
+  onPass,
+  onRequest,
+  onSave,
+}: {
+  candidate: EndorserCandidatePresentation;
+  onPass: () => void;
+  onRequest: () => void;
+  onSave: () => void;
+}): ReactElement {
   return (
     <View style={styles.center}>
       <Text accessibilityRole="header" style={styles.title}>Candidates for you</Text>
       <Text style={styles.subtitle}>Choose a thoughtful next step for each person.</Text>
-      <CandidateCard candidate={candidate} />
+      <View style={styles.deck}>
+        <View style={styles.backCard} />
+        <View style={styles.backCardTwo} />
+        <SwipeDeck key={candidate.id} onAction={(action) => {
+          if (action === 'pass') onPass();
+          if (action === 'save') onSave();
+          if (action === 'request') onRequest();
+        }}>
+          <CandidateCard candidate={candidate} />
+        </SwipeDeck>
+      </View>
       <View style={styles.actions}>
         <Pressable
           accessibilityLabel={`Pass ${candidate.name}`}
           accessibilityRole="button"
-          onPress={() => router.replace('/endorser/discover?state=passed' as never)}
+          onPress={onPass}
           style={styles.round}
         >
           <Ionicons color={lightJourney.orange} name="close" size={24} />
         </Pressable>
-        <Pressable accessibilityLabel={`Save ${candidate.name}`} accessibilityRole="button" style={styles.round}>
+        <Pressable accessibilityLabel={`Save ${candidate.name}`} accessibilityRole="button" onPress={onSave} style={styles.round}>
           <Ionicons color={lightJourney.green} name="bookmark-outline" size={22} />
         </Pressable>
         <Pressable
-          accessibilityLabel={`View ${candidate.name} fit`}
+          accessibilityLabel={`Endorse ${candidate.name}`}
           accessibilityRole="button"
-          onPress={() => router.push('/endorser/discover?sheet=fit' as never)}
+          onPress={onRequest}
           style={styles.round}
         >
           <Ionicons color={lightJourney.green} name="arrow-forward" size={22} />
@@ -177,22 +185,78 @@ function Message({ title, copy, onRetry }: { title: string; copy: string; onRetr
   );
 }
 
-function Content({ state, load, retry }: {
+function Content({
+  state,
+  load,
+  retry,
+  onPass,
+  onSave,
+  onRequest,
+}: {
   state: EndorserDiscoverState;
   load: CandidateLoad;
   retry: () => void;
+  onPass: () => void;
+  onSave: () => void;
+  onRequest: () => void;
 }): ReactElement {
   if (state === 'tutorial') return <Tutorial />;
   if (state === 'passed') return <Message title="Passed for now" copy="This person will not be notified. You can review more candidates any time." onRetry={() => router.replace('/endorser/discover' as never)} />;
   if (load.status === 'loading') return <Message title="Finding candidates" copy="Reviewing current opportunities for you." />;
   if (load.status === 'error') return <Message title="Candidates are unavailable" copy={load.message} onRetry={retry} />;
   if (load.status === 'empty') return <Message title="No candidates right now" copy="Check back soon as new people join the network." onRetry={retry} />;
-  return state === 'fit' ? <Fit candidate={load.candidate} /> : <Candidate candidate={load.candidate} />;
+  const candidate = load.candidates[0];
+  if (!candidate) return <Message title="No more candidates" copy="You have reviewed everyone currently available." onRetry={retry} />;
+  return state === 'fit'
+    ? <Fit candidate={candidate} />
+    : <Candidate candidate={candidate} onPass={onPass} onRequest={onRequest} onSave={onSave} />;
 }
 
 export function EndorserDiscoverScreen({ state }: { state: EndorserDiscoverState }): ReactElement {
-  const [load, retry] = useCandidate();
-  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}><Header /><Content load={load} retry={retry} state={state} /></SafeAreaView>;
+  const [load, retry] = useCandidates();
+  const [cursor, setCursor] = useState(0);
+  const candidate = load.status === 'ready' ? load.candidates[cursor] : undefined;
+
+  const moveNext = useCallback(() => {
+    setCursor((current) => current + 1);
+  }, []);
+
+  const saveCurrent = useCallback(() => {
+    if (!candidate) return;
+    void persistSavedCard('endorser', {
+      id: candidate.id,
+      title: candidate.name,
+      subtitle: candidate.headline,
+      detail: `${candidate.score}% · ${candidate.fitLabel}`,
+      path: `/candidate/${candidate.id}`,
+    }).then(moveNext).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Your saved list could not be updated.';
+      Alert.alert('Could not save candidate', message);
+    });
+  }, [candidate, moveNext]);
+
+  const endorseCurrent = useCallback(() => {
+    if (!candidate) return;
+    moveNext();
+    void referralsApi.recordEndorserSwipe({
+      id: candidate.id,
+      name: candidate.name,
+      headline: candidate.headline,
+      yearsOfExperience: candidate.yearsOfExperience,
+      skills: candidate.skills,
+      targetRole: candidate.targetRole,
+      opportunityId: candidate.opportunityId,
+    }).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : 'The endorsement could not be sent.';
+      Alert.alert('Could not endorse candidate', message);
+    });
+  }, [candidate, moveNext]);
+
+  const selectedLoad = load.status === 'ready'
+    ? { status: 'ready' as const, candidates: load.candidates.slice(cursor) }
+    : load;
+
+  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}><Header /><Content load={selectedLoad} onPass={moveNext} onRequest={endorseCurrent} onSave={saveCurrent} retry={retry} state={state} /></SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
@@ -205,6 +269,7 @@ const styles = StyleSheet.create({
   title: { color: lightJourney.ink, fontFamily: 'IBMPlexSerif-Medium', fontSize: 27, lineHeight: 33, textAlign: 'center' },
   subtitle: { color: lightJourney.textMuted, fontFamily: 'TikTokSans-Regular', fontSize: 11, lineHeight: 17, marginTop: 6, textAlign: 'center' },
   stack: { height: 334, justifyContent: 'center', marginTop: 18, width: '100%' },
+  deck: { height: 294, justifyContent: 'center', marginTop: 18, width: '100%' },
   backCard: { backgroundColor: lightJourney.surfaceMuted, borderColor: lightJourney.border, borderRadius: 16, borderWidth: 1, height: 286, position: 'absolute', right: 19, transform: [{ rotate: '7deg' }], width: '88%' },
   backCardTwo: { backgroundColor: lightJourney.surfaceMuted, borderColor: lightJourney.border, borderRadius: 16, borderWidth: 1, height: 286, left: 19, position: 'absolute', transform: [{ rotate: '-6deg' }], width: '88%' },
   card: { alignItems: 'center', backgroundColor: lightJourney.surface, borderColor: lightJourney.border, borderRadius: 16, borderWidth: 1, height: 294, justifyContent: 'center', padding: 20, width: '100%' },

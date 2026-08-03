@@ -15,3 +15,9 @@ test('saves when an upward swipe is the dominant gesture', () => {
 test('snaps back when a gesture does not clear an action threshold', () => {
   expect(decideSwipe({ translationX: 60, translationY: -40 })).toBe('reset');
 });
+
+test('commits a fast horizontal flick before the distance threshold', () => {
+  expect(
+    decideSwipe({ translationX: -50, translationY: 4, velocityX: -850, velocityY: 0 }),
+  ).toBe('pass');
+});

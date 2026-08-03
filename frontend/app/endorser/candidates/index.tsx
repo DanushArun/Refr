@@ -1,1 +1,1 @@
-export { EndorserCandidateListScreen as default } from '../../../src/screens/EndorserProgressScreen';
+export { EndorserCandidatesScreen as default } from '../../../src/screens/EndorserCandidatesScreen';

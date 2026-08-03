@@ -29,6 +29,9 @@ test('presents a live seeker recommendation for the endorser card', () => {
     meta: '4 years · Node.js · PostgreSQL',
     target: 'Looking for: Senior Backend Engineer',
     fitLabel: 'Great fit',
+    yearsOfExperience: 4,
+    skills: ['Node.js', 'PostgreSQL', 'Kafka'],
+    targetRole: 'Senior Backend Engineer',
   });
 });
 

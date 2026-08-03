@@ -1,4 +1,9 @@
-import { ALL_ROLE_TABS, tabIsVisibleForRole, tabsForRole } from './roleTabs';
+import {
+  ALL_ROLE_TABS,
+  routeForRole,
+  tabIsVisibleForRole,
+  tabsForRole,
+} from './roleTabs';
 
 test('test_tabsForRole_whenSeeker_returnsSeekerTabSet', (): void => {
   expect(tabsForRole('seeker').map((tab) => tab.name)).toEqual([
@@ -36,4 +41,9 @@ test('test_tabIsVisibleForRole_whenSeeker_hidesReferrerOnlyTabs', (): void => {
   expect(tabIsVisibleForRole('pipeline', 'seeker')).toBe(true);
   expect(tabIsVisibleForRole('inbox', 'seeker')).toBe(false);
   expect(tabIsVisibleForRole('earnings', 'seeker')).toBe(false);
+});
+
+test('test_routeForRole_whenRoleChanges_returnsItsDedicatedDiscoverShell', (): void => {
+  expect(routeForRole('seeker')).toBe('/seeker/discover');
+  expect(routeForRole('referrer')).toBe('/referrer/discover');
 });

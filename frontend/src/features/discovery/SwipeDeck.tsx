@@ -30,6 +30,7 @@ export function SwipeDeck({ children, onAction }: SwipeDeckProps): ReactElement 
   const translationY = useSharedValue(0);
 
   const pan = Gesture.Pan()
+    .minDistance(8)
     .onUpdate((event) => {
       translationX.value = event.translationX;
       translationY.value = event.translationY;
@@ -38,6 +39,8 @@ export function SwipeDeck({ children, onAction }: SwipeDeckProps): ReactElement 
       const action = decideSwipe({
         translationX: event.translationX,
         translationY: event.translationY,
+        velocityX: event.velocityX,
+        velocityY: event.velocityY,
       });
       if (action === 'reset') {
         translationX.value = withSpring(0);
