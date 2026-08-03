@@ -84,7 +84,7 @@ function ProfileOverview(): ReactElement {
       <Pressable accessibilityLabel="Edit profile" accessibilityRole="button" style={styles.outlineButton}>
         <Text style={styles.outlineText}>Edit profile</Text>
       </Pressable>
-      <Pressable accessibilityLabel="Referral history" accessibilityRole="button" onPress={() => router.push('/(seeker-tabs)/pipeline' as never)} style={styles.history}>
+      <Pressable accessibilityLabel="Referral history" accessibilityRole="button" onPress={() => router.push('/seeker/pipeline' as never)} style={styles.history}>
         <View>
           <Text style={styles.rowTitle}>Referral history</Text>
           <Text style={styles.rowDetail}>1 referral active</Text>

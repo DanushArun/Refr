@@ -120,7 +120,7 @@ async function switchDemoRole(isReferrer: boolean): Promise<void> {
     await saveDemoRole(nextRole);
     notifyAuthChange(nextRole === 'seeker' ? MOCK_SEEKER_SESSION : MOCK_REFERRER_SESSION);
     router.replace(
-      nextRole === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/discover',
+      nextRole === 'seeker' ? '/seeker/discover' : '/referrer/discover',
     );
   } catch (error: unknown) {
     Alert.alert('Could not switch view', getErrorMessage(error));

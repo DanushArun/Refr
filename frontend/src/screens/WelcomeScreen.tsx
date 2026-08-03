@@ -52,8 +52,8 @@ function RoleChoice({ body, label, onPress, role }: RoleChoiceProps): ReactEleme
   );
 }
 
-function routeFor(role: DemoRole): '/(seeker-tabs)/discover' | '/(referrer-tabs)/discover' {
-  return role === 'seeker' ? '/(seeker-tabs)/discover' : '/(referrer-tabs)/discover';
+function routeFor(role: DemoRole): '/seeker/discover' | '/referrer/discover' {
+  return role === 'seeker' ? '/seeker/discover' : '/referrer/discover';
 }
 
 async function chooseRole(role: DemoRole): Promise<void> {

@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "types": ["jest", "node"],
     "paths": {
       "@refr/shared": ["./packages/shared/src/index.ts"]
     }

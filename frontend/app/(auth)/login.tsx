@@ -60,8 +60,8 @@ export default function LoginScreen() {
     const role = String(result.user.role ?? 'seeker').toLowerCase();
     const targetPath =
       role === 'referrer'
-        ? '/(referrer-tabs)/discover'
-        : '/(seeker-tabs)/discover';
+        ? '/referrer/discover'
+        : '/seeker/discover';
 
     try {
       router.replace(targetPath);

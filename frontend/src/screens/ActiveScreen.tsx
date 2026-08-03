@@ -142,7 +142,7 @@ export function ActiveScreen() {
   );
 
   const openDiscover = useCallback(() => {
-    navigateAfterPress(() => router.push('/(referrer-tabs)/discover'));
+    navigateAfterPress(() => router.push('/referrer/discover'));
   }, []);
 
   if (loading) return <LoadingState />;

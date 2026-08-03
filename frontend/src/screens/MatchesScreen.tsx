@@ -110,7 +110,7 @@ export function MatchesScreen() {
   }, []);
 
   const openDiscover = useCallback(() => {
-    navigateAfterPress(() => router.push('/(seeker-tabs)/discover'));
+    navigateAfterPress(() => router.push('/seeker/discover'));
   }, []);
 
   const retryLoad = useCallback(() => {

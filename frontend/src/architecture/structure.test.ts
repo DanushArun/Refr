@@ -122,6 +122,14 @@ describe('frontend architecture structure', () => {
     expect(route.includes('EndorserDiscoverScreen')).toBe(true);
   });
 
+  it('keeps seeker tabs on an unambiguous role path', () => {
+    expect(exists('app/seeker/(tabs)/discover.tsx')).toBe(true);
+  });
+
+  it('keeps referrer tabs on an unambiguous role path', () => {
+    expect(exists('app/referrer/(tabs)/discover.tsx')).toBe(true);
+  });
+
   it.each(['participation', 'phone', 'otp'])(
     'keeps the catalogue auth alias for %s',
     (screen) => {

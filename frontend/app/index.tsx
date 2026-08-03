@@ -9,8 +9,8 @@ import { lightJourney } from '../src/theme/lightJourney';
 
 function targetRouteFor(role: string | undefined): string {
   return role === 'referrer'
-    ? '/(referrer-tabs)/discover'
-    : '/(seeker-tabs)/discover';
+    ? '/referrer/discover'
+    : '/seeker/discover';
 }
 
 export default function Index(): React.ReactElement {
