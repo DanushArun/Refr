@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { LightJourneyScreen } from '../../src/screens/LightJourneyScreen';
+import { EndorserAccountScreen } from '../../src/screens/EndorserAccountScreen';
 
 export default function ProfileRoute(): ReactElement {
-  return <LightJourneyScreen role="endorser" surface="profile" />;
+  return <EndorserAccountScreen state="profile" />;
 }

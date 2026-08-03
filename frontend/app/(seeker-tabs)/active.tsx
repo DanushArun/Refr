@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { LightJourneyScreen } from '../../src/screens/LightJourneyScreen';
+import { TrackingScreen } from '../../src/screens/TrackingScreen';
 
 export default function ActiveRoute(): ReactElement {
-  return <LightJourneyScreen role="seeker" surface="activity" />;
+  return <TrackingScreen state="overview" />;
 }

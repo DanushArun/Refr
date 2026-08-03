@@ -134,10 +134,10 @@ const styles = StyleSheet.create({
   roleNumber: {
     alignItems: 'center',
     backgroundColor: lightJourney.surfaceMuted,
-    borderRadius: 16,
-    height: 32,
+    borderRadius: 22,
+    height: 44,
     justifyContent: 'center',
-    width: 32,
+    width: 44,
   },
   roleNumberText: {
     color: lightJourney.blue,

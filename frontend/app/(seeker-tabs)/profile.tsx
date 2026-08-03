@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { LightJourneyScreen } from '../../src/screens/LightJourneyScreen';
+import { SeekerProfileScreen } from '../../src/screens/SeekerProfileScreen';
 
 export default function ProfileRoute(): ReactElement {
-  return <LightJourneyScreen role="seeker" surface="profile" />;
+  return <SeekerProfileScreen state="overview" />;
 }

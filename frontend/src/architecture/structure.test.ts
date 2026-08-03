@@ -110,17 +110,24 @@ describe('frontend architecture structure', () => {
     expect(exists('src/features/discovery/mappers.ts')).toBe(true);
   });
 
-  it('routes seeker discovery through the light journey screen', () => {
+  it('routes seeker discovery through the catalogue discover screen', () => {
     const route = fs.readFileSync(path.join(frontendRoot, 'app/(seeker-tabs)/discover.tsx'));
 
-    expect(route.includes('LightJourneyScreen')).toBe(true);
+    expect(route.includes('DiscoverScreen')).toBe(true);
   });
 
-  it('routes referrer discovery through the light journey screen', () => {
+  it('routes referrer discovery through the catalogue discover screen', () => {
     const route = fs.readFileSync(path.join(frontendRoot, 'app/(referrer-tabs)/discover.tsx'));
 
-    expect(route.includes('LightJourneyScreen')).toBe(true);
+    expect(route.includes('EndorserDiscoverScreen')).toBe(true);
   });
+
+  it.each(['participation', 'phone', 'otp'])(
+    'keeps the catalogue auth alias for %s',
+    (screen) => {
+      expect(exists(`app/auth/${screen}.tsx`)).toBe(true);
+    },
+  );
 
   it('role-aware discovery screen chooses both swipe surfaces', () => {
     const route = fs.readFileSync(

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { LightJourneyScreen } from '../../src/screens/LightJourneyScreen';
+import { EndorserCandidateListScreen } from '../../src/screens/EndorserProgressScreen';
 
 export default function ActiveRoute(): ReactElement {
-  return <LightJourneyScreen role="endorser" surface="candidates" />;
+  return <EndorserCandidateListScreen />;
 }

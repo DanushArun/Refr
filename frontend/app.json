@@ -6,7 +6,11 @@
     "scheme": "refr",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "splash": {
       "backgroundColor": "#FCF9F4",
       "resizeMode": "contain"
@@ -40,7 +44,8 @@
             "backgroundColor": "#FCF9F4"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "owner": "danush07",
     "runtimeVersion": "exposdk:54.0.0",

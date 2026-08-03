@@ -1,4 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { BASE_URL } from './baseUrl';
 import {
   isDemoScreen,
@@ -30,6 +31,7 @@ export interface AuthResult {
 // Simple event emitter to notify hook
 type AuthListener = (session: Session | null) => void;
 const listeners = new Set<AuthListener>();
+const SESSION_STORAGE_KEY = 'auth_session';
 
 export const notifyAuthChange = (session: Session | null) => {
   listeners.forEach((l) => l(session));
@@ -46,19 +48,51 @@ function getDemoSession(): Session {
     : MOCK_REFERRER_SESSION;
 }
 
-export async function saveSession(session: Session | null) {
-  if (session) {
-    await AsyncStorage.setItem('auth_session', JSON.stringify(session));
-  } else {
-    await AsyncStorage.removeItem('auth_session');
+function usesWebStorage(): boolean {
+  return Platform.OS === 'web';
+}
+
+async function storeSessionValue(value: string | null): Promise<void> {
+  if (usesWebStorage()) {
+    if (value === null) {
+      globalThis.localStorage.removeItem(SESSION_STORAGE_KEY);
+    } else {
+      globalThis.localStorage.setItem(SESSION_STORAGE_KEY, value);
+    }
+    return;
   }
+
+  if (value === null) {
+    await SecureStore.deleteItemAsync(SESSION_STORAGE_KEY);
+  } else {
+    await SecureStore.setItemAsync(SESSION_STORAGE_KEY, value);
+  }
+}
+
+async function readSessionValue(): Promise<string | null> {
+  if (usesWebStorage()) {
+    return globalThis.localStorage.getItem(SESSION_STORAGE_KEY);
+  }
+  return SecureStore.getItemAsync(SESSION_STORAGE_KEY);
+}
+
+export async function saveSession(session: Session | null): Promise<void> {
+  await storeSessionValue(session ? JSON.stringify(session) : null);
   notifyAuthChange(session);
 }
 
 export async function getSession(): Promise<Session | null> {
   if (isDemoScreen('auth')) return getDemoSession();
-  const json = await AsyncStorage.getItem('auth_session');
-  return json ? JSON.parse(json) : null;
+  const value = await readSessionValue();
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value) as Session;
+  } catch (error: unknown) {
+    if (!(error instanceof SyntaxError)) throw error;
+    await storeSessionValue(null);
+    return null;
+  }
 }
 
 export async function signUpWithEmail(
@@ -254,8 +288,14 @@ export async function verifyPhoneOtp(phone: string, token: string): Promise<Auth
 
 export async function signOut(): Promise<{ error: Error | null }> {
   if (isDemoScreen('auth')) return { error: null };
-  await saveSession(null);
-  return { error: null };
+  try {
+    await saveSession(null);
+    return { error: null };
+  } catch (error: unknown) {
+    return {
+      error: error instanceof Error ? error : new Error('Unable to clear the local session.'),
+    };
+  }
 }
 
 export const authApi = {

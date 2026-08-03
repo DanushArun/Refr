@@ -1,0 +1,4 @@
+import type { ReactElement } from 'react';
+import { EndorserAccountScreen } from '../../../src/screens/EndorserAccountScreen';
+
+export default function PreferencesRoute(): ReactElement { return <EndorserAccountScreen state="preferences" />; }
