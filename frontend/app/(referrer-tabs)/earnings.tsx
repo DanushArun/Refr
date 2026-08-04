@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { EndorserAccountScreen } from '../../src/screens/EndorserAccountScreen';
+import { EndorserEarningsScreen } from '../../src/screens/EndorserEarningsScreen';
 
 export default function EarningsRoute(): ReactElement {
-  return <EndorserAccountScreen state="earnings" />;
+  return <EndorserEarningsScreen />;
 }

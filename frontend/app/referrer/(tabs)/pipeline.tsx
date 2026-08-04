@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { LightJourneyScreen } from '../../../src/screens/LightJourneyScreen';
+import { EndorserCandidatesScreen } from '../../../src/screens/EndorserCandidatesScreen';
 
 export default function PipelineRoute(): ReactElement {
-  return <LightJourneyScreen role="endorser" surface="candidates" />;
+  return <EndorserCandidatesScreen />;
 }

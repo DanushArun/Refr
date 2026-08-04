@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { LightJourneyScreen } from '../../../src/screens/LightJourneyScreen';
+import { EndorserInboxJourneyScreen } from '../../../src/screens/EndorserInboxJourneyScreen';
 
 export default function MatchesRoute(): ReactElement {
-  return <LightJourneyScreen role="endorser" surface="inbox" />;
+  return <EndorserInboxJourneyScreen />;
 }

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { EndorserCandidateListScreen } from '../../src/screens/EndorserProgressScreen';
+import { EndorserCandidatesScreen } from '../../src/screens/EndorserCandidatesScreen';
 
 export default function ActiveRoute(): ReactElement {
-  return <EndorserCandidateListScreen />;
+  return <EndorserCandidatesScreen />;
 }
