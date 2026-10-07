@@ -1,4 +1,8 @@
-# Endorsly — Mobile Frontend
+![Endorsly workflow](docs/assets/project-overview.svg)
+
+# Endorsly
+
+**Discover opportunities. Request endorsements. Follow the conversation.**
 
 **Professional Intelligence Platform for India** -- a content-first feed where
 the natural social action is submitting job endorsements. Employer-monetised.
@@ -11,6 +15,60 @@ Django backend has been split into its own repository:
 > Endorsement Score**. Some internal identifiers still use historical
 > `Referral`, `referrer`, and `kingmaker_score` names. Do not use "Kingmaker"
 > in user-facing copy.
+
+
+![Expo](https://img.shields.io/badge/Expo-181f28)
+![React Native](https://img.shields.io/badge/React%20Native-181f28)
+![TypeScript](https://img.shields.io/badge/TypeScript-181f28)
+
+[Architecture](docs/ARCHITECTURE.md) · [Evaluation guide](docs/EVALUATION.md)
+
+**Contents:** [The challenge](#the-challenge) · [Walkthrough](#walk-through-the-project) ·
+[Implementation](#implementation-state) · [Design choices](#engineering-choices) ·
+[Next evidence](#next-evidence-to-collect)
+
+---
+
+## The challenge
+
+A professional-network interface must connect discovery, endorsement requests and follow-up
+without losing the user across screens. Endorsly brings seeker and endorser experiences into an
+Expo application, with a separate backend for authoritative account and routing state.
+
+## System at a glance
+
+```mermaid
+flowchart LR
+    N0["Role-based screens"]
+    N1["Demo or API client"]
+    N2["Django backend"]
+    N3["Endorsement state"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+```
+
+## Walk through the project
+
+### 1. Choose the evaluation mode
+
+The checked-in demo configuration is enabled. Inspect which screens use mock state before treating
+the interface as a live backend demonstration.
+
+### 2. Explore a role
+
+Review seeker discovery/matches/pipeline or endorser inbox/active/earnings. Role-specific screens
+share navigation and common components.
+
+### 3. Open a conversation
+
+Follow a person or endorsement into chat and return. Navigation tests exist for important
+transitions and route reset behavior.
+
+### 4. Evaluate real services
+
+Disable configured demos and connect the Django backend. Native haptic/liquid-glass modules
+require a development build for meaningful platform evaluation.
 
 ## Stack
 
@@ -122,3 +180,33 @@ Jest, typecheck and backend integration runs were not repeated. No new pass coun
 The product's employer-monetisation and pricing notes describe intended policy rather than
 verified payment infrastructure. End-to-end auth, endorsement, chat and notification behavior
 requires the separately configured backend and appropriate device testing.
+
+## Engineering choices
+
+**Demo mode is visible.** A populated screen can come from fixtures; it is not automatically live
+evidence.
+
+**Terminology is intentional.** Public copy uses Endorsement/Endorser/Seeker despite historical
+referral identifiers.
+
+**Service boundary stays separate.** Backend state and authorization are tested against the
+separate Django repository.
+
+## Implementation state
+
+| State | Current evidence |
+| --- | --- |
+| Present | Role-specific screens, navigation and sensory source |
+| Present | Shared contracts and native module source |
+| Enabled by default | Configured synthetic/mock demo flows |
+| Not verified | Current device acceptance and backend-integrated flow |
+
+The [architecture guide](docs/ARCHITECTURE.md) maps these statements to source entry points.
+The [evaluation guide](docs/EVALUATION.md) separates inspection, executable checks and
+domain validation, with the next evidence needed for each project.
+
+## Next evidence to collect
+
+- Capture real-device navigation and accessibility results.
+- Test cross-role flows with demos off.
+- Verify native integrations and backend contract together.
